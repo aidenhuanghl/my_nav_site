@@ -4,57 +4,52 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>我的导航网站</title>
-    <!-- 引入样式 -->
-    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    <!-- 页面头部 -->
-    <header>
-        <h1>我的导航网站</h1>
+<body class="bg-gray-100 font-sans">
+
+    <header class="bg-green-500 text-white py-6 text-center shadow-md">
+        <h1 class="text-3xl font-bold">🌐 我的导航网站</h1>
     </header>
 
-    <!-- 导航分类 -->
-    <nav>
-        <ul>
-            <li><a href="#search">搜索引擎</a></li>
-            <li><a href="#social">社交媒体</a></li>
-            <li><a href="#tools">实用工具</a></li>
+    <nav class="bg-gray-800 py-3">
+        <ul class="flex justify-center space-x-6">
+            <li><a href="#search" class="text-white hover:text-green-300">搜索引擎</a></li>
+            <li><a href="#social" class="text-white hover:text-green-300">社交媒体</a></li>
+            <li><a href="#tools" class="text-white hover:text-green-300">实用工具</a></li>
         </ul>
     </nav>
 
-    <!-- 导航链接区域 -->
-    <main>
-        <section id="search">
-            <h2>搜索引擎</h2>
-            <ul>
-                <li><a href="https://www.baidu.com/" target="_blank">百度</a></li>
-                <li><a href="https://www.google.com/" target="_blank">Google</a></li>
-                <li><a href="https://www.bing.com/" target="_blank">Bing</a></li>
+    <main class="max-w-4xl mx-auto py-8 px-4 space-y-8">
+
+        <section id="search" class="bg-white shadow-md rounded-lg p-6">
+            <h2 class="text-xl font-semibold mb-4 border-b-2 border-green-300 pb-2">🔍 搜索引擎</h2>
+            <ul class="space-y-2">
+                <li><a href="https://www.baidu.com/" target="_blank" class="text-gray-700 hover:text-green-500">百度</a></li>
+                <li><a href="https://www.google.com/" target="_blank" class="text-gray-700 hover:text-green-500">Google</a></li>
+                <li><a href="https://www.bing.com/" target="_blank" class="text-gray-700 hover:text-green-500">Bing</a></li>
             </ul>
         </section>
 
-        <section id="social">
-            <h2>社交媒体</h2>
-            <ul>
-                <li><a href="https://www.weibo.com/" target="_blank">微博</a></li>
-                <li><a href="https://www.zhihu.com/" target="_blank">知乎</a></li>
-                <li><a href="https://www.douyin.com/" target="_blank">抖音</a></li>
+        <section id="social" class="bg-white shadow-md rounded-lg p-6">
+            <h2 class="text-xl font-semibold mb-4 border-b-2 border-green-300 pb-2">💬 社交媒体</h2>
+            <ul class="space-y-2">
+                <li><a href="https://www.weibo.com/" target="_blank" class="text-gray-700 hover:text-green-500">微博</a></li>
+                <li><a href="https://www.zhihu.com/" target="_blank" class="text-gray-700 hover:text-green-500">知乎</a></li>
+                <li><a href="https://www.douyin.com/" target="_blank" class="text-gray-700 hover:text-green-500">抖音</a></li>
             </ul>
         </section>
 
-        <section id="tools">
-            <h2>实用工具</h2>
-            <ul>
-                <li><a href="https://translate.google.cn/" target="_blank">谷歌翻译</a></li>
-                <li><a href="https://www.ilovepdf.com/" target="_blank">PDF工具</a></li>
-                <li><a href="https://tool.lu/" target="_blank">在线工具箱</a></li>
+        <section id="tools" class="bg-white shadow-md rounded-lg p-6">
+            <h2 class="text-xl font-semibold mb-4 border-b-2 border-green-300 pb-2">🛠 实用工具</h2>
+            <ul class="space-y-2">
+                <li><a href="https://translate.google.cn/" target="_blank" class="text-gray-700 hover:text-green-500">谷歌翻译</a></li>
+                <li><a href="https://www.ilovepdf.com/" target="_blank" class="text-gray-700 hover:text-green-500">PDF工具</a></li>
+                <li><a href="https://tool.lu/" target="_blank" class="text-gray-700 hover:text-green-500">在线工具箱</a></li>
             </ul>
         </section>
+
     </main>
 
-    <!-- 页脚 -->
-    <footer>
-        <p>© 2025 我的导航网站</p>
-    </footer>
-</body>
-</html>
+    <footer class="text-center bg-gray-800 text-white py-4">
+        © 202
