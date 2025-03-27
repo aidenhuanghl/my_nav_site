@@ -5,24 +5,47 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>我的导航网站</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+      body.dark {
+        background-color: #333;
+        color: #fff;
+      }
+      body.dark header {
+        background-color: #444;
+      }
+      body.dark nav {
+        background-color: #222;
+      }
+      body.dark footer {
+        background-color: #222;
+      }
+      body.dark a {
+        color: #ddd;
+      }
+      body {
+        font-family: 'Roboto', sans-serif;
+      }
+    </style>
 </head>
 <body class="bg-gray-100 font-sans">
 
-    <header class="bg-green-500 text-white py-6 text-center shadow-md">
+    <header class="bg-gradient-to-r from-green-400 to-blue-500 text-white py-6 text-center shadow-md">
         <h1 class="text-3xl font-bold">🌐 我的导航网站</h1>
+        <button id="theme-toggle" class="mt-4 bg-white text-green-500 px-4 py-2 rounded shadow transition transform hover:scale-105 duration-300">切换主题</button>
     </header>
 
     <nav class="bg-gray-800 py-3">
         <ul class="flex justify-center space-x-6">
-            <li><a href="#search" class="text-white hover:text-green-300">搜索引擎</a></li>
-            <li><a href="#social" class="text-white hover:text-green-300">社交媒体</a></li>
-            <li><a href="#tools" class="text-white hover:text-green-300">实用工具</a></li>
+            <li><a href="#search" class="transition-colors duration-300 text-white hover:text-green-300">搜索引擎</a></li>
+            <li><a href="#social" class="transition-colors duration-300 text-white hover:text-green-300">社交媒体</a></li>
+            <li><a href="#tools" class="transition-colors duration-300 text-white hover:text-green-300">实用工具</a></li>
         </ul>
     </nav>
 
     <main class="max-w-4xl mx-auto py-8 px-4 space-y-8">
 
-        <section id="search" class="bg-white shadow-md rounded-lg p-6">
+        <section id="search" class="bg-white shadow-lg rounded-lg p-6 transition transform hover:scale-105 duration-300">
             <h2 class="text-xl font-semibold mb-4 border-b-2 border-green-300 pb-2">🔍 搜索引擎</h2>
             <ul class="space-y-2">
                 <li><a href="https://www.baidu.com/" target="_blank" class="text-gray-700 hover:text-green-500">百度</a></li>
@@ -31,7 +54,7 @@
             </ul>
         </section>
 
-        <section id="social" class="bg-white shadow-md rounded-lg p-6">
+        <section id="social" class="bg-white shadow-lg rounded-lg p-6 transition transform hover:scale-105 duration-300">
             <h2 class="text-xl font-semibold mb-4 border-b-2 border-green-300 pb-2">💬 社交媒体</h2>
             <ul class="space-y-2">
                 <li><a href="https://www.weibo.com/" target="_blank" class="text-gray-700 hover:text-green-500">微博</a></li>
@@ -40,7 +63,7 @@
             </ul>
         </section>
 
-        <section id="tools" class="bg-white shadow-md rounded-lg p-6">
+        <section id="tools" class="bg-white shadow-lg rounded-lg p-6 transition transform hover:scale-105 duration-300">
             <h2 class="text-xl font-semibold mb-4 border-b-2 border-green-300 pb-2">🛠 实用工具</h2>
             <ul class="space-y-2">
                 <li><a href="https://translate.google.cn/" target="_blank" class="text-gray-700 hover:text-green-500">谷歌翻译</a></li>
@@ -51,5 +74,31 @@
 
     </main>
 
-    <footer class="text-center bg-gray-800 text-white py-4">
+    <footer class="text-center bg-gradient-to-r from-gray-700 to-gray-900 text-white py-4">
         © 202
+    </footer>
+
+    <button id="back-to-top" class="hidden fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded transition transform hover:scale-105 duration-300">返回顶部</button>
+    
+    <script>
+      // Dark mode toggle functionality
+      const themeToggle = document.getElementById('theme-toggle');
+      themeToggle.addEventListener('click', () => {
+        document.body.classList.toggle('dark');
+      });
+
+      // Back to Top button functionality
+      const backToTop = document.getElementById('back-to-top');
+      window.addEventListener('scroll', () => {
+        if (window.pageYOffset > 200) {
+          backToTop.classList.remove('hidden');
+        } else {
+          backToTop.classList.add('hidden');
+        }
+      });
+      backToTop.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    </script>
+</body>
+</html>
