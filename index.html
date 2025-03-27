@@ -81,6 +81,37 @@
                 </div>
             </div>
             <div class="settings-section">
+                <h4>视觉效果</h4>
+                <div class="setting-item toggle-setting">
+                    <label for="enable-particles">粒子背景</label>
+                    <label class="toggle">
+                        <input type="checkbox" id="enable-particles" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="setting-item toggle-setting">
+                    <label for="enable-data-streams">数据流效果</label>
+                    <label class="toggle">
+                        <input type="checkbox" id="enable-data-streams" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="setting-item toggle-setting">
+                    <label for="enable-morphing-bg">动态背景</label>
+                    <label class="toggle">
+                        <input type="checkbox" id="enable-morphing-bg" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="setting-item toggle-setting">
+                    <label for="enable-mouse-effects">鼠标光效</label>
+                    <label class="toggle">
+                        <input type="checkbox" id="enable-mouse-effects">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="settings-section">
                 <h4>重置选项</h4>
                 <button id="reset-settings" class="reset-button">恢复默认设置</button>
             </div>
@@ -267,7 +298,20 @@
         </div>
     </div>
 
+    <!-- 背景效果 -->
+    <div id="particles-js" class="particles-container"></div>
+    <div class="data-streams">
+        <div class="data-stream"></div>
+        <div class="data-stream"></div>
+        <div class="data-stream"></div>
+        <div class="data-stream"></div>
+        <div class="data-stream"></div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vanilla-tilt@1.7.0/dist/vanilla-tilt.min.js"></script>
+    <script src="visual-effects.js"></script>
     <script>
         // 主题切换功能
         const themeToggle = document.getElementById('theme-toggle');
@@ -437,10 +481,17 @@
                 colorTheme: document.body.getAttribute('data-color-theme') || 'default',
                 density: document.body.getAttribute('data-density') || 'normal',
                 saveHistory: document.getElementById('save-history').checked,
-                showRecommendations: document.getElementById('show-recommendations').checked
+                showRecommendations: document.getElementById('show-recommendations').checked,
+                enableParticles: document.getElementById('enable-particles').checked,
+                enableDataStreams: document.getElementById('enable-data-streams').checked,
+                enableMorphingBg: document.getElementById('enable-morphing-bg').checked,
+                enableMouseEffects: document.getElementById('enable-mouse-effects').checked
             };
             
             localStorage.setItem('ai-nav-preferences', JSON.stringify(preferences));
+            
+            // 应用视觉效果设置
+            applyVisualEffectsSettings(preferences);
         }
         
         // 加载用户偏好设置
@@ -475,14 +526,66 @@
                 document.getElementById('save-history').checked = preferences.saveHistory !== false;
                 document.getElementById('show-recommendations').checked = preferences.showRecommendations !== false;
                 
+                // 应用视觉效果设置
+                if (preferences.enableParticles !== undefined) {
+                    document.getElementById('enable-particles').checked = preferences.enableParticles;
+                }
+                if (preferences.enableDataStreams !== undefined) {
+                    document.getElementById('enable-data-streams').checked = preferences.enableDataStreams;
+                }
+                if (preferences.enableMorphingBg !== undefined) {
+                    document.getElementById('enable-morphing-bg').checked = preferences.enableMorphingBg;
+                }
+                if (preferences.enableMouseEffects !== undefined) {
+                    document.getElementById('enable-mouse-effects').checked = preferences.enableMouseEffects;
+                }
+                
                 // 显示/隐藏推荐区域
                 if (preferences.showRecommendations) {
                     document.getElementById('recommendations').classList.add('active');
                 }
+                
+                // 应用视觉效果设置
+                applyVisualEffectsSettings(preferences);
             }
             
             // 加载卡片顺序
             loadCardOrder();
+        }
+        
+        // 应用视觉效果设置
+        function applyVisualEffectsSettings(preferences) {
+            // 粒子背景
+            const particlesContainer = document.getElementById('particles-js');
+            if (particlesContainer) {
+                particlesContainer.style.display = preferences.enableParticles ? 'block' : 'none';
+            }
+            
+            // 数据流效果
+            const dataStreams = document.querySelector('.data-streams');
+            if (dataStreams) {
+                dataStreams.style.display = preferences.enableDataStreams ? 'block' : 'none';
+            }
+            
+            // 动态背景变化
+            if (window.stopMorphingBg) {
+                window.stopMorphingBg();
+            }
+            if (preferences.enableMorphingBg) {
+                window.requestMorphingBg();
+            }
+            
+            // 鼠标光效
+            if (preferences.enableMouseEffects) {
+                if (typeof initMouseGlow === 'function' && !document.querySelector('.mouse-glow')) {
+                    initMouseGlow();
+                }
+            } else {
+                const mouseGlow = document.querySelector('.mouse-glow');
+                if (mouseGlow) {
+                    mouseGlow.remove();
+                }
+            }
         }
         
         // 初始化可排序功能
@@ -817,6 +920,12 @@
             saveUserPreferences();
             updateRecommendations();
         });
+        
+        // 视觉效果设置事件监听
+        document.getElementById('enable-particles').addEventListener('change', saveUserPreferences);
+        document.getElementById('enable-data-streams').addEventListener('change', saveUserPreferences);
+        document.getElementById('enable-morphing-bg').addEventListener('change', saveUserPreferences);
+        document.getElementById('enable-mouse-effects').addEventListener('change', saveUserPreferences);
     </script>
 </body>
 </html>
