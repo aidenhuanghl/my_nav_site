@@ -28,7 +28,67 @@
                 <i class="fas fa-moon"></i>
             </div>
         </label>
+        <button id="settings-toggle" class="settings-button glass-effect">
+            <i class="fas fa-cog"></i>
+        </button>
     </div>
+
+    <!-- 设置面板 -->
+    <div class="settings-panel">
+        <div class="settings-header">
+            <h3><i class="fas fa-sliders-h"></i> 个性化设置</h3>
+            <button id="close-settings" class="close-button"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="settings-content">
+            <div class="settings-section">
+                <h4>外观</h4>
+                <div class="setting-item">
+                    <label for="accent-color">主题色调</label>
+                    <div class="color-options">
+                        <button class="color-option active" data-color="default" style="background: linear-gradient(135deg, #6e56cf, #00c2ff);"></button>
+                        <button class="color-option" data-color="green" style="background: linear-gradient(135deg, #10b981, #3b82f6);"></button>
+                        <button class="color-option" data-color="red" style="background: linear-gradient(135deg, #ef4444, #f59e0b);"></button>
+                        <button class="color-option" data-color="pink" style="background: linear-gradient(135deg, #ec4899, #8b5cf6);"></button>
+                    </div>
+                </div>
+            </div>
+            <div class="settings-section">
+                <h4>布局设置</h4>
+                <div class="setting-item">
+                    <label for="content-density">内容密度</label>
+                    <select id="content-density" class="settings-select">
+                        <option value="compact">紧凑</option>
+                        <option value="normal" selected>普通</option>
+                        <option value="comfortable">舒适</option>
+                    </select>
+                </div>
+            </div>
+            <div class="settings-section">
+                <h4>常用功能</h4>
+                <div class="setting-item toggle-setting">
+                    <label for="save-history">保存搜索历史</label>
+                    <label class="toggle">
+                        <input type="checkbox" id="save-history" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="setting-item toggle-setting">
+                    <label for="show-recommendations">显示智能推荐</label>
+                    <label class="toggle">
+                        <input type="checkbox" id="show-recommendations" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="settings-section">
+                <h4>重置选项</h4>
+                <button id="reset-settings" class="reset-button">恢复默认设置</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 遮罩层 -->
+    <div class="overlay"></div>
 
     <header class="glass-effect">
         <div class="logo">
@@ -56,7 +116,10 @@
     <main>
         <section id="search" class="content-section active glass-card">
             <h2><i class="fas fa-search animated-icon"></i> 搜索引擎</h2>
-            <div class="card-grid">
+            <div class="section-controls">
+                <button class="sort-button" data-section="search"><i class="fas fa-sort"></i> 排序</button>
+            </div>
+            <div class="card-grid sortable" id="search-grid">
                 <a href="https://www.baidu.com/" target="_blank" class="card">
                     <div class="card-icon"><i class="fas fa-compass"></i></div>
                     <h3>百度</h3>
@@ -77,7 +140,10 @@
 
         <section id="social" class="content-section glass-card">
             <h2><i class="fas fa-share-alt animated-icon"></i> 社交媒体</h2>
-            <div class="card-grid">
+            <div class="section-controls">
+                <button class="sort-button" data-section="social"><i class="fas fa-sort"></i> 排序</button>
+            </div>
+            <div class="card-grid sortable" id="social-grid">
                 <a href="https://www.weibo.com/" target="_blank" class="card">
                     <div class="card-icon"><i class="fab fa-weibo"></i></div>
                     <h3>微博</h3>
@@ -98,7 +164,10 @@
 
         <section id="tools" class="content-section glass-card">
             <h2><i class="fas fa-tools animated-icon"></i> 实用工具</h2>
-            <div class="card-grid">
+            <div class="section-controls">
+                <button class="sort-button" data-section="tools"><i class="fas fa-sort"></i> 排序</button>
+            </div>
+            <div class="card-grid sortable" id="tools-grid">
                 <a href="https://translate.google.cn/" target="_blank" class="card">
                     <div class="card-icon"><i class="fas fa-language"></i></div>
                     <h3>谷歌翻译</h3>
@@ -119,7 +188,10 @@
 
         <section id="ai" class="content-section glass-card">
             <h2><i class="fas fa-robot animated-icon"></i> AI工具</h2>
-            <div class="card-grid">
+            <div class="section-controls">
+                <button class="sort-button" data-section="ai"><i class="fas fa-sort"></i> 排序</button>
+            </div>
+            <div class="card-grid sortable" id="ai-grid">
                 <a href="https://chat.openai.com/" target="_blank" class="card">
                     <div class="card-icon"><i class="fas fa-comment-dots"></i></div>
                     <h3>ChatGPT</h3>
@@ -153,12 +225,56 @@
         <i class="fas fa-arrow-up"></i>
     </button>
     
+    <div class="search-engines-dropdown">
+        <div class="search-engine-option active" data-engine="google">
+            <i class="fab fa-google"></i> Google
+        </div>
+        <div class="search-engine-option" data-engine="baidu">
+            <i class="fas fa-compass"></i> 百度
+        </div>
+        <div class="search-engine-option" data-engine="bing">
+            <i class="fab fa-microsoft"></i> Bing
+        </div>
+    </div>
+
+    <div class="search-history-panel">
+        <div class="search-history-header">
+            <h3>搜索历史</h3>
+            <button id="clear-history"><i class="fas fa-trash-alt"></i></button>
+        </div>
+        <div id="search-history-list">
+            <!-- 将通过JavaScript动态填充 -->
+        </div>
+    </div>
+
+    <!-- 智能推荐区域 -->
+    <div id="recommendations" class="recommendations glass-card">
+        <h3><i class="fas fa-bolt animated-icon"></i> 智能推荐</h3>
+        <p class="recommendation-intro">根据您的使用习惯，我们为您推荐以下内容：</p>
+        <div class="recommendation-container">
+            <div class="recommendation-group">
+                <h4>常用网站</h4>
+                <div id="frequent-sites" class="recommendation-items">
+                    <!-- 动态填充内容 -->
+                </div>
+            </div>
+            <div class="recommendation-group">
+                <h4>您可能感兴趣</h4>
+                <div id="suggested-sites" class="recommendation-items">
+                    <!-- 动态填充内容 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
     <script>
         // 主题切换功能
         const themeToggle = document.getElementById('theme-toggle');
         themeToggle.addEventListener('change', () => {
             document.body.classList.toggle('dark-theme');
             updateAIMessage();
+            saveUserPreferences();
         });
 
         // 返回顶部按钮
@@ -220,9 +336,13 @@
             if (e.key === 'Enter') {
                 const query = searchInput.value.trim();
                 if (query) {
-                    window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, '_blank');
+                    performSearch(query);
                 }
             }
+        });
+        
+        searchInput.addEventListener('focus', () => {
+            showSearchHistory();
         });
 
         // 语音搜索
@@ -252,6 +372,450 @@
         // 页面加载动画
         window.addEventListener('load', () => {
             document.body.classList.add('loaded');
+            loadUserPreferences();
+            initSortables();
+            updateRecommendations();
+        });
+        
+        // 设置面板相关
+        const settingsToggle = document.getElementById('settings-toggle');
+        const settingsPanel = document.querySelector('.settings-panel');
+        const closeSettings = document.getElementById('close-settings');
+        const overlay = document.querySelector('.overlay');
+        
+        settingsToggle.addEventListener('click', () => {
+            settingsPanel.classList.add('active');
+            overlay.classList.add('active');
+        });
+        
+        closeSettings.addEventListener('click', () => {
+            settingsPanel.classList.remove('active');
+            overlay.classList.remove('active');
+        });
+        
+        overlay.addEventListener('click', () => {
+            settingsPanel.classList.remove('active');
+            overlay.classList.remove('active');
+        });
+        
+        // 颜色主题设置
+        const colorOptions = document.querySelectorAll('.color-option');
+        colorOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                colorOptions.forEach(opt => opt.classList.remove('active'));
+                option.classList.add('active');
+                
+                const colorTheme = option.getAttribute('data-color');
+                document.body.setAttribute('data-color-theme', colorTheme);
+                saveUserPreferences();
+            });
+        });
+        
+        // 内容密度设置
+        const contentDensity = document.getElementById('content-density');
+        contentDensity.addEventListener('change', () => {
+            document.body.setAttribute('data-density', contentDensity.value);
+            saveUserPreferences();
+        });
+        
+        // 重置设置
+        const resetSettings = document.getElementById('reset-settings');
+        resetSettings.addEventListener('click', () => {
+            if (confirm('确定要重置所有设置吗？这将清除所有自定义配置。')) {
+                localStorage.removeItem('ai-nav-preferences');
+                localStorage.removeItem('ai-nav-card-order');
+                localStorage.removeItem('ai-nav-search-history');
+                localStorage.removeItem('ai-nav-site-visits');
+                location.reload();
+            }
+        });
+        
+        // 保存用户偏好设置
+        function saveUserPreferences() {
+            const preferences = {
+                theme: document.body.classList.contains('dark-theme'),
+                colorTheme: document.body.getAttribute('data-color-theme') || 'default',
+                density: document.body.getAttribute('data-density') || 'normal',
+                saveHistory: document.getElementById('save-history').checked,
+                showRecommendations: document.getElementById('show-recommendations').checked
+            };
+            
+            localStorage.setItem('ai-nav-preferences', JSON.stringify(preferences));
+        }
+        
+        // 加载用户偏好设置
+        function loadUserPreferences() {
+            const preferences = JSON.parse(localStorage.getItem('ai-nav-preferences'));
+            
+            if (preferences) {
+                // 应用主题
+                if (preferences.theme) {
+                    document.body.classList.add('dark-theme');
+                    document.getElementById('theme-toggle').checked = true;
+                }
+                
+                // 应用颜色主题
+                if (preferences.colorTheme) {
+                    document.body.setAttribute('data-color-theme', preferences.colorTheme);
+                    colorOptions.forEach(option => {
+                        option.classList.remove('active');
+                        if (option.getAttribute('data-color') === preferences.colorTheme) {
+                            option.classList.add('active');
+                        }
+                    });
+                }
+                
+                // 应用内容密度
+                if (preferences.density) {
+                    document.body.setAttribute('data-density', preferences.density);
+                    contentDensity.value = preferences.density;
+                }
+                
+                // 应用其他设置
+                document.getElementById('save-history').checked = preferences.saveHistory !== false;
+                document.getElementById('show-recommendations').checked = preferences.showRecommendations !== false;
+                
+                // 显示/隐藏推荐区域
+                if (preferences.showRecommendations) {
+                    document.getElementById('recommendations').classList.add('active');
+                }
+            }
+            
+            // 加载卡片顺序
+            loadCardOrder();
+        }
+        
+        // 初始化可排序功能
+        function initSortables() {
+            const sortableGrids = document.querySelectorAll('.sortable');
+            sortableGrids.forEach(grid => {
+                new Sortable(grid, {
+                    animation: 150,
+                    ghostClass: 'sortable-ghost',
+                    onEnd: function() {
+                        saveCardOrder();
+                    }
+                });
+            });
+            
+            // 添加排序按钮功能
+            const sortButtons = document.querySelectorAll('.sort-button');
+            sortButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const section = button.getAttribute('data-section');
+                    const grid = document.getElementById(`${section}-grid`);
+                    
+                    if (grid.classList.contains('sorting-active')) {
+                        grid.classList.remove('sorting-active');
+                        button.innerHTML = '<i class="fas fa-sort"></i> 排序';
+                    } else {
+                        grid.classList.add('sorting-active');
+                        button.innerHTML = '<i class="fas fa-check"></i> 完成';
+                    }
+                });
+            });
+        }
+        
+        // 保存卡片顺序
+        function saveCardOrder() {
+            const cardOrder = {};
+            const sections = ['search', 'social', 'tools', 'ai'];
+            
+            sections.forEach(section => {
+                const cards = document.querySelectorAll(`#${section}-grid .card`);
+                cardOrder[section] = Array.from(cards).map(card => card.getAttribute('href'));
+            });
+            
+            localStorage.setItem('ai-nav-card-order', JSON.stringify(cardOrder));
+        }
+        
+        // 加载卡片顺序
+        function loadCardOrder() {
+            const savedOrder = JSON.parse(localStorage.getItem('ai-nav-card-order'));
+            
+            if (savedOrder) {
+                Object.keys(savedOrder).forEach(section => {
+                    const grid = document.getElementById(`${section}-grid`);
+                    const urls = savedOrder[section];
+                    
+                    if (grid && urls && urls.length) {
+                        const cards = Array.from(grid.querySelectorAll('.card'));
+                        
+                        // 根据保存的顺序重新排序卡片
+                        urls.forEach(url => {
+                            const card = cards.find(c => c.getAttribute('href') === url);
+                            if (card) {
+                                grid.appendChild(card);
+                            }
+                        });
+                    }
+                });
+            }
+        }
+        
+        // 记录网站访问
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('click', () => {
+                const url = card.getAttribute('href');
+                const title = card.querySelector('h3').textContent;
+                const icon = card.querySelector('.card-icon i').className;
+                
+                recordSiteVisit(url, title, icon);
+            });
+        });
+        
+        function recordSiteVisit(url, title, icon) {
+            let visits = JSON.parse(localStorage.getItem('ai-nav-site-visits')) || {};
+            
+            if (!visits[url]) {
+                visits[url] = {
+                    title: title,
+                    icon: icon,
+                    count: 0,
+                    lastVisit: Date.now()
+                };
+            }
+            
+            visits[url].count++;
+            visits[url].lastVisit = Date.now();
+            
+            localStorage.setItem('ai-nav-site-visits', JSON.stringify(visits));
+            
+            // 更新推荐
+            updateRecommendations();
+        }
+        
+        // 更新推荐内容
+        function updateRecommendations() {
+            const visits = JSON.parse(localStorage.getItem('ai-nav-site-visits')) || {};
+            const frequentSites = document.getElementById('frequent-sites');
+            const suggestedSites = document.getElementById('suggested-sites');
+            
+            // 清空现有内容
+            frequentSites.innerHTML = '';
+            suggestedSites.innerHTML = '';
+            
+            // 获取访问次数最多的5个网站
+            const sortedByFrequency = Object.entries(visits)
+                .sort((a, b) => b[1].count - a[1].count)
+                .slice(0, 4);
+            
+            if (sortedByFrequency.length === 0) {
+                frequentSites.innerHTML = '<p class="empty-state">暂无数据，请先浏览一些网站</p>';
+            } else {
+                sortedByFrequency.forEach(([url, data]) => {
+                    const item = document.createElement('a');
+                    item.className = 'recommendation-item';
+                    item.href = url;
+                    item.target = '_blank';
+                    item.innerHTML = `
+                        <div class="recommendation-icon"><i class="${data.icon}"></i></div>
+                        <div class="recommendation-text">${data.title}</div>
+                    `;
+                    frequentSites.appendChild(item);
+                });
+            }
+            
+            // 模拟一些推荐网站
+            const suggestions = [
+                { url: 'https://juejin.cn/', title: '掘金', icon: 'fas fa-code' },
+                { url: 'https://github.com/', title: 'GitHub', icon: 'fab fa-github' },
+                { url: 'https://www.bilibili.com/', title: 'B站', icon: 'fas fa-play-circle' },
+                { url: 'https://cloud.tencent.com/', title: '腾讯云', icon: 'fas fa-cloud' }
+            ];
+            
+            suggestions.forEach(suggestion => {
+                if (!Object.keys(visits).includes(suggestion.url)) {
+                    const item = document.createElement('a');
+                    item.className = 'recommendation-item';
+                    item.href = suggestion.url;
+                    item.target = '_blank';
+                    item.innerHTML = `
+                        <div class="recommendation-icon"><i class="${suggestion.icon}"></i></div>
+                        <div class="recommendation-text">${suggestion.title}</div>
+                    `;
+                    suggestedSites.appendChild(item);
+                }
+            });
+            
+            if (suggestedSites.children.length === 0) {
+                suggestedSites.innerHTML = '<p class="empty-state">没有更多推荐</p>';
+            }
+            
+            // 显示或隐藏推荐区域
+            const preferences = JSON.parse(localStorage.getItem('ai-nav-preferences')) || {};
+            if (preferences.showRecommendations !== false) {
+                document.getElementById('recommendations').classList.add('active');
+            } else {
+                document.getElementById('recommendations').classList.remove('active');
+            }
+        }
+        
+        // 增强搜索功能
+        const searchEngineOptions = document.querySelectorAll('.search-engine-option');
+        const searchBar = document.querySelector('.search-bar');
+        let currentSearchEngine = 'google';
+        
+        // 切换搜索引擎
+        searchBar.querySelector('i').addEventListener('click', (e) => {
+            const dropdown = document.querySelector('.search-engines-dropdown');
+            dropdown.classList.toggle('active');
+            e.stopPropagation();
+        });
+        
+        searchEngineOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                const engine = option.getAttribute('data-engine');
+                currentSearchEngine = engine;
+                
+                // 更新图标
+                const icon = option.querySelector('i').className;
+                searchBar.querySelector('i').className = icon;
+                
+                // 更新活动状态
+                searchEngineOptions.forEach(opt => opt.classList.remove('active'));
+                option.classList.add('active');
+                
+                // 关闭下拉菜单
+                document.querySelector('.search-engines-dropdown').classList.remove('active');
+                
+                // 保存偏好
+                saveUserPreferences();
+            });
+        });
+        
+        // 关闭下拉菜单
+        document.addEventListener('click', () => {
+            document.querySelector('.search-engines-dropdown').classList.remove('active');
+            document.querySelector('.search-history-panel').classList.remove('active');
+        });
+        
+        function performSearch(query) {
+            // 保存搜索历史
+            const preferences = JSON.parse(localStorage.getItem('ai-nav-preferences')) || {};
+            if (preferences.saveHistory !== false) {
+                saveSearchHistory(query);
+            }
+            
+            let searchUrl;
+            switch (currentSearchEngine) {
+                case 'baidu':
+                    searchUrl = `https://www.baidu.com/s?wd=${encodeURIComponent(query)}`;
+                    break;
+                case 'bing':
+                    searchUrl = `https://www.bing.com/search?q=${encodeURIComponent(query)}`;
+                    break;
+                case 'google':
+                default:
+                    searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+            }
+            
+            window.open(searchUrl, '_blank');
+        }
+        
+        // 保存搜索历史
+        function saveSearchHistory(query) {
+            let history = JSON.parse(localStorage.getItem('ai-nav-search-history')) || [];
+            
+            // 如果已经存在相同的查询，先删除旧的
+            history = history.filter(item => item.query !== query);
+            
+            // 添加到历史记录最前面
+            history.unshift({
+                query: query,
+                timestamp: Date.now(),
+                engine: currentSearchEngine
+            });
+            
+            // 只保留最近的15条记录
+            if (history.length > 15) {
+                history = history.slice(0, 15);
+            }
+            
+            localStorage.setItem('ai-nav-search-history', JSON.stringify(history));
+        }
+        
+        // 显示搜索历史
+        function showSearchHistory() {
+            const historyPanel = document.querySelector('.search-history-panel');
+            const historyList = document.getElementById('search-history-list');
+            const history = JSON.parse(localStorage.getItem('ai-nav-search-history')) || [];
+            
+            historyList.innerHTML = '';
+            
+            if (history.length === 0) {
+                historyList.innerHTML = '<p class="empty-history">无搜索历史</p>';
+            } else {
+                history.forEach(item => {
+                    const historyItem = document.createElement('div');
+                    historyItem.className = 'history-item';
+                    
+                    // 获取引擎图标
+                    let engineIcon;
+                    switch(item.engine) {
+                        case 'baidu':
+                            engineIcon = 'fas fa-compass';
+                            break;
+                        case 'bing':
+                            engineIcon = 'fab fa-microsoft';
+                            break;
+                        case 'google':
+                        default:
+                            engineIcon = 'fab fa-google';
+                    }
+                    
+                    historyItem.innerHTML = `
+                        <div class="history-icon"><i class="${engineIcon}"></i></div>
+                        <div class="history-query">${item.query}</div>
+                        <div class="history-time">${formatTime(item.timestamp)}</div>
+                    `;
+                    
+                    historyItem.addEventListener('click', () => {
+                        searchInput.value = item.query;
+                        historyPanel.classList.remove('active');
+                        performSearch(item.query);
+                    });
+                    
+                    historyList.appendChild(historyItem);
+                });
+            }
+            
+            historyPanel.classList.add('active');
+            event.stopPropagation();
+        }
+        
+        // 清除搜索历史
+        document.getElementById('clear-history').addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (confirm('确定要清除所有搜索历史吗？')) {
+                localStorage.removeItem('ai-nav-search-history');
+                document.getElementById('search-history-list').innerHTML = '<p class="empty-history">无搜索历史</p>';
+            }
+        });
+        
+        // 格式化时间
+        function formatTime(timestamp) {
+            const now = new Date();
+            const date = new Date(timestamp);
+            
+            const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
+            
+            if (diffDays === 0) {
+                return '今天';
+            } else if (diffDays === 1) {
+                return '昨天';
+            } else if (diffDays < 7) {
+                return `${diffDays}天前`;
+            } else {
+                return `${date.getMonth() + 1}月${date.getDate()}日`;
+            }
+        }
+        
+        // 保存其他设置更改
+        document.getElementById('save-history').addEventListener('change', saveUserPreferences);
+        document.getElementById('show-recommendations').addEventListener('change', () => {
+            saveUserPreferences();
+            updateRecommendations();
         });
     </script>
 </body>
