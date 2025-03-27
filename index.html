@@ -3,102 +3,256 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的导航网站</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-      body.dark {
-        background-color: #333;
-        color: #fff;
-      }
-      body.dark header {
-        background-color: #444;
-      }
-      body.dark nav {
-        background-color: #222;
-      }
-      body.dark footer {
-        background-color: #222;
-      }
-      body.dark a {
-        color: #ddd;
-      }
-      body {
-        font-family: 'Roboto', sans-serif;
-      }
-    </style>
+    <title>AI导航 | 未来风格导航平台</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
-<body class="bg-gray-100 font-sans">
+<body>
+    <div class="ai-assistant-container">
+        <div class="ai-assistant">
+            <div class="ai-assistant-icon">
+                <i class="fas fa-robot"></i>
+            </div>
+            <div class="ai-assistant-message">
+                <p id="ai-message">您好！欢迎使用AI导航。需要什么帮助吗？</p>
+            </div>
+        </div>
+    </div>
 
-    <header class="bg-gradient-to-r from-green-400 to-blue-500 text-white py-6 text-center shadow-md">
-        <h1 class="text-3xl font-bold">🌐 我的导航网站</h1>
-        <button id="theme-toggle" class="mt-4 bg-white text-green-500 px-4 py-2 rounded shadow transition transform hover:scale-105 duration-300">切换主题</button>
+    <div class="theme-switch-wrapper">
+        <label class="theme-switch" for="theme-toggle">
+            <input type="checkbox" id="theme-toggle" />
+            <div class="slider round">
+                <i class="fas fa-sun"></i>
+                <i class="fas fa-moon"></i>
+            </div>
+        </label>
+    </div>
+
+    <header class="glass-effect">
+        <div class="logo">
+            <div class="pulse-effect"></div>
+            <h1><i class="fas fa-brain"></i> AI<span>导航</span></h1>
+        </div>
+        <div class="search-container">
+            <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <input type="text" id="search-input" placeholder="输入关键词探索网络世界...">
+                <button id="voice-search"><i class="fas fa-microphone"></i></button>
+            </div>
+        </div>
     </header>
 
-    <nav class="bg-gray-800 py-3">
-        <ul class="flex justify-center space-x-6">
-            <li><a href="#search" class="transition-colors duration-300 text-white hover:text-green-300">搜索引擎</a></li>
-            <li><a href="#social" class="transition-colors duration-300 text-white hover:text-green-300">社交媒体</a></li>
-            <li><a href="#tools" class="transition-colors duration-300 text-white hover:text-green-300">实用工具</a></li>
+    <nav class="glass-effect">
+        <ul>
+            <li><a href="#search" class="nav-link active" data-section="search"><i class="fas fa-search"></i> <span>搜索引擎</span></a></li>
+            <li><a href="#social" class="nav-link" data-section="social"><i class="fas fa-share-alt"></i> <span>社交媒体</span></a></li>
+            <li><a href="#tools" class="nav-link" data-section="tools"><i class="fas fa-tools"></i> <span>实用工具</span></a></li>
+            <li><a href="#ai" class="nav-link" data-section="ai"><i class="fas fa-robot"></i> <span>AI工具</span></a></li>
         </ul>
     </nav>
 
-    <main class="max-w-4xl mx-auto py-8 px-4 space-y-8">
-
-        <section id="search" class="bg-white shadow-lg rounded-lg p-6 transition transform hover:scale-105 duration-300">
-            <h2 class="text-xl font-semibold mb-4 border-b-2 border-green-300 pb-2">🔍 搜索引擎</h2>
-            <ul class="space-y-2">
-                <li><a href="https://www.baidu.com/" target="_blank" class="text-gray-700 hover:text-green-500">百度</a></li>
-                <li><a href="https://www.google.com/" target="_blank" class="text-gray-700 hover:text-green-500">Google</a></li>
-                <li><a href="https://www.bing.com/" target="_blank" class="text-gray-700 hover:text-green-500">Bing</a></li>
-            </ul>
+    <main>
+        <section id="search" class="content-section active glass-card">
+            <h2><i class="fas fa-search animated-icon"></i> 搜索引擎</h2>
+            <div class="card-grid">
+                <a href="https://www.baidu.com/" target="_blank" class="card">
+                    <div class="card-icon"><i class="fas fa-compass"></i></div>
+                    <h3>百度</h3>
+                    <p>中国最大的搜索引擎</p>
+                </a>
+                <a href="https://www.google.com/" target="_blank" class="card">
+                    <div class="card-icon"><i class="fab fa-google"></i></div>
+                    <h3>Google</h3>
+                    <p>全球最大的搜索引擎</p>
+                </a>
+                <a href="https://www.bing.com/" target="_blank" class="card">
+                    <div class="card-icon"><i class="fab fa-microsoft"></i></div>
+                    <h3>Bing</h3>
+                    <p>微软的智能搜索引擎</p>
+                </a>
+            </div>
         </section>
 
-        <section id="social" class="bg-white shadow-lg rounded-lg p-6 transition transform hover:scale-105 duration-300">
-            <h2 class="text-xl font-semibold mb-4 border-b-2 border-green-300 pb-2">💬 社交媒体</h2>
-            <ul class="space-y-2">
-                <li><a href="https://www.weibo.com/" target="_blank" class="text-gray-700 hover:text-green-500">微博</a></li>
-                <li><a href="https://www.zhihu.com/" target="_blank" class="text-gray-700 hover:text-green-500">知乎</a></li>
-                <li><a href="https://www.douyin.com/" target="_blank" class="text-gray-700 hover:text-green-500">抖音</a></li>
-            </ul>
+        <section id="social" class="content-section glass-card">
+            <h2><i class="fas fa-share-alt animated-icon"></i> 社交媒体</h2>
+            <div class="card-grid">
+                <a href="https://www.weibo.com/" target="_blank" class="card">
+                    <div class="card-icon"><i class="fab fa-weibo"></i></div>
+                    <h3>微博</h3>
+                    <p>中国热门的社交平台</p>
+                </a>
+                <a href="https://www.zhihu.com/" target="_blank" class="card">
+                    <div class="card-icon"><i class="fas fa-question-circle"></i></div>
+                    <h3>知乎</h3>
+                    <p>中国最大的问答社区</p>
+                </a>
+                <a href="https://www.douyin.com/" target="_blank" class="card">
+                    <div class="card-icon"><i class="fas fa-video"></i></div>
+                    <h3>抖音</h3>
+                    <p>流行的短视频平台</p>
+                </a>
+            </div>
         </section>
 
-        <section id="tools" class="bg-white shadow-lg rounded-lg p-6 transition transform hover:scale-105 duration-300">
-            <h2 class="text-xl font-semibold mb-4 border-b-2 border-green-300 pb-2">🛠 实用工具</h2>
-            <ul class="space-y-2">
-                <li><a href="https://translate.google.cn/" target="_blank" class="text-gray-700 hover:text-green-500">谷歌翻译</a></li>
-                <li><a href="https://www.ilovepdf.com/" target="_blank" class="text-gray-700 hover:text-green-500">PDF工具</a></li>
-                <li><a href="https://tool.lu/" target="_blank" class="text-gray-700 hover:text-green-500">在线工具箱</a></li>
-            </ul>
+        <section id="tools" class="content-section glass-card">
+            <h2><i class="fas fa-tools animated-icon"></i> 实用工具</h2>
+            <div class="card-grid">
+                <a href="https://translate.google.cn/" target="_blank" class="card">
+                    <div class="card-icon"><i class="fas fa-language"></i></div>
+                    <h3>谷歌翻译</h3>
+                    <p>在线翻译工具</p>
+                </a>
+                <a href="https://www.ilovepdf.com/" target="_blank" class="card">
+                    <div class="card-icon"><i class="far fa-file-pdf"></i></div>
+                    <h3>PDF工具</h3>
+                    <p>全能PDF编辑转换工具</p>
+                </a>
+                <a href="https://tool.lu/" target="_blank" class="card">
+                    <div class="card-icon"><i class="fas fa-toolbox"></i></div>
+                    <h3>在线工具箱</h3>
+                    <p>程序员的工具箱</p>
+                </a>
+            </div>
         </section>
 
+        <section id="ai" class="content-section glass-card">
+            <h2><i class="fas fa-robot animated-icon"></i> AI工具</h2>
+            <div class="card-grid">
+                <a href="https://chat.openai.com/" target="_blank" class="card">
+                    <div class="card-icon"><i class="fas fa-comment-dots"></i></div>
+                    <h3>ChatGPT</h3>
+                    <p>AI对话助手</p>
+                </a>
+                <a href="https://www.midjourney.com/" target="_blank" class="card">
+                    <div class="card-icon"><i class="fas fa-paint-brush"></i></div>
+                    <h3>Midjourney</h3>
+                    <p>AI图像生成工具</p>
+                </a>
+                <a href="https://claude.ai/" target="_blank" class="card">
+                    <div class="card-icon"><i class="fas fa-brain"></i></div>
+                    <h3>Claude</h3>
+                    <p>Anthropic的AI助手</p>
+                </a>
+            </div>
+        </section>
     </main>
 
-    <footer class="text-center bg-gradient-to-r from-gray-700 to-gray-900 text-white py-4">
-        © 202
+    <footer class="glass-effect">
+        <div class="wave"></div>
+        <p>&copy; 2023 AI导航 | 未来风格导航平台</p>
+        <div class="footer-links">
+            <a href="#"><i class="fab fa-github"></i></a>
+            <a href="#"><i class="fab fa-twitter"></i></a>
+            <a href="#"><i class="fab fa-linkedin"></i></a>
+        </div>
     </footer>
 
-    <button id="back-to-top" class="hidden fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded transition transform hover:scale-105 duration-300">返回顶部</button>
+    <button id="back-to-top" class="glass-button">
+        <i class="fas fa-arrow-up"></i>
+    </button>
     
     <script>
-      // Dark mode toggle functionality
-      const themeToggle = document.getElementById('theme-toggle');
-      themeToggle.addEventListener('click', () => {
-        document.body.classList.toggle('dark');
-      });
+        // 主题切换功能
+        const themeToggle = document.getElementById('theme-toggle');
+        themeToggle.addEventListener('change', () => {
+            document.body.classList.toggle('dark-theme');
+            updateAIMessage();
+        });
 
-      // Back to Top button functionality
-      const backToTop = document.getElementById('back-to-top');
-      window.addEventListener('scroll', () => {
-        if (window.pageYOffset > 200) {
-          backToTop.classList.remove('hidden');
-        } else {
-          backToTop.classList.add('hidden');
+        // 返回顶部按钮
+        const backToTop = document.getElementById('back-to-top');
+        window.addEventListener('scroll', () => {
+            if (window.pageYOffset > 200) {
+                backToTop.classList.add('visible');
+            } else {
+                backToTop.classList.remove('visible');
+            }
+        });
+        backToTop.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // 导航切换
+        const navLinks = document.querySelectorAll('.nav-link');
+        const sections = document.querySelectorAll('.content-section');
+        
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                
+                // 更新导航激活状态
+                navLinks.forEach(link => link.classList.remove('active'));
+                link.classList.add('active');
+                
+                // 显示对应内容
+                const targetSection = link.getAttribute('data-section');
+                sections.forEach(section => {
+                    section.classList.remove('active');
+                    if (section.id === targetSection) {
+                        section.classList.add('active');
+                    }
+                });
+
+                // 平滑滚动
+                document.querySelector(`#${targetSection}`).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // AI助手消息
+        function updateAIMessage() {
+            const aiMessage = document.getElementById('ai-message');
+            const isDarkMode = document.body.classList.contains('dark-theme');
+            
+            if (isDarkMode) {
+                aiMessage.textContent = "夜间模式已启用，保护您的眼睛。需要其他帮助吗？";
+            } else {
+                aiMessage.textContent = "您好！欢迎使用AI导航。需要什么帮助吗？";
+            }
         }
-      });
-      backToTop.addEventListener('click', () => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      });
+
+        // 搜索功能
+        const searchInput = document.getElementById('search-input');
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const query = searchInput.value.trim();
+                if (query) {
+                    window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, '_blank');
+                }
+            }
+        });
+
+        // 语音搜索
+        const voiceSearch = document.getElementById('voice-search');
+        voiceSearch.addEventListener('click', () => {
+            if ('webkitSpeechRecognition' in window) {
+                const recognition = new webkitSpeechRecognition();
+                recognition.lang = 'zh-CN';
+                recognition.start();
+                
+                voiceSearch.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                
+                recognition.onresult = (event) => {
+                    const transcript = event.results[0][0].transcript;
+                    searchInput.value = transcript;
+                    voiceSearch.innerHTML = '<i class="fas fa-microphone"></i>';
+                };
+                
+                recognition.onerror = () => {
+                    voiceSearch.innerHTML = '<i class="fas fa-microphone"></i>';
+                };
+            } else {
+                alert('您的浏览器不支持语音识别');
+            }
+        });
+
+        // 页面加载动画
+        window.addEventListener('load', () => {
+            document.body.classList.add('loaded');
+        });
     </script>
 </body>
 </html>
