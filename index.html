@@ -141,6 +141,7 @@
             <li><a href="#social" class="nav-link" data-section="social"><i class="fas fa-share-alt"></i> <span>社交媒体</span></a></li>
             <li><a href="#tools" class="nav-link" data-section="tools"><i class="fas fa-tools"></i> <span>实用工具</span></a></li>
             <li><a href="#ai" class="nav-link" data-section="ai"><i class="fas fa-robot"></i> <span>AI工具</span></a></li>
+            <li><a href="#mechanical" class="nav-link" data-section="mechanical"><i class="fas fa-cogs"></i> <span>机械资料</span></a></li>
         </ul>
     </nav>
 
@@ -237,6 +238,20 @@
                     <div class="card-icon"><i class="fas fa-brain"></i></div>
                     <h3>Claude</h3>
                     <p>Anthropic的AI助手</p>
+                </a>
+            </div>
+        </section>
+
+        <section id="mechanical" class="content-section glass-card">
+            <h2><i class="fas fa-cogs animated-icon"></i> 机械资料</h2>
+            <div class="section-controls">
+                <button class="sort-button" data-section="mechanical"><i class="fas fa-sort"></i> 排序</button>
+            </div>
+            <div class="card-grid sortable" id="mechanical-grid">
+                <a href="https://www.164580.com/biaozhun/" target="_blank" class="card">
+                    <div class="card-icon"><i class="fas fa-wrench"></i></div>
+                    <h3>易紧通标准</h3>
+                    <p>紧固件标准查询</p>
                 </a>
             </div>
         </section>
@@ -622,7 +637,7 @@
         // 保存卡片顺序
         function saveCardOrder() {
             const cardOrder = {};
-            const sections = ['search', 'social', 'tools', 'ai'];
+            const sections = ['search', 'social', 'tools', 'ai', 'mechanical'];
             
             sections.forEach(section => {
                 const cards = document.querySelectorAll(`#${section}-grid .card`);
@@ -927,5 +942,14 @@
         document.getElementById('enable-morphing-bg').addEventListener('change', saveUserPreferences);
         document.getElementById('enable-mouse-effects').addEventListener('change', saveUserPreferences);
     </script>
+    <!-- 账号管理相关脚本 - 仅初始化 authAPI -->
+    <script>
+        window.authAPI = {}; // 确保 authAPI 对象在使用前已定义
+    </script>
+    <!-- 先加载API客户端 -->
+    <script src="auth-api.js"></script>
+    <!-- 再加载认证兼容层 -->
+    <script src="auth.js"></script>
+    <script src="account.js"></script>
 </body>
 </html>
