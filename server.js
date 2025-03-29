@@ -1,22 +1,31 @@
-require('dotenv').config(); // 加载环境变量
+console.log('server.js execution started');
+
+require('dotenv').config();
+console.log('dotenv configured');
+
 const express = require('express');
+console.log('express loaded');
 const path = require('path');
 const cors = require('cors');
 const apiRoutes = require('./api');
+console.log('Dependencies loaded');
 
 const app = express();
 const port = process.env.PORT || 3000;
-const host = process.env.HOST || 'localhost';
+const host = process.env.HOST || '0.0.0.0';
+
+console.log('Server constants set');
 
 // 中间件
+app.use(cors());
+console.log('CORS enabled');
 app.use(express.json());  // 解析JSON请求体
 app.use(express.urlencoded({ extended: true }));  // 解析URL编码的请求体
-
-// 启用CORS（跨域资源共享）
-app.use(cors());
+console.log('Body parsers enabled');
 
 // 静态文件服务
 app.use(express.static(path.join(__dirname, './')));
+console.log('Static files middleware configured');
 
 // API路由
 app.use('/api', apiRoutes);
