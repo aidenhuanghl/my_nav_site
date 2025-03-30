@@ -22,6 +22,7 @@
                     <li><a href="#social-media-section" class="nav-link">社交媒体</a></li>
                     <li><a href="#resources-section" class="nav-link">资源</a></li>
                     <li><a href="#tools-section" class="nav-link">工具</a></li>
+                    <li><a href="#blog-section" class="nav-link">博客</a></li>
                     <li><a href="#contact-section" class="nav-link">咨询</a></li>
                     <li><a href="#about-section" class="nav-link">关于</a></li>
                 </ul>
@@ -82,6 +83,18 @@
                     </div>
                     <div class="card-image">
                         <img src="https://source.unsplash.com/random/400x300/?coding" alt="Web开发">
+                    </div>
+                </div>
+
+                <!-- 博客卡片 -->
+                <div class="card" id="blog-card">
+                    <h3>技术博客</h3>
+                    <p>分享AI、开发和科技领域的最新见解、教程和深度分析，持续更新优质内容 📚 阅读</p>
+                    <div class="card-footer">
+                        <a href="#blog-section" class="card-link" data-section="blog">阅读 <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                    <div class="card-image">
+                        <img src="https://source.unsplash.com/random/400x300/?blog" alt="技术博客">
                     </div>
                 </div>
 
@@ -180,6 +193,182 @@
                 </div>
             </section>
 
+            <!-- 博客部分 -->
+            <section id="blog-section" class="detail-section">
+                <h2>技术博客</h2>
+                
+                <div class="blog-controls">
+                    <form class="blog-search">
+                        <input type="text" placeholder="搜索博客...">
+                        <button type="submit"><i class="fas fa-search"></i></button>
+                    </form>
+                    
+                    <div class="blog-categories">
+                        <div class="blog-category active" data-category="all">全部</div>
+                        <div class="blog-category" data-category="tech">技术</div>
+                        <div class="blog-category" data-category="ai">AI</div>
+                        <div class="blog-category" data-category="japan">日本</div>
+                        <div class="blog-category" data-category="web">Web开发</div>
+                        <div class="blog-category" data-category="life">生活</div>
+                    </div>
+                </div>
+                
+                <div class="blog-grid">
+                    <!-- 博客卡片 1 -->
+                    <div class="blog-card" data-categories="tech,ai">
+                        <div class="blog-card-image">
+                            <img src="https://source.unsplash.com/random/800x500/?ai" alt="AI发展趋势">
+                            <div class="blog-card-date">2023-06-15</div>
+                        </div>
+                        <div class="blog-card-content">
+                            <div class="blog-card-tags">
+                                <span class="blog-tag">AI</span>
+                                <span class="blog-tag">技术</span>
+                            </div>
+                            <h3 class="blog-card-title">2023年AI发展趋势分析</h3>
+                            <p class="blog-card-excerpt">人工智能技术在2023年迎来爆发式增长，GPT-4的发布标志着大语言模型进入新阶段，各行各业都在积极探索AI应用...</p>
+                            <a href="#" class="blog-read-more">阅读全文 <i class="fas fa-arrow-right"></i></a>
+                        </div>
+                    </div>
+                    
+                    <!-- 博客卡片 2 -->
+                    <div class="blog-card" data-categories="japan,life">
+                        <div class="blog-card-image">
+                            <img src="https://source.unsplash.com/random/800x500/?tokyo" alt="东京生活">
+                            <div class="blog-card-date">2023-05-20</div>
+                        </div>
+                        <div class="blog-card-content">
+                            <div class="blog-card-tags">
+                                <span class="blog-tag">日本</span>
+                                <span class="blog-tag">生活</span>
+                            </div>
+                            <h3 class="blog-card-title">初到东京：一个中国留学生的生活适应指南</h3>
+                            <p class="blog-card-excerpt">作为一名初到东京的中国留学生，面对陌生的环境和文化差异，我经历了许多挑战和惊喜。这篇文章分享我的经验和建议...</p>
+                            <a href="#" class="blog-read-more">阅读全文 <i class="fas fa-arrow-right"></i></a>
+                        </div>
+                    </div>
+                    
+                    <!-- 博客卡片 3 -->
+                    <div class="blog-card" data-categories="web,tech">
+                        <div class="blog-card-image">
+                            <img src="https://source.unsplash.com/random/800x500/?javascript" alt="JavaScript">
+                            <div class="blog-card-date">2023-04-10</div>
+                        </div>
+                        <div class="blog-card-content">
+                            <div class="blog-card-tags">
+                                <span class="blog-tag">Web开发</span>
+                                <span class="blog-tag">JavaScript</span>
+                            </div>
+                            <h3 class="blog-card-title">理解JavaScript的异步编程：从回调到Promise再到Async/Await</h3>
+                            <p class="blog-card-excerpt">JavaScript的异步编程一直是前端开发者必须掌握的核心技能。本文将带你深入理解从回调函数、Promise到Async/Await的演变...</p>
+                            <a href="#" class="blog-read-more">阅读全文 <i class="fas fa-arrow-right"></i></a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="blog-pagination">
+                    <div class="pagination-item active" data-page="1">1</div>
+                    <div class="pagination-item" data-page="2">2</div>
+                    <div class="pagination-item" data-page="3">3</div>
+                    <div class="pagination-item next" data-page="next">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+                
+                <!-- 博客侧边栏 -->
+                <div class="blog-sidebar">
+                    <div class="sidebar-section">
+                        <h4 class="sidebar-title">热门文章</h4>
+                        <ul class="sidebar-posts">
+                            <li><a href="#">如何使用ChatGPT提高工作效率</a></li>
+                            <li><a href="#">日本工作签证申请完全指南</a></li>
+                            <li><a href="#">React vs Vue：2023年如何选择？</a></li>
+                            <li><a href="#">在日本远程工作的经验分享</a></li>
+                            <li><a href="#">Next.js 13新特性解析</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="sidebar-section">
+                        <h4 class="sidebar-title">标签云</h4>
+                        <div class="sidebar-tags">
+                            <a href="#" class="sidebar-tag">AI</a>
+                            <a href="#" class="sidebar-tag">JavaScript</a>
+                            <a href="#" class="sidebar-tag">React</a>
+                            <a href="#" class="sidebar-tag">日本生活</a>
+                            <a href="#" class="sidebar-tag">移民</a>
+                            <a href="#" class="sidebar-tag">Web3</a>
+                            <a href="#" class="sidebar-tag">CSS</a>
+                            <a href="#" class="sidebar-tag">技术趋势</a>
+                            <a href="#" class="sidebar-tag">学习方法</a>
+                        </div>
+                    </div>
+                    
+                    <div class="sidebar-section">
+                        <h4 class="sidebar-title">订阅更新</h4>
+                        <form class="sidebar-subscribe">
+                            <input type="email" placeholder="您的邮箱地址">
+                            <button type="submit" class="subscribe-btn">订阅</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 写博客按钮 -->
+            <div class="write-blog-container">
+                <a href="#" class="write-blog-btn" id="write-blog-btn">
+                    <i class="fas fa-pen"></i> 写博客
+                </a>
+            </div>
+
+            <!-- 写博客模态框 -->
+            <div class="write-blog-modal">
+                <div class="write-blog-content">
+                    <div class="write-blog-header">
+                        <h3>发布新博客</h3>
+                        <button class="close-modal-btn">&times;</button>
+                    </div>
+                    <form class="write-blog-form">
+                        <div class="form-group">
+                            <label for="blog-title">博客标题</label>
+                            <input type="text" id="blog-title" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="blog-category">分类</label>
+                            <select id="blog-category" required>
+                                <option value="tech">技术</option>
+                                <option value="ai">AI</option>
+                                <option value="japan">日本</option>
+                                <option value="web">Web开发</option>
+                                <option value="life">生活</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="blog-tags">标签（用逗号分隔）</label>
+                            <input type="text" id="blog-tags" placeholder="例如: JavaScript, 前端, React">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="blog-content">博客内容</label>
+                            <textarea id="blog-content" rows="12" required></textarea>
+                            <p class="file-hint">支持基本的Markdown语法: **粗体**, *斜体*, `代码`, ## 标题</p>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="blog-image">封面图片</label>
+                            <input type="file" id="blog-image" accept="image/*">
+                            <p class="file-hint">推荐尺寸: 800x500像素, 最大文件大小: 2MB</p>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="button" class="save-draft-btn">保存草稿</button>
+                            <button type="submit" class="publish-btn">发布博客</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
             <section id="contact-section" class="detail-section">
                 <h2>联系咨询</h2>
                 <div class="contact-form">
@@ -227,6 +416,7 @@
 
     <!-- JavaScript代码 -->
     <script src="visual-effects.js"></script>
+    <script src="blog.js"></script>
     <script>
         // 设置当前年份
         document.getElementById('current-year').textContent = new Date().getFullYear();
@@ -296,6 +486,122 @@
                 document.getElementById('name').value = '';
                 document.getElementById('email').value = '';
                 document.getElementById('message').value = '';
+            });
+        }
+
+        // 博客分类筛选功能
+        document.querySelectorAll('.blog-category').forEach(category => {
+            category.addEventListener('click', function() {
+                // 移除所有分类的active类
+                document.querySelectorAll('.blog-category').forEach(cat => cat.classList.remove('active'));
+                
+                // 给当前点击的分类添加active类
+                this.classList.add('active');
+                
+                // 获取选中的分类
+                const selectedCategory = this.getAttribute('data-category');
+                
+                // 筛选博客文章
+                document.querySelectorAll('.blog-card').forEach(card => {
+                    // 如果选择了"全部"或者文章属于选中的分类
+                    if(selectedCategory === 'all' || card.getAttribute('data-categories').includes(selectedCategory)) {
+                        card.style.display = 'flex';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        });
+
+        // 博客搜索功能
+        const blogSearchInput = document.querySelector('.blog-search input');
+        const blogSearchBtn = document.querySelector('.blog-search button');
+        
+        if(blogSearchBtn && blogSearchInput) {
+            blogSearchBtn.addEventListener('click', searchBlogs);
+            blogSearchInput.addEventListener('keypress', function(e) {
+                if(e.key === 'Enter') {
+                    searchBlogs();
+                }
+            });
+        }
+        
+        function searchBlogs() {
+            const searchTerm = blogSearchInput.value.toLowerCase().trim();
+            
+            if(!searchTerm) {
+                // 如果搜索词为空，显示所有博客
+                document.querySelectorAll('.blog-card').forEach(card => {
+                    card.style.display = 'flex';
+                });
+                return;
+            }
+            
+            // 搜索博客标题和摘要
+            document.querySelectorAll('.blog-card').forEach(card => {
+                const title = card.querySelector('.blog-card-title').textContent.toLowerCase();
+                const excerpt = card.querySelector('.blog-card-excerpt').textContent.toLowerCase();
+                const tags = card.querySelector('.blog-card-tags').textContent.toLowerCase();
+                
+                if(title.includes(searchTerm) || excerpt.includes(searchTerm) || tags.includes(searchTerm)) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // 写博客模态框功能
+        const writeBlogBtn = document.getElementById('write-blog-btn');
+        const writeBlogModal = document.querySelector('.write-blog-modal');
+        const closeModalBtn = document.querySelector('.close-modal-btn');
+        
+        if(writeBlogBtn && writeBlogModal && closeModalBtn) {
+            writeBlogBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                writeBlogModal.classList.add('active');
+                document.body.style.overflow = 'hidden'; // 禁止背景滚动
+            });
+            
+            closeModalBtn.addEventListener('click', function() {
+                writeBlogModal.classList.remove('active');
+                document.body.style.overflow = ''; // 恢复背景滚动
+            });
+            
+            // 点击模态框外部关闭模态框
+            writeBlogModal.addEventListener('click', function(e) {
+                if(e.target === writeBlogModal) {
+                    writeBlogModal.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+        }
+
+        // 博客发布功能
+        const publishBtn = document.querySelector('.publish-btn');
+        if(publishBtn) {
+            publishBtn.addEventListener('click', function() {
+                const title = document.getElementById('blog-title').value;
+                const category = document.getElementById('blog-category').value;
+                const tags = document.getElementById('blog-tags').value;
+                const content = document.getElementById('blog-content').value;
+                
+                if(!title || !content) {
+                    alert('请填写博客标题和内容');
+                    return;
+                }
+                
+                // 在实际应用中，这里应该将博客数据发送到服务器保存
+                alert('博客发布成功！');
+                
+                // 关闭模态框
+                writeBlogModal.classList.remove('active');
+                document.body.style.overflow = '';
+                
+                // 清空表单
+                document.getElementById('blog-title').value = '';
+                document.getElementById('blog-content').value = '';
+                document.getElementById('blog-tags').value = '';
             });
         }
     </script>
