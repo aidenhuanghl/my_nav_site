@@ -592,7 +592,7 @@ function initPopularPostLinks() {
     });
     
     // 初始化时排序热门文章
-    updatePopularArticlesSorting();
+    updatePopularArticles();
 }
 
 // 更新发布博客函数
@@ -1402,6 +1402,6 @@ function initViewCountsForPopularPosts() {
     // 保存更新后的浏览量数据
     localStorage.setItem('blogViewCounts', JSON.stringify(viewCounts));
     
-    // 初始排序热门文章
-    updatePopularArticlesSorting();
+    // 初始更新热门文章
+    updatePopularArticles();
 } 
