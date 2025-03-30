@@ -1099,18 +1099,26 @@ function loadBlogPosts() {
     window.blogAPI.getAllPosts()
         .then(blogs => {
             const blogGrid = document.querySelector('.blog-grid');
+            const noPostsMessage = document.getElementById('no-blog-posts-message');
             
             if (!blogGrid) return;
-            
-            // 如果没有保存的博客，不需要清空现有的示例博客
-            if (blogs.length === 0) {
-                return;
-            }
             
             // 清空现有博客
             blogGrid.innerHTML = '';
             
-            // 按日期排序，最新的排在前面（服务器已排序，这里可以简化）
+            // 如果没有博客，显示"暂无文章"消息
+            if (blogs.length === 0) {
+                if (noPostsMessage) {
+                    blogGrid.appendChild(noPostsMessage);
+                    noPostsMessage.style.display = 'block';
+                }
+                return;
+            }
+            
+            // 隐藏"暂无文章"消息
+            if (noPostsMessage) {
+                noPostsMessage.style.display = 'none';
+            }
             
             // 渲染博客卡片
             blogs.forEach(blog => {
