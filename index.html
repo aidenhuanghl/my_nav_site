@@ -360,7 +360,7 @@
                     
                     // 创建一个临时博客对象
                     const blog = {
-                        id: 'popular-' + Date.now(),
+                        id: 'popular-' + this.getAttribute('data-title').replace(/\s+/g, '-').toLowerCase(),
                         title: this.getAttribute('data-title'),
                         content: "这是热门文章的内容。详细内容正在编写中...",
                         category: this.getAttribute('data-category'),
@@ -590,12 +590,15 @@
                 detailImageHtml = `<div class="blog-detail-image"><img src="${blog.imageUrl}" alt="${blog.title}"></div>`;
             }
             
+            // 确保博客ID存在
+            const blogId = blog.id || ('blog-' + Date.now());
+            
             detailModal.innerHTML = `
                 <div class="blog-detail-content">
                     <div class="blog-detail-header">
                         <h2>${blog.title}</h2>
                         <div class="blog-detail-actions">
-                            <button class="blog-detail-delete" data-blog-id="${blog.id}"><i class="fas fa-trash"></i> 删除</button>
+                            <button class="blog-detail-delete" data-blog-id="${blogId}"><i class="fas fa-trash"></i> 删除</button>
                             <button class="close-detail-btn">&times;</button>
                         </div>
                     </div>
