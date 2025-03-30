@@ -1023,6 +1023,8 @@ function showBlogDetail(blogIdOrObject) {
     const detailModal = document.createElement('div');
     detailModal.className = 'blog-detail-modal';
     
+    console.log('开始创建博客详情模态框:', detailModal);
+    
     // Format date
     let formattedDate = '未知日期';
     if (blog.date) {
@@ -1078,28 +1080,41 @@ function showBlogDetail(blogIdOrObject) {
         </div>
     `;
 
+    // 确保在添加到DOM之前，模态框内容已设置
+    console.log('模态框HTML已设置:', detailModal.innerHTML.length > 0 ? '有内容' : '无内容');
+    
+    // 将模态框添加到文档体
     document.body.appendChild(detailModal);
+    console.log('模态框已添加到文档体', document.body.contains(detailModal) ? '成功' : '失败');
+    
     document.body.style.overflow = 'hidden';
 
-    // Add fade-in effect
-    requestAnimationFrame(() => {
+    // Add fade-in effect with a small delay to ensure DOM update
+    setTimeout(() => {
+        console.log('尝试激活模态框...');
         detailModal.classList.add('active');
-    });
+        console.log('模态框CSS类:', detailModal.className);
+    }, 50);
 
     // --- Add Event Listeners ---
 
     // Close button
     const closeBtn = detailModal.querySelector('.close-detail-btn');
     if (closeBtn) {
+        console.log('关闭按钮已找到');
         closeBtn.addEventListener('click', () => {
+            console.log('关闭按钮被点击');
             detailModal.classList.remove('active');
             setTimeout(() => {
                  if (document.body.contains(detailModal)) {
                     document.body.removeChild(detailModal);
                     document.body.style.overflow = '';
+                    console.log('模态框已从DOM中移除');
                  }
             }, 300);
         });
+    } else {
+        console.warn('未找到关闭按钮');
     }
 
     // Delete button
@@ -1117,6 +1132,7 @@ function showBlogDetail(blogIdOrObject) {
     // Click outside modal to close
     detailModal.addEventListener('click', (e) => {
         if (e.target === detailModal) {
+             console.log('模态框外部被点击，准备关闭');
              detailModal.classList.remove('active');
              setTimeout(() => {
                  if (document.body.contains(detailModal)) {

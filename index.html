@@ -320,6 +320,39 @@
                 });
             });
 
+            // 添加直接测试按钮，绕过正常点击流程直接测试showBlogDetail函数
+            const testButton = document.createElement('button');
+            testButton.textContent = '测试文章详情模态框';
+            testButton.style.position = 'fixed';
+            testButton.style.bottom = '20px';
+            testButton.style.left = '20px';
+            testButton.style.zIndex = '9999';
+            testButton.style.padding = '10px 15px';
+            testButton.style.backgroundColor = '#4CAF50';
+            testButton.style.color = 'white';
+            testButton.style.border = 'none';
+            testButton.style.borderRadius = '4px';
+            testButton.style.cursor = 'pointer';
+            testButton.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
+            
+            testButton.addEventListener('click', function() {
+                console.log('测试按钮被点击，直接调用showBlogDetail函数');
+                const testBlog = {
+                    id: 'test-' + Date.now(),
+                    title: '测试文章 - ' + new Date().toLocaleTimeString(),
+                    content: '这是一篇用于测试模态框功能的文章。如果您能看到这段文字，说明模态框显示正常。',
+                    date: new Date().toISOString().split('T')[0],
+                    author: '测试用户',
+                    category: '测试',
+                    tags: ['测试', '模态框'],
+                    viewCount: 0
+                };
+                showBlogDetail(testBlog);
+            });
+            
+            document.body.appendChild(testButton);
+            console.log('测试按钮已添加到页面');
+
             // 更多选项下拉菜单
             const moreOptionsToggle = document.getElementById('more-options-toggle');
             const moreDropdown = document.getElementById('more-dropdown');

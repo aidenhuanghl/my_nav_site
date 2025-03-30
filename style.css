@@ -1114,6 +1114,8 @@ ul {
 .blog-detail-modal.active {
     opacity: 1;
     visibility: visible !important;
+    display: flex !important;
+    z-index: 99999 !important;
 }
 
 .blog-detail-content {
