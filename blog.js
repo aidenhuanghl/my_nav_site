@@ -353,9 +353,23 @@ function createBlogCard(blog) {
     // 截取摘要
     const excerpt = blog.content.length > 120 ? blog.content.substring(0, 120) + '...' : blog.content;
     
+    // 根据分类选择适当的图片
+    let imageUrl = 'images/blog-1.jpg'; // 默认图片
+    
+    // 根据分类选择图片
+    if (blog.category.includes('tech') || blog.category.includes('web')) {
+        imageUrl = 'images/webdev.jpg';
+    } else if (blog.category.includes('ai')) {
+        imageUrl = 'images/ai.jpg';
+    } else if (blog.category.includes('japan')) {
+        imageUrl = 'images/japan.jpg';
+    } else if (blog.category.includes('social')) {
+        imageUrl = 'images/social.jpg';
+    }
+    
     card.innerHTML = `
         <div class="blog-card-image">
-            <img src="https://source.unsplash.com/random/800x500/?${blog.category}" alt="${blog.title}">
+            <img src="${imageUrl}" alt="${blog.title}">
             <div class="blog-card-date">${formattedDate}</div>
         </div>
         <div class="blog-card-content">
