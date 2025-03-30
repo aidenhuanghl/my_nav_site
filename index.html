@@ -320,56 +320,6 @@
                 });
             });
 
-            // 添加直接测试按钮，绕过正常点击流程直接测试showBlogDetail函数
-            const testButton = document.createElement('button');
-            testButton.textContent = '测试文章详情模态框';
-            testButton.style.position = 'fixed';
-            testButton.style.bottom = '20px';
-            testButton.style.left = '20px';
-            testButton.style.zIndex = '999999';
-            testButton.style.padding = '10px 15px';
-            testButton.style.backgroundColor = '#ff4757';
-            testButton.style.color = 'white';
-            testButton.style.border = 'none';
-            testButton.style.borderRadius = '4px';
-            testButton.style.cursor = 'pointer';
-            testButton.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)';
-            testButton.style.fontSize = '16px';
-            testButton.style.fontWeight = 'bold';
-            
-            testButton.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                console.log('测试按钮被点击，直接调用showBlogDetail函数');
-                alert('正在打开测试模态框，请稍等...');
-                
-                setTimeout(() => {
-                    const testBlog = {
-                        id: 'test-' + Date.now(),
-                        title: '测试文章 - ' + new Date().toLocaleTimeString(),
-                        content: '这是一篇用于测试模态框功能的文章。如果您能看到这段文字，说明模态框显示正常。',
-                        date: new Date().toISOString().split('T')[0],
-                        author: '测试用户',
-                        category: '测试',
-                        tags: ['测试', '模态框'],
-                        viewCount: 0
-                    };
-                    
-                    try {
-                        showBlogDetail(testBlog);
-                    } catch (error) {
-                        console.error('显示测试博客时出错:', error);
-                        alert('显示测试博客时出错: ' + error.message);
-                    }
-                }, 300);
-            });
-            
-            // 确保在DOM完全加载后添加按钮
-            setTimeout(() => {
-                document.body.appendChild(testButton);
-                console.log('测试按钮已添加到页面');
-            }, 1000);
-
             // 更多选项下拉菜单
             const moreOptionsToggle = document.getElementById('more-options-toggle');
             const moreDropdown = document.getElementById('more-dropdown');
