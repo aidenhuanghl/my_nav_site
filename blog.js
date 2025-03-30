@@ -533,10 +533,15 @@ function updatePopularArticlesList(articles) {
     // 清空现有列表
     popularPostsList.innerHTML = '';
     
+    // 去重 - 使用Map根据标题跟踪已添加的文章
+    const addedArticles = new Map();
+    
     // 先添加基于浏览量的文章
     articles.forEach(article => {
-        // 只添加有一定浏览量的文章（浏览量>0）
-        if (article.count > 0) {
+        // 只添加有一定浏览量的文章（浏览量>0）和未添加过的文章
+        if (article.count > 0 && !addedArticles.has(article.title)) {
+            addedArticles.set(article.title, true);
+            
             const li = document.createElement('li');
             const link = document.createElement('a');
             
@@ -560,16 +565,51 @@ function updatePopularArticlesList(articles) {
     });
     
     // 如果基于浏览量的文章不足6篇，补充静态热门文章
-    if (articles.length < 6 && staticPopularPosts.length > 0) {
-        const remainingSlots = 6 - articles.length;
+    if (addedArticles.size < 6 && staticPopularPosts.length > 0) {
+        const remainingSlots = 6 - addedArticles.size;
         
-        for (let i = 0; i < Math.min(remainingSlots, staticPopularPosts.length); i++) {
-            popularPostsList.appendChild(staticPopularPosts[i].cloneNode(true));
+        // 添加静态文章，但确保不重复添加
+        for (let i = 0; i < staticPopularPosts.length && addedArticles.size < 6; i++) {
+            const staticPost = staticPopularPosts[i];
+            const postLink = staticPost.querySelector('.popular-post');
+            const postTitle = postLink ? postLink.getAttribute('data-title') : '';
+            
+            // 仅在标题未添加过时添加
+            if (postTitle && !addedArticles.has(postTitle)) {
+                addedArticles.set(postTitle, true);
+                popularPostsList.appendChild(staticPost.cloneNode(true));
+            }
         }
         
         // 为新添加的静态热门文章添加事件监听器
         initPopularPostLinksNoRecursion();
     }
+    
+    // 检查并移除任何重复的文章（保险措施）
+    removeDuplicateArticles();
+}
+
+// 移除热门文章列表中的重复项
+function removeDuplicateArticles() {
+    const popularPostsList = document.querySelector('.sidebar-posts');
+    if (!popularPostsList) return;
+    
+    const titles = new Map();
+    const allItems = popularPostsList.querySelectorAll('li');
+    
+    allItems.forEach(item => {
+        const link = item.querySelector('.popular-post');
+        if (!link) return;
+        
+        const title = link.getAttribute('data-title') || link.textContent;
+        
+        if (titles.has(title)) {
+            // 找到重复项，移除
+            item.remove();
+        } else {
+            titles.set(title, true);
+        }
+    });
 }
 
 // 初始化热门文章链接 - 不递归调用updatePopularArticles
