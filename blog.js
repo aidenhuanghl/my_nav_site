@@ -1507,40 +1507,96 @@ function initViewCountsForPopularPosts() {
 
 // 清理所有测试文章
 function cleanupTestArticles() {
-    console.log('开始清理测试文章...');
+    console.log('开始全面清理测试文章...');
     
-    // 清理博客浏览量数据
-    let viewCounts = JSON.parse(localStorage.getItem('blogViewCounts') || '{}');
-    let cleanedViewCounts = {};
+    // 清理所有相关的localStorage项
+    let keysToClean = ['blogViewCounts', 'blogPosts', 'userBlogs', 'blogDrafts'];
     
-    // 遍历所有浏览量数据，过滤掉测试文章
-    for (const blogId in viewCounts) {
-        if (!blogId.startsWith('test-')) {
-            cleanedViewCounts[blogId] = viewCounts[blogId];
+    keysToClean.forEach(storageKey => {
+        try {
+            // 获取存储数据
+            let data = JSON.parse(localStorage.getItem(storageKey) || '{}');
+            
+            // 根据不同类型数据结构进行清理
+            if (Array.isArray(data)) {
+                // 过滤数组类型数据
+                let cleanedData = data.filter(item => {
+                    // 检查ID
+                    if (item.id && (item.id.toString().startsWith('test-') || item.id.toString().includes('test'))) {
+                        return false;
+                    }
+                    // 检查标题
+                    if (item.title && (item.title.toLowerCase() === 'test 3' || item.title.toLowerCase().startsWith('test'))) {
+                        return false;
+                    }
+                    return true;
+                });
+                localStorage.setItem(storageKey, JSON.stringify(cleanedData));
+                console.log(`已清理 ${data.length - cleanedData.length} 个测试项目，从 ${storageKey}`);
+            } else if (typeof data === 'object') {
+                // 处理对象类型数据
+                let cleanedData = {};
+                let removedCount = 0;
+                
+                for (const key in data) {
+                    // 检查键名
+                    if (key.startsWith('test-') || key.includes('test')) {
+                        removedCount++;
+                        continue;
+                    }
+                    
+                    // 检查值中的标题
+                    if (data[key].title && (
+                        data[key].title.toLowerCase() === 'test 3' || 
+                        data[key].title.toLowerCase().startsWith('test')
+                    )) {
+                        removedCount++;
+                        continue;
+                    }
+                    
+                    cleanedData[key] = data[key];
+                }
+                
+                localStorage.setItem(storageKey, JSON.stringify(cleanedData));
+                console.log(`已清理 ${removedCount} 个测试项目，从 ${storageKey}`);
+            }
+        } catch (error) {
+            console.error(`清理 ${storageKey} 时出错:`, error);
         }
+    });
+    
+    // 尝试直接从DOM中删除测试文章
+    try {
+        // 查找标题包含"test"的博客文章，从DOM直接删除
+        document.querySelectorAll('.blog-card-title').forEach(titleElement => {
+            if (titleElement.textContent.toLowerCase().includes('test')) {
+                const card = titleElement.closest('.blog-card');
+                if (card && card.parentNode) {
+                    card.parentNode.removeChild(card);
+                    console.log('从DOM直接移除测试文章:', titleElement.textContent);
+                }
+            }
+        });
+        
+        // 同样清理热门文章列表中的测试文章
+        document.querySelectorAll('.popular-post').forEach(postLink => {
+            const title = postLink.textContent || postLink.getAttribute('data-title') || '';
+            if (title.toLowerCase().includes('test')) {
+                const listItem = postLink.closest('li');
+                if (listItem && listItem.parentNode) {
+                    listItem.parentNode.removeChild(listItem);
+                    console.log('从热门文章列表移除测试文章:', title);
+                }
+            }
+        });
+    } catch (domError) {
+        console.error('清理DOM元素时出错:', domError);
     }
     
-    // 保存清理后的浏览量数据
-    localStorage.setItem('blogViewCounts', JSON.stringify(cleanedViewCounts));
-    
-    // 清理用户博客数据
-    let blogPosts = JSON.parse(localStorage.getItem('blogPosts') || '[]');
-    let cleanedBlogPosts = blogPosts.filter(blog => !blog.id.toString().startsWith('test-'));
-    
-    // 保存清理后的博客数据
-    localStorage.setItem('blogPosts', JSON.stringify(cleanedBlogPosts));
-    
-    // 清理userBlogs数据（如果有）
-    let userBlogs = JSON.parse(localStorage.getItem('userBlogs') || '[]');
-    let cleanedUserBlogs = userBlogs.filter(blog => !blog.id.toString().startsWith('test-'));
-    
-    // 保存清理后的用户博客数据
-    localStorage.setItem('userBlogs', JSON.stringify(cleanedUserBlogs));
-    
     // 显示清理完成通知
-    showNotification('测试文章已全部清理完成');
+    showNotification('所有测试文章已全面清理完成');
     
-    console.log('测试文章清理完成');
+    console.log('测试文章清理完成，页面将在1秒后刷新');
     
     // 刷新页面以反映更改
     setTimeout(() => {
@@ -1548,28 +1604,38 @@ function cleanupTestArticles() {
     }, 1000);
 }
 
-// 添加清理测试文章的按钮
+// 添加清理测试文章的按钮 - 样式和位置优化
 function addCleanupButton() {
     const cleanupBtn = document.createElement('button');
-    cleanupBtn.textContent = '清理测试文章';
+    cleanupBtn.textContent = '清理所有测试文章';
     cleanupBtn.style.position = 'fixed';
     cleanupBtn.style.bottom = '70px';
     cleanupBtn.style.right = '20px';
     cleanupBtn.style.zIndex = '9999';
-    cleanupBtn.style.padding = '8px 12px';
-    cleanupBtn.style.backgroundColor = '#ff5722';
+    cleanupBtn.style.padding = '10px 16px';
+    cleanupBtn.style.backgroundColor = '#e53935';
     cleanupBtn.style.color = 'white';
     cleanupBtn.style.border = 'none';
     cleanupBtn.style.borderRadius = '4px';
     cleanupBtn.style.cursor = 'pointer';
-    cleanupBtn.style.boxShadow = '0 2px 5px rgba(0,0,0,0.3)';
-    cleanupBtn.style.fontSize = '14px';
+    cleanupBtn.style.boxShadow = '0 3px 8px rgba(0,0,0,0.4)';
+    cleanupBtn.style.fontSize = '15px';
+    cleanupBtn.style.fontWeight = 'bold';
     
     cleanupBtn.addEventListener('click', function() {
-        if (confirm('确定要清理所有测试文章吗？此操作不可撤销。')) {
+        if (confirm('确定要彻底清理所有测试文章吗？\n\n这将删除所有包含"test"的文章，此操作不可撤销。')) {
             cleanupTestArticles();
         }
     });
     
     document.body.appendChild(cleanupBtn);
+    
+    // 为移动设备适配
+    const mediaQuery = window.matchMedia('(max-width: 768px)');
+    if (mediaQuery.matches) {
+        cleanupBtn.style.bottom = '120px';
+        cleanupBtn.style.right = '10px';
+        cleanupBtn.style.padding = '8px 12px';
+        cleanupBtn.style.fontSize = '13px';
+    }
 } 
