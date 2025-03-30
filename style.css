@@ -180,14 +180,15 @@ ul {
 
 .site-intro {
     text-align: center;
-    margin-bottom: 60px;
+    margin-bottom: 20px;
+    padding: 50px 0;
 }
 
 .site-title {
-    font-size: 2.5rem;
+    font-size: 3rem;
     font-weight: 700;
     color: #be6aff;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
     background: linear-gradient(90deg, #3b82f6, #10b981);
     -webkit-background-clip: text;
     background-clip: text;
@@ -195,15 +196,18 @@ ul {
 }
 
 .site-tagline {
-    font-size: 3rem;
+    font-size: 1.5rem;
     font-weight: 700;
     margin-bottom: 20px;
     background: linear-gradient(90deg, #2563eb, #34d399);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
-    max-width: 800px;
+    max-width: 600px;
     margin: 0 auto;
+    background: none;
+    -webkit-background-clip: initial;
+    background-clip: initial;
 }
 
 /* 内容网格 */
@@ -443,32 +447,32 @@ ul {
 /* 博客网格 */
 .blog-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 30px;
-    margin-top: 30px;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 35px;
+    margin-top: 40px;
 }
 
 /* 博客卡片 */
 .blog-card {
     display: flex;
     flex-direction: column;
-    border-radius: var(--border-radius);
+    border-radius: 10px;
     background-color: var(--bg-primary);
-    box-shadow: var(--shadow-md);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.1);
     overflow: hidden;
-    transition: var(--transition);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
     height: 100%;
     border: 1px solid var(--card-border);
 }
 
 .blog-card:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--shadow-lg);
+    transform: translateY(-8px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.1);
 }
 
 .blog-card-image {
     width: 100%;
-    height: 200px;
+    height: 220px;
     position: relative;
 }
 
@@ -517,19 +521,18 @@ ul {
 }
 
 .blog-card-title {
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     font-weight: 600;
-    margin-bottom: 12px;
+    margin-bottom: 15px;
     color: var(--text-primary);
     line-height: 1.4;
 }
 
 .blog-card-excerpt {
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-    margin-bottom: 20px;
+    font-size: 1rem;
+    line-height: 1.7;
+    margin-bottom: 25px;
     flex-grow: 1;
-    line-height: 1.6;
 }
 
 .blog-read-more {
@@ -986,12 +989,16 @@ ul {
 
 /* 响应式设计 */
 @media (max-width: 768px) {
+    #blog-section h2 {
+        font-size: 1.8rem;
+    }
+    
     .site-title {
-        font-size: 2rem;
+        font-size: 2.2rem;
     }
     
     .site-tagline {
-        font-size: 2rem;
+        font-size: 1.2rem;
     }
     
     .content-grid {
@@ -1256,4 +1263,54 @@ ul {
     max-width: 100%;
     border-radius: 8px;
     box-shadow: var(--card-shadow);
+}
+
+/* 博客部分样式增强 */
+#blog-section {
+    margin-top: 40px;
+    padding-top: 50px;
+    border-top: none;
+}
+
+#blog-section h2 {
+    font-size: 2.2rem;
+    margin-bottom: 40px;
+    text-align: center;
+}
+
+#blog-section h2:after {
+    width: 80px;
+    height: 5px;
+    left: calc(50% - 40px);
+}
+
+.blog-grid {
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 35px;
+    margin-top: 40px;
+}
+
+.blog-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 10px;
+}
+
+.blog-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+}
+
+.blog-card-image {
+    height: 220px;
+}
+
+.blog-card-title {
+    font-size: 1.3rem;
+    margin-bottom: 15px;
+}
+
+.blog-card-excerpt {
+    font-size: 1rem;
+    line-height: 1.7;
+    margin-bottom: 25px;
 }
