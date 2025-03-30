@@ -39,14 +39,26 @@ router.get('/posts', async (req, res) => {
 // 获取单个博客文章
 router.get('/posts/:id', async (req, res) => {
   try {
+    console.log('获取单个博客文章，ID:', req.params.id);
+    
     const blogPostDAO = await getBlogPostDAO();
     const post = await blogPostDAO.getPostById(req.params.id);
     
     if (!post) {
+      console.warn('未找到指定文章，ID:', req.params.id);
       return res.status(404).json({ error: '未找到指定文章' });
     }
     
-    res.json(post);
+    // 确保返回的对象同时包含id和_id字段
+    const responsePost = { ...post };
+    
+    // 如果只有_id没有id，添加id字段（字符串格式）
+    if (responsePost._id && !responsePost.id) {
+      responsePost.id = responsePost._id.toString();
+    }
+    
+    console.log('成功获取博客文章:', responsePost.title, 'ID:', responsePost.id);
+    res.json(responsePost);
   } catch (error) {
     console.error('获取单个博客文章失败:', error);
     res.status(500).json({ error: '服务器错误', message: error.message });

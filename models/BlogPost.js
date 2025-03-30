@@ -69,24 +69,65 @@ class BlogPostDAO {
   // 获取单个文章
   async getPostById(id) {
     try {
+      console.log('尝试获取文章，ID:', id);
+      
       // 尝试将ID转换为ObjectId，如果不是有效的ObjectId则直接使用原始ID
       let postId;
+      let idIsObjectId = false;
+      
       try {
-        postId = new ObjectId(id);
+        if (typeof id === 'string' && ObjectId.isValid(id)) {
+          postId = new ObjectId(id);
+          idIsObjectId = true;
+          console.log('ID是有效的ObjectId，已转换');
+        } else {
+          console.log('ID不是有效的ObjectId，使用原始ID:', id);
+          postId = id;
+        }
       } catch (err) {
-        console.log('ID不是有效的ObjectId，使用原始ID:', id);
+        console.warn('ID转换错误:', err.message);
         postId = id;
       }
       
-      // 查找文章，同时支持_id和id字段
-      const post = await this.postsCollection.findOne({ 
-        $or: [
-          { _id: postId },
-          { id: id }
-        ]
-      });
+      // 构建查询条件
+      const query = { $or: [] };
       
-      return post;
+      // 添加_id查询条件（如果ID是有效的ObjectId）
+      if (idIsObjectId) {
+        query.$or.push({ _id: postId });
+      }
+      
+      // 添加id查询条件（字符串ID）
+      if (typeof id === 'string') {
+        query.$or.push({ id: id });
+      }
+      
+      // 如果没有有效的查询条件，返回null
+      if (query.$or.length === 0) {
+        console.warn('没有有效的查询条件');
+        return null;
+      }
+      
+      console.log('查询条件:', JSON.stringify(query));
+      
+      // 查找文章
+      const post = await this.postsCollection.findOne(query);
+      
+      if (!post) {
+        console.warn('未找到文章');
+        return null;
+      }
+      
+      // 确保结果同时包含id和_id
+      const result = { ...post };
+      
+      // 如果只有_id没有id，为结果添加id字段（字符串格式）
+      if (result._id && !result.id) {
+        result.id = result._id.toString();
+      }
+      
+      console.log('成功获取文章:', result.title, 'ID:', result.id);
+      return result;
     } catch (error) {
       console.error('获取文章详情失败:', error);
       return null;
@@ -100,16 +141,32 @@ class BlogPostDAO {
 
   // 创建新文章
   async createPost(postData) {
-    const newPost = createBlogPost(postData);
-    const result = await this.postsCollection.insertOne(newPost);
-    
-    // 确保返回的对象同时包含id和_id
-    const id = result.insertedId.toString();
-    return { 
-      ...newPost, 
-      _id: result.insertedId,
-      id: id 
-    };
+    try {
+      console.log('创建新文章:', postData.title);
+      
+      // 创建基本文章对象
+      const newPost = createBlogPost(postData);
+      
+      // 添加MongoDB ID作为字符串id字段
+      const insertResult = await this.postsCollection.insertOne(newPost);
+      const objectId = insertResult.insertedId;
+      const stringId = objectId.toString();
+      
+      // 更新文档，添加字符串id字段
+      await this.postsCollection.updateOne(
+        { _id: objectId },
+        { $set: { id: stringId } }
+      );
+      
+      // 获取完整的文章对象（包含id和_id）
+      const completePost = await this.getPostById(objectId);
+      
+      console.log('文章创建成功, ID:', stringId);
+      return completePost;
+    } catch (error) {
+      console.error('创建文章失败:', error);
+      throw error;
+    }
   }
 
   // 更新文章
