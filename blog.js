@@ -13,6 +13,60 @@ function initBlogFunctionality() {
     
     // 初始化博客搜索
     initBlogSearch();
+    
+    // 初始化博客分页
+    initBlogPagination();
+    
+    // 初始化现有博客卡片的阅读全文功能
+    initExistingBlogCards();
+    
+    // 加载用户发布的博客
+    loadBlogPosts();
+}
+
+// 为现有静态博客卡片添加阅读全文功能
+function initExistingBlogCards() {
+    const readMoreLinks = document.querySelectorAll('.blog-card .blog-read-more');
+    
+    readMoreLinks.forEach((link, index) => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // 获取父级博客卡片
+            const blogCard = this.closest('.blog-card');
+            if (!blogCard) return;
+            
+            // 获取博客信息
+            const title = blogCard.querySelector('.blog-card-title').textContent;
+            const excerpt = blogCard.querySelector('.blog-card-excerpt').textContent;
+            const dateElement = blogCard.querySelector('.blog-card-date');
+            const date = dateElement ? dateElement.textContent : new Date().toISOString().split('T')[0];
+            
+            // 获取标签
+            const tags = [];
+            blogCard.querySelectorAll('.blog-tag').forEach(tag => {
+                tags.push(tag.textContent);
+            });
+            
+            // 获取分类
+            const categories = blogCard.getAttribute('data-categories') || '';
+            const category = categories.split(',')[0] || 'tech';
+            
+            // 创建临时博客对象
+            const blog = {
+                id: 'static-' + index,
+                title: title,
+                content: excerpt + '\n\n这是预设的静态博客文章。您可以点击右下角的"写博客"按钮创建自己的博客内容。',
+                date: date,
+                author: '网站作者',
+                category: category,
+                tags: tags
+            };
+            
+            // 显示博客详情
+            showBlogDetail(blog);
+        });
+    });
 }
 
 // 写博客模态框
@@ -49,23 +103,60 @@ function initWriteBlogModal() {
         form.addEventListener('submit', function(e) {
             e.preventDefault();
             
-            // 这里应该是与后端API交互的代码
-            // 由于这是静态网站，我们仅做演示
+            // 获取表单数据
             const title = document.querySelector('#blog-title').value;
             const content = document.querySelector('#blog-content').value;
+            const category = document.querySelector('#blog-category').value;
+            const tags = document.querySelector('#blog-tags').value;
             
             if (!title || !content) {
                 alert('请填写标题和内容');
                 return;
             }
             
-            // 模拟提交成功
+            // 保存博客
+            const newBlog = saveBlogPost(title, content, category, tags);
+            
+            // 提交成功
             alert('博客发布成功！');
             modal.classList.remove('active');
             document.body.style.overflow = '';
             form.reset();
             
-            // 在实际应用中，成功后应该刷新博客列表或重定向到新博客页面
+            // 刷新博客列表
+            loadBlogPosts();
+        });
+    }
+    
+    // 保存草稿按钮
+    const saveDraftBtn = document.querySelector('.save-draft-btn');
+    if (saveDraftBtn) {
+        saveDraftBtn.addEventListener('click', function() {
+            const title = document.querySelector('#blog-title').value || '无标题草稿';
+            const content = document.querySelector('#blog-content').value || '';
+            const category = document.querySelector('#blog-category').value;
+            const tags = document.querySelector('#blog-tags').value;
+            
+            if (!content) {
+                alert('请至少填写一些内容');
+                return;
+            }
+            
+            // 保存为草稿
+            const drafts = JSON.parse(localStorage.getItem('blogDrafts') || '[]');
+            const draft = {
+                id: Date.now(),
+                title,
+                content,
+                category,
+                tags,
+                date: new Date().toISOString()
+            };
+            
+            drafts.push(draft);
+            localStorage.setItem('blogDrafts', JSON.stringify(drafts));
+            
+            alert('草稿已保存');
         });
     }
 }
@@ -231,13 +322,13 @@ function loadBlogPosts() {
     
     if (!blogGrid) return;
     
-    // 清空现有博客
-    blogGrid.innerHTML = '';
-    
+    // 如果没有保存的博客，不需要清空现有的示例博客
     if (blogs.length === 0) {
-        blogGrid.innerHTML = '<p class="no-blogs">暂无博客内容，点击右下角"写博客"按钮创建您的第一篇博客吧！</p>';
         return;
     }
+    
+    // 清空现有博客
+    blogGrid.innerHTML = '';
     
     // 按日期排序，最新的排在前面
     blogs.sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -291,19 +382,37 @@ function createBlogCard(blog) {
 }
 
 // 显示博客详情
-function showBlogDetail(blogId) {
-    const blogs = JSON.parse(localStorage.getItem('blogPosts') || '[]');
-    const blog = blogs.find(b => b.id == blogId);
+function showBlogDetail(blogIdOrObject) {
+    let blog;
     
-    if (!blog) return;
+    // 如果传入的是对象，直接使用
+    if (typeof blogIdOrObject === 'object') {
+        blog = blogIdOrObject;
+    } else {
+        // 否则查找博客
+        const blogs = JSON.parse(localStorage.getItem('blogPosts') || '[]');
+        blog = blogs.find(b => b.id == blogIdOrObject);
+        if (!blog) return;
+    }
     
     // 创建博客详情模态框
     const detailModal = document.createElement('div');
     detailModal.className = 'blog-detail-modal';
     
     // 格式化日期
-    const date = new Date(blog.date);
-    const formattedDate = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+    let formattedDate;
+    if (typeof blog.date === 'string') {
+        if (blog.date.includes('T')) {
+            // ISO格式日期
+            const date = new Date(blog.date);
+            formattedDate = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+        } else {
+            // 已经格式化的日期
+            formattedDate = blog.date;
+        }
+    } else {
+        formattedDate = '未知日期';
+    }
     
     detailModal.innerHTML = `
         <div class="blog-detail-content">
@@ -313,11 +422,11 @@ function showBlogDetail(blogId) {
             </div>
             <div class="blog-detail-meta">
                 <span class="blog-detail-date"><i class="far fa-calendar-alt"></i> ${formattedDate}</span>
-                <span class="blog-detail-author"><i class="far fa-user"></i> ${blog.author}</span>
-                <span class="blog-detail-category"><i class="far fa-folder"></i> ${blog.category}</span>
+                <span class="blog-detail-author"><i class="far fa-user"></i> ${blog.author || '网站作者'}</span>
+                <span class="blog-detail-category"><i class="far fa-folder"></i> ${blog.category || '未分类'}</span>
             </div>
             <div class="blog-detail-tags">
-                ${blog.tags.map(tag => `<span class="blog-tag">${tag}</span>`).join('')}
+                ${Array.isArray(blog.tags) ? blog.tags.map(tag => `<span class="blog-tag">${tag}</span>`).join('') : ''}
             </div>
             <div class="blog-detail-body">
                 ${formatBlogContent(blog.content)}
@@ -359,6 +468,8 @@ function showBlogDetail(blogId) {
 
 // 格式化博客内容，支持简单的Markdown语法
 function formatBlogContent(content) {
+    if (!content) return '';
+    
     // 将换行符转换为<br>
     let formatted = content.replace(/\n/g, '<br>');
     
