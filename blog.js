@@ -1,8 +1,28 @@
-document.addEventListener('DOMContentLoaded', function() {
-    // 删除所有热门文章
-    deleteAllPopularArticles();
+// 检测是否需要从localStorage迁移数据到MongoDB
+document.addEventListener('DOMContentLoaded', async function() {
+    // 检查是否有迁移标志
+    const dataMigrated = localStorage.getItem('dataMigratedToMongoDB');
     
-    // 然后初始化博客功能
+    if (!dataMigrated) {
+        try {
+            // 显示加载提示
+            showNotification('正在迁移数据到MongoDB，请稍候...', 3000);
+            
+            // 迁移数据
+            await window.blogAPI.importFromLocalStorage();
+            
+            // 设置迁移标志
+            localStorage.setItem('dataMigratedToMongoDB', 'true');
+            
+            // 显示成功消息
+            showNotification('数据成功迁移到MongoDB!', 3000);
+        } catch (error) {
+            console.error('数据迁移失败:', error);
+            showNotification('数据迁移失败，请刷新页面重试', 5000);
+        }
+    }
+    
+    // 初始化博客功能
     initBlogFunctionality();
 });
 
@@ -24,6 +44,9 @@ function initBlogFunctionality() {
     
     // 初始化热门文章链接点击
     initPopularPostLinks();
+    
+    // 加载时隐藏已删除的热门文章 (Moved from index.html)
+    hideDeletedPopularPosts();
     
     // 加载用户发布的博客
     loadBlogPosts();
@@ -360,32 +383,28 @@ function initBlogPagination() {
 
 // 添加简单的博客帖子保存功能
 function saveBlogPost(title, content, category, tags, imageData, isPopular) {
-    // 在实际应用中，这里应该与后端API交互
-    // 由于这是静态网站，我们将博客数据保存在localStorage中
-    let blogs = JSON.parse(localStorage.getItem('blogPosts') || '[]');
-    
+    // 创建博客对象
     const newBlog = {
-        id: Date.now(),
         title,
         content,
         category,
-        tags: tags.split(',').map(tag => tag.trim()),
-        date: new Date().toISOString(),
-        author: '网站作者',
-        imageData: imageData, // 保存图片数据
+        tags: typeof tags === 'string' ? tags.split(',').map(tag => tag.trim()) : tags,
+        imageData, // 保存图片数据
         isPopular: isPopular || false, // 是否设为热门文章
-        viewCount: 0 // 初始浏览量为0
     };
     
-    blogs.push(newBlog);
-    localStorage.setItem('blogPosts', JSON.stringify(blogs));
-    
-    // 如果设为热门文章，添加到热门文章列表
-    if (isPopular) {
-        addToPopularArticles(newBlog);
-    }
-    
-    return newBlog;
+    // 调用API保存到MongoDB
+    return window.blogAPI.createPost(newBlog)
+        .then(blog => {
+            // 显示成功信息
+            showNotification('博客发布成功！');
+            return blog;
+        })
+        .catch(error => {
+            console.error('保存博客失败:', error);
+            showNotification('保存博客失败，请重试');
+            throw error;
+        });
 }
 
 // 将文章添加到热门文章列表
@@ -414,7 +433,7 @@ function addToPopularArticles(blog) {
             let userBlogs = JSON.parse(localStorage.getItem('blogPosts') || '[]');
             let blog = userBlogs.find(b => b.id == blogId);
             
-            if (!blog) {
+        if (!blog) {
                 // 如果找不到，创建一个临时对象
                 blog = {
                     id: blogId,
@@ -491,30 +510,23 @@ function incrementViewCount(blogId, blogTitle, category) {
 
 // 更新热门文章列表，完全基于浏览量自动排序
 function updatePopularArticles() {
-    // 获取所有浏览量数据
-    const viewCounts = JSON.parse(localStorage.getItem('blogViewCounts') || '{}');
-    
-    // 将对象转换为数组以便排序
-    let articlesWithViews = [];
-    for (const blogId in viewCounts) {
-        if (viewCounts[blogId].count > 0) { // 只考虑有浏览量的文章
-            articlesWithViews.push({
-                id: blogId,
-                title: viewCounts[blogId].title,
-                count: viewCounts[blogId].count,
-                category: viewCounts[blogId].category || '未分类'
-            });
-        }
-    }
-    
-    // 根据浏览量排序
-    articlesWithViews.sort((a, b) => b.count - a.count);
-    
-    // 选择前N篇文章（例如前10篇）
-    const topArticles = articlesWithViews.slice(0, 10);
-    
-    // 更新热门文章列表
-    updatePopularArticlesList(topArticles);
+    // 使用API获取热门文章
+    window.blogAPI.getPopularPosts()
+        .then(articles => {
+            // 将API响应转换为需要的格式
+            const topArticles = articles.map(article => ({
+                id: article.id,
+                title: article.title,
+                count: article.viewCount,
+                category: article.category || '未分类'
+            }));
+            
+            // 更新热门文章列表
+            updatePopularArticlesList(topArticles);
+        })
+        .catch(error => {
+            console.error('获取热门文章失败:', error);
+        });
 }
 
 // 更新热门文章列表的UI
@@ -623,7 +635,7 @@ function initPopularPostLinksNoRecursion() {
         }
         
         clonedLink.addEventListener('click', function(e) {
-            e.preventDefault();
+                e.preventDefault();
             
             const title = this.getAttribute('data-title');
             const category = this.getAttribute('data-category') || '未分类'; 
@@ -632,11 +644,11 @@ function initPopularPostLinksNoRecursion() {
             // 创建一个临时博客对象
             const blog = {
                 id: blogId,
-                title: title,
+        title: title,
                 content: "这是热门文章的摘要或部分内容。详细内容正在加载或编写中...",
                 date: new Date().toISOString().split('T')[0],
                 author: '网站作者',
-                category: category,
+        category: category,
                 tags: [category],
                 imageUrl: null,
                 viewCount: parseInt(this.getAttribute('data-view-count') || '0')
@@ -827,84 +839,59 @@ function deleteBlog(blogId) {
     console.log('尝试删除博客，ID:', blogId);
 
     let deleted = false;
-    let blogTitle = blogTitleFromId(blogId); // Try to get title early
-
-    // Handle popular posts deletion (identified by title stored in localStorage)
-    if (blogId.startsWith('popular-')) {
-        saveDeletedPopularPost(blogTitle); // Save title to localStorage
-        // Attempt to remove from DOM directly
-        const popularPostElement = document.querySelector(`.popular-post[data-title="${blogTitle}"]`);
-        if (popularPostElement) {
-            const listItem = popularPostElement.closest('li');
-            if (listItem) {
-                 listItem.style.opacity = '0';
-                 listItem.style.height = '0';
-                 setTimeout(() => {
-                     if (listItem.parentNode) {
-                         listItem.parentNode.removeChild(listItem);
-                     }
-                 }, 500);
-                 deleted = true;
-            }
-        } else {
-             // Fallback: iterate and check data-title if direct match failed
-             document.querySelectorAll('.popular-post').forEach(post => {
-                if (post.getAttribute('data-title') === blogTitle) {
-                    saveDeletedPopularPost(post.getAttribute('data-title')); // Ensure correct title saved
-                    const listItem = post.closest('li');
-                    if (listItem) {
-                        listItem.style.opacity = '0';
-                        listItem.style.height = '0';
-                        setTimeout(() => {
-                             if (listItem.parentNode) {
-                                 listItem.parentNode.removeChild(listItem);
-                             }
-                        }, 500);
-                        deleted = true;
-                    }
-                }
-            });
-        }
-    }
-    // Handle static blog cards (identified by index)
-    else if (blogId.startsWith('static-')) {
+    let blogTitle = blogTitleFromId(blogId); // 尝试获取标题
+    
+    // 调用API删除博客
+    if (blogId.startsWith('static-')) {
+        // 对于静态博客，仍然保持原有的DOM操作
         const index = parseInt(blogId.replace('static-', ''), 10);
-        const allBlogCards = document.querySelectorAll('.blog-grid .blog-card'); // Be more specific
+        const allBlogCards = document.querySelectorAll('.blog-grid .blog-card');
 
         if (!isNaN(index) && index >= 0 && index < allBlogCards.length) {
             const blogCard = allBlogCards[index];
-            if (blogCard && blogCard.parentNode) { // Check parentNode exists
+            if (blogCard && blogCard.parentNode) {
                  blogCard.style.opacity = '0';
                  blogCard.style.transform = 'scale(0.8)';
                  setTimeout(() => {
                     if (blogCard.parentNode) {
                         blogCard.parentNode.removeChild(blogCard);
-                        checkIfBlogGridEmpty(); // Check if grid is empty after removal
+                        checkIfBlogGridEmpty();
                     }
                  }, 500);
                  deleted = true;
             }
         }
+    } else {
+        // 对于MongoDB中的博客文章，使用API删除
+        window.blogAPI.deletePost(blogId)
+            .then(() => {
+                // 删除成功，从DOM中移除对应元素
+                const blogCard = document.querySelector(`.blog-card a[data-blog-id="${blogId}"]`);
+                if (blogCard) {
+                    const card = blogCard.closest('.blog-card');
+                    if (card && card.parentNode) {
+                        card.style.opacity = '0';
+                        card.style.transform = 'scale(0.8)';
+                        setTimeout(() => {
+                            if (card.parentNode) {
+                                card.parentNode.removeChild(card);
+                                checkIfBlogGridEmpty();
+                            }
+                        }, 500);
+                    }
+                }
+                
+                deleted = true;
+                showNotification('博客文章已成功删除');
+            })
+            .catch(error => {
+                console.error('删除博客失败:', error);
+                showNotification('删除博客文章失败，请重试');
+            });
     }
-    // Handle user-created blog posts (from localStorage)
-    else {
-        let userBlogs = JSON.parse(localStorage.getItem('blogPosts') || '[]');
-        const initialLength = userBlogs.length;
-        userBlogs = userBlogs.filter(blog => blog.id != blogId); // Use != for potential type difference
-
-        if (userBlogs.length < initialLength) {
-            localStorage.setItem('blogPosts', JSON.stringify(userBlogs));
-            deleted = true;
-            // Re-render the blog list to reflect the deletion
-            loadBlogPosts();
-        }
-    }
-
+    
     if (deleted) {
         showNotification('博客文章已成功删除');
-    } else {
-        console.warn('未能删除博客，ID 未匹配:', blogId);
-        showNotification('删除博客文章失败');
     }
 }
 
@@ -1012,90 +999,80 @@ function showBlogDetail(blogIdOrObject) {
     
     try {
         let blog;
-        let blogId; // Ensure we have a consistent blogId
-
-        // Determine blog object and blogId
+        let blogId; // 确保有一个一致的blogId
+        
+        // 确定博客对象和blogId
         if (typeof blogIdOrObject === 'object' && blogIdOrObject !== null) {
             blog = blogIdOrObject;
-            blogId = blog.id || ('blog-' + Date.now()); // Assign an ID if missing
+            blogId = blog.id || ('blog-' + Date.now());
             console.log('Processing blog object, extracted ID:', blogId);
-            // Ensure the passed object gets a proper ID if it's missing one before use
             if (!blog.id) {
-                 blog.id = blogId;
+                blog.id = blogId;
             }
         } else {
-            // If it's an ID, find the blog post
+            // 如果是ID，从API获取博客文章
             blogId = blogIdOrObject;
             console.log('Processing blog ID:', blogId);
-            const userBlogs = JSON.parse(localStorage.getItem('blogPosts') || '[]');
-            const staticBlogs = []; // Need a way to represent static blogs if finding by ID
-
-            // Attempt to find in user blogs first
-            blog = userBlogs.find(b => b.id == blogId);
-
-            // 如果未找到，尝试查找热门文章
-            if (!blog) {
-                console.warn('Could not find blog by ID:', blogId, '. Creating a placeholder blog.');
-                // 创建一个默认的博客对象而不是直接返回
-                if (blogId.startsWith('popular-')) {
-                    // 尝试从ID中提取标题信息
-                    const titleFromId = blogId.replace(/^popular-/, '').replace(/-/g, ' ');
-                    blog = {
-                        id: blogId,
-                        title: titleFromId || '热门文章',
-                        content: "这是热门文章的摘要或部分内容。详细内容正在加载或编写中...",
-                        date: new Date().toISOString().split('T')[0],
-                        author: '网站作者',
-                        category: '未分类',
-                        tags: ['热门'],
-                        imageUrl: null,
-                        viewCount: 0
-                    };
-                } else if (blogId.startsWith('static-')) {
-                    const index = parseInt(blogId.replace('static-', ''), 10);
-                    blog = {
-                        id: blogId,
-                        title: '静态博客文章 ' + (index + 1),
-                        content: "这是预设的静态博客文章。您可以点击右下角的\"写博客\"按钮创建自己的博客内容。",
-                        date: new Date().toISOString().split('T')[0],
-                        author: '网站作者',
-                        category: '技术',
-                        tags: ['技术'],
-                        imageUrl: null,
-                        viewCount: 0
-                    };
-                } else {
-                    blog = {
-                        id: blogId,
-                        title: '未知文章',
-                        content: "无法找到这篇文章的内容。",
-                        date: new Date().toISOString().split('T')[0],
-                        author: '未知',
-                        category: '未分类',
-                        tags: [],
-                        imageUrl: null,
-                        viewCount: 0
-                    };
-                }
+            
+            // 对于静态博客，保持原有的逻辑
+            if (blogId.startsWith('static-')) {
+                const index = parseInt(blogId.replace('static-', ''), 10);
+                blog = {
+                    id: blogId,
+                    title: '静态博客文章 ' + (index + 1),
+                    content: "这是预设的静态博客文章。您可以点击右下角的\"写博客\"按钮创建自己的博客内容。",
+                    date: new Date().toISOString().split('T')[0],
+                    author: '网站作者',
+                    category: '技术',
+                    tags: ['技术'],
+                    imageUrl: null,
+                    viewCount: 0
+                };
+                
+                // 显示博客详情
+                displayBlogDetailModal(blog, blogId);
+            } else {
+                // 对于MongoDB中的博客，使用API获取
+                window.blogAPI.getPost(blogId)
+                    .then(post => {
+                        // 显示博客详情
+                        displayBlogDetailModal(post, blogId);
+                    })
+                    .catch(error => {
+                        console.error('获取博客详情失败:', error);
+                        
+                        // 创建一个默认的博客对象
+                        const defaultBlog = {
+                            id: blogId,
+                            title: '未知文章',
+                            content: "无法找到这篇文章的内容。",
+                            date: new Date().toISOString().split('T')[0],
+                            author: '未知',
+                            category: '未分类',
+                            tags: [],
+                            imageUrl: null,
+                            viewCount: 0
+                        };
+                        
+                        displayBlogDetailModal(defaultBlog, blogId);
+                    });
             }
+            return;
         }
+        
+        // 如果已经有博客对象，直接显示详情
+        displayBlogDetailModal(blog, blogId);
+    } catch (error) {
+        console.error('显示博客详情时出错:', error);
+        window._showingBlogDetail = false;
+    }
+}
 
-        // If blog is still not found, exit
-        if (!blog) {
-             console.error('Blog object could not be determined for:', blogIdOrObject);
-             window._showingBlogDetail = false;
-             return;
-        }
-
-        // 使用try-catch包裹递增浏览量操作，避免错误中断流程
-        let currentViewCount = 0;
-        try {
-            // 递增文章浏览量，传递分类信息
-            currentViewCount = incrementViewCount(blogId, blog.title, blog.category);
-        } catch (error) {
-            console.error('递增浏览量时出错:', error);
-        }
-
+// 新增函数：显示博客详情模态框
+function displayBlogDetailModal(blog, blogId) {
+    try {
+        let currentViewCount = blog.viewCount || 0;
+        
         // 检查是否已有模态框
         const existingModal = document.querySelector('.blog-detail-modal');
         if (existingModal) {
@@ -1103,42 +1080,39 @@ function showBlogDetail(blogIdOrObject) {
             document.body.removeChild(existingModal);
         }
         
-        // --- Create Modal ---
+        // 创建模态框
         const detailModal = document.createElement('div');
         detailModal.className = 'blog-detail-modal';
         
         console.log('开始创建博客详情模态框:', detailModal);
         
-        // Format date
+        // 格式化日期
         let formattedDate = '未知日期';
         if (blog.date) {
            try {
-               // Handle different date formats gracefully
+               // 处理不同的日期格式
                const dateObj = new Date(blog.date);
-               if (!isNaN(dateObj.getTime())) { // Check if date is valid
+               if (!isNaN(dateObj.getTime())) {
                    formattedDate = `${dateObj.getFullYear()}-${(dateObj.getMonth() + 1).toString().padStart(2, '0')}-${dateObj.getDate().toString().padStart(2, '0')}`;
                } else if (typeof blog.date === 'string') {
-                   // If it's a string but not parsable, use it as is (might be pre-formatted)
                    formattedDate = blog.date;
                }
            } catch (e) {
                console.error('Error parsing date:', blog.date, e);
-               formattedDate = typeof blog.date === 'string' ? blog.date : '无效日期'; // Fallback
+               formattedDate = typeof blog.date === 'string' ? blog.date : '无效日期';
            }
         }
-
-        // Image HTML
+        
+        // 图片HTML
         let detailImageHtml = '';
-        // Use imageData (from user posts/drafts) or imageUrl (from static posts)
         const imageSource = blog.imageData || blog.imageUrl;
         if (imageSource) {
             detailImageHtml = `<div class="blog-detail-image"><img src="${imageSource}" alt="${blog.title || '博客图片'}"></div>`;
         }
         
-        // 为所有博客文章显示删除按钮，不再根据类型区分
         const deleteButtonHtml = `<button class="blog-detail-delete" data-blog-id="${blogId}"><i class="fas fa-trash"></i> 删除</button>`;
-
-        // --- Set Modal Inner HTML (Always include Delete Button) ---
+        
+        // 设置模态框内容
         detailModal.innerHTML = `
             <div class="blog-detail-content">
                 <div class="blog-detail-header">
@@ -1152,7 +1126,7 @@ function showBlogDetail(blogIdOrObject) {
                     <span class="blog-detail-date"><i class="far fa-calendar-alt"></i> ${formattedDate}</span>
                     <span class="blog-detail-author"><i class="far fa-user"></i> ${blog.author || '网站作者'}</span>
                     <span class="blog-detail-category"><i class="far fa-folder"></i> ${blog.category || '未分类'}</span>
-                    <span class="blog-detail-views"><i class="far fa-eye"></i> ${currentViewCount || 0}</span>
+                    <span class="blog-detail-views"><i class="far fa-eye"></i> ${currentViewCount}</span>
                 </div>
                 <div class="blog-detail-tags">
                     ${Array.isArray(blog.tags) ? blog.tags.map(tag => `<span class="blog-tag">${tag}</span>`).join('') : ''}
@@ -1163,73 +1137,44 @@ function showBlogDetail(blogIdOrObject) {
                 </div>
             </div>
         `;
-
-        // 确保在添加到DOM之前，模态框内容已设置
-        console.log('模态框HTML已设置:', detailModal.innerHTML.length > 0 ? '有内容' : '无内容');
         
         // 将模态框添加到文档体
         document.body.appendChild(detailModal);
-        console.log('模态框已添加到文档体', document.body.contains(detailModal) ? '成功' : '失败');
-        
         document.body.style.overflow = 'hidden';
-
-        // Add fade-in effect with a small delay to ensure DOM update
+        
+        // 添加淡入效果
         setTimeout(() => {
-            console.log('尝试激活模态框...');
             detailModal.classList.add('active');
-            console.log('模态框CSS类:', detailModal.className);
-            
-            // 立即检查模态框是否可见
-            const modalComputed = window.getComputedStyle(detailModal);
-            console.log('模态框计算样式 - opacity:', modalComputed.opacity, 'visibility:', modalComputed.visibility, 'display:', modalComputed.display);
-            
-            // 确保模态框计算样式正确
-            if (modalComputed.opacity !== '1' || modalComputed.visibility !== 'visible') {
-                console.warn('模态框可能存在样式问题，尝试强制设置内联样式');
-                detailModal.style.opacity = '1';
-                detailModal.style.visibility = 'visible';
-                detailModal.style.display = 'flex';
-                detailModal.style.pointerEvents = 'auto';
-            }
         }, 50);
-
-        // --- Add Event Listeners ---
-
-        // Close button
+        
+        // 添加关闭按钮事件
         const closeBtn = detailModal.querySelector('.close-detail-btn');
         if (closeBtn) {
-            console.log('关闭按钮已找到');
             closeBtn.addEventListener('click', () => {
-                console.log('关闭按钮被点击');
                 detailModal.classList.remove('active');
                 setTimeout(() => {
                      if (document.body.contains(detailModal)) {
                         document.body.removeChild(detailModal);
                         document.body.style.overflow = '';
-                        console.log('模态框已从DOM中移除');
                      }
                 }, 300);
             });
-        } else {
-            console.warn('未找到关闭按钮');
         }
-
-        // Delete button
+        
+        // 添加删除按钮事件
         const deleteBtn = detailModal.querySelector('.blog-detail-delete');
         if (deleteBtn) {
             deleteBtn.addEventListener('click', (e) => {
                 e.preventDefault();
-                e.stopPropagation(); // Prevent modal close if clicking button area
+                e.stopPropagation();
                 const currentBlogId = deleteBtn.getAttribute('data-blog-id');
-                console.log('Delete button clicked from showBlogDetail, ID:', currentBlogId);
-                showDeleteConfirmation(currentBlogId, detailModal); // Call the confirmation modal
+                showDeleteConfirmation(currentBlogId, detailModal);
             });
         }
-
-        // Click outside modal to close
+        
+        // 点击模态框外部关闭
         detailModal.addEventListener('click', (e) => {
             if (e.target === detailModal) {
-                 console.log('模态框外部被点击，准备关闭');
                  detailModal.classList.remove('active');
                  setTimeout(() => {
                      if (document.body.contains(detailModal)) {
@@ -1239,9 +1184,8 @@ function showBlogDetail(blogIdOrObject) {
                  }, 300);
             }
         });
-        
     } catch (error) {
-        console.error('显示博客详情时出错:', error);
+        console.error('显示博客详情模态框时出错:', error);
     } finally {
         // 确保标志被重置
         setTimeout(() => {
@@ -1274,29 +1218,33 @@ function formatBlogContent(content) {
 
 // 加载博客帖子
 function loadBlogPosts() {
-    // 在实际应用中，这里应该从后端API加载博客数据
-    // 由于这是静态网站，我们从localStorage中加载
-    const blogs = JSON.parse(localStorage.getItem('blogPosts') || '[]');
-    const blogGrid = document.querySelector('.blog-grid');
-    
-    if (!blogGrid) return;
-    
-    // 如果没有保存的博客，不需要清空现有的示例博客
-    if (blogs.length === 0) {
-        return;
-    }
-    
-    // 清空现有博客
-    blogGrid.innerHTML = '';
-    
-    // 按日期排序，最新的排在前面
-    blogs.sort((a, b) => new Date(b.date) - new Date(a.date));
-    
-    // 渲染博客卡片
-    blogs.forEach(blog => {
-        const blogCard = createBlogCard(blog);
-        blogGrid.appendChild(blogCard);
-    });
+    // 从MongoDB加载博客数据，而不是从localStorage加载
+    window.blogAPI.getAllPosts()
+        .then(blogs => {
+            const blogGrid = document.querySelector('.blog-grid');
+            
+            if (!blogGrid) return;
+            
+            // 如果没有保存的博客，不需要清空现有的示例博客
+            if (blogs.length === 0) {
+                return;
+            }
+            
+            // 清空现有博客
+            blogGrid.innerHTML = '';
+            
+            // 按日期排序，最新的排在前面（服务器已排序，这里可以简化）
+            
+            // 渲染博客卡片
+            blogs.forEach(blog => {
+                const blogCard = createBlogCard(blog);
+                blogGrid.appendChild(blogCard);
+            });
+        })
+        .catch(error => {
+            console.error('加载博客文章失败:', error);
+            showNotification('加载博客文章失败，请刷新页面重试', 5000);
+        });
 }
 
 // 创建博客卡片
@@ -1446,28 +1394,68 @@ function saveDraft() {
     const content = document.getElementById('blog-content').value;
     
     const draft = {
-        title: title,
-        category: category,
-        tags: tags,
-        content: content,
-        isPopular: false, // 默认不设为热门
+        title: title || '无标题草稿',
+        content,
+        category,
+        tags,
+        imageData: null, // 如果有上传的图片，这里需要处理
         lastSaved: new Date().toISOString()
     };
     
-    localStorage.setItem('blogDraft', JSON.stringify(draft));
+    // 调用API保存草稿
+    window.blogAPI.saveDraft(draft)
+        .then(() => {
+            showNotification('草稿已保存');
+        })
+        .catch(error => {
+            console.error('保存草稿失败:', error);
+            showNotification('保存草稿失败，请重试');
+            
+            // 作为备份，保存到localStorage
+            localStorage.setItem('blogDraft', JSON.stringify(draft));
+        });
 }
 
 // 从本地存储加载草稿
 function loadDraft() {
-    const draftJson = localStorage.getItem('blogDraft');
-    if (draftJson) {
-        const draft = JSON.parse(draftJson);
-        
-        document.getElementById('blog-title').value = draft.title || '';
-        document.getElementById('blog-category').value = draft.category || 'tech';
-        document.getElementById('blog-tags').value = draft.tags || '';
-        document.getElementById('blog-content').value = draft.content || '';
-    }
+    // 首先尝试从API加载草稿
+    window.blogAPI.getAllDrafts()
+        .then(drafts => {
+            if (drafts && drafts.length > 0) {
+                // 使用最新的草稿
+                const latestDraft = drafts[0];
+                
+                document.getElementById('blog-title').value = latestDraft.title || '';
+                document.getElementById('blog-category').value = latestDraft.category || 'tech';
+                document.getElementById('blog-tags').value = latestDraft.tags || '';
+                document.getElementById('blog-content').value = latestDraft.content || '';
+            } else {
+                // 如果没有从API加载到草稿，尝试从localStorage加载
+                const draftJson = localStorage.getItem('blogDraft');
+                if (draftJson) {
+                    const draft = JSON.parse(draftJson);
+                    
+                    document.getElementById('blog-title').value = draft.title || '';
+                    document.getElementById('blog-category').value = draft.category || 'tech';
+                    document.getElementById('blog-tags').value = draft.tags || '';
+                    document.getElementById('blog-content').value = draft.content || '';
+                }
+            }
+        })
+        .catch(error => {
+            console.error('加载草稿失败:', error);
+            
+            // 失败时尝试从localStorage加载
+            const draftJson = localStorage.getItem('blogDraft');
+            if (draftJson) {
+                const draft = JSON.parse(draftJson);
+                
+                document.getElementById('blog-title').value = draft.title || '';
+                document.getElementById('blog-category').value = draft.category || 'tech';
+                document.getElementById('blog-tags').value = draft.tags || '';
+                document.getElementById('blog-content').value = draft.content || '';
+            }
+        });
 }
 
 // 页面加载时隐藏已删除的热门文章
@@ -1529,25 +1517,6 @@ function initViewCountsForPopularPosts() {
     
     // 初始更新热门文章
     updatePopularArticles();
-}
-
-// 添加一个删除所有热门文章的函数
-function deleteAllPopularArticles() {
-    console.log('正在删除所有热门文章...');
-    
-    // 1. 清空相关的localStorage数据
-    localStorage.removeItem('deletedPopularPosts'); // 删除已删除文章列表
-    localStorage.removeItem('blogViewCounts'); // 删除浏览量数据
-    
-    // 2. 删除DOM中的所有热门文章条目
-    const popularPostsList = document.querySelector('.sidebar-posts');
-    if (popularPostsList) {
-        // 清空热门文章列表
-        popularPostsList.innerHTML = '';
-    }
-    
-    // 3. 触发页面刷新以确保更改生效
-    console.log('所有热门文章已删除');
 }
 
 // 清理所有测试文章 - 保留空方法以防被调用

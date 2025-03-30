@@ -1,62 +1,81 @@
-# 个人导航网站
+# 个人博客网站 - MongoDB版
 
-这是一个简洁、现代的个人博客网站，特别关注于AI技术、Web开发和日本生活相关内容。
+一个使用HTML、CSS、JavaScript编写的个人博客网站，后端使用Express和MongoDB实现数据持久化存储。
 
-## 主要特点
+## 功能特点
 
-- **响应式设计**：在各种设备上都能获得良好的浏览体验
-- **博客文章系统**：支持发布、编辑和删除博客文章
-- **热门文章自动排序**：基于浏览量自动排序热门文章，无需手动标记
-- **分类与标签**：支持文章分类和标签管理
-- **实时搜索**：快速查找相关内容
-- **Markdown支持**：在编写文章时支持基本的Markdown语法
+- 现代化、响应式设计，支持移动端和桌面端
+- 发布、编辑和删除博客文章
+- 草稿保存功能
+- 基于浏览量的热门文章排序
+- 支持标签和分类管理
+- 支持图片上传
+- 数据存储在MongoDB数据库中，实现持久化
 
 ## 技术栈
 
-- HTML5
-- CSS3
-- JavaScript (原生)
-- 本地存储 (localStorage) 用于数据持久化
+- 前端：HTML、CSS、JavaScript
+- 后端：Node.js、Express
+- 数据库：MongoDB
+- API：RESTful API
 
-## 功能亮点
+## 安装和运行
 
-### 浏览量统计系统
-- 每次查看文章都会增加浏览量计数
-- 浏览量数据保存在localStorage中，确保在页面刷新后仍然保留
-- 浏览量在文章详情和热门文章列表中显示
+### 前提条件
 
-### 基于浏览量的热门文章排序
-- 热门文章列表完全基于浏览量自动排序
-- 浏览量最高的文章自动显示在热门列表中
-- 系统会自动选择浏览量最高的文章显示在热门列表中
-- 无需手动标记文章为"热门"，完全基于用户行为数据
+- Node.js（版本12或更高）
+- MongoDB（本地或Atlas云数据库）
 
-### 文章管理
-- 完整的文章发布系统
-- 支持文章删除功能
-- 草稿保存功能
+### 安装步骤
 
-## 使用方法
-
-1. 克隆仓库
-2. 在本地使用Web服务器运行（如Python的http.server）
-3. 访问网站并开始使用
-
-```bash
-# 示例：使用Python启动简单的HTTP服务器
-python -m http.server 8000
+1. 克隆项目
+```
+git clone https://github.com/your-username/my-nav-site.git
+cd my-nav-site
 ```
 
-## 截图
+2. 安装依赖
+```
+cd server
+npm install
+```
 
-[可以在这里添加项目截图]
+3. 配置数据库
+   - 修改`server/.env`文件中的MongoDB连接字符串
 
-## 未来计划
+4. 运行服务器
+```
+cd server
+node server.js
+```
 
-- 添加用户认证系统
-- 实现文章评论功能
-- 添加深色模式
-- 后端集成，实现真正的数据持久化
+5. 访问网站
+   - 打开浏览器访问 http://localhost:3000
+
+## 数据迁移
+
+此项目支持从localStorage迁移数据到MongoDB。当您首次使用MongoDB版本时，系统会自动尝试将localStorage中的数据迁移到MongoDB数据库。
+
+## 项目结构
+
+```
+.
+├── index.html          # 网站主页
+├── style.css           # 样式文件
+├── blog.js             # 博客功能JS
+├── blog-api.js         # MongoDB API接口
+├── visual-effects.js   # 视觉效果JS
+├── images/             # 图片资源
+└── server/             # 后端服务器
+    ├── server.js       # Express服务器
+    ├── db.js           # MongoDB连接和模型
+    ├── api.js          # API服务
+    └── .env            # 环境配置
+```
+
+## 开发者
+
+本项目由[Your Name]开发维护。
 
 ## 许可证
 
