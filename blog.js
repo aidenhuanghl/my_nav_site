@@ -1512,6 +1512,13 @@ function cleanupTestArticles() {
     // 清理所有相关的localStorage项
     let keysToClean = ['blogViewCounts', 'blogPosts', 'userBlogs', 'blogDrafts'];
     
+    // 要删除的特定文章标题
+    const specificArticlesToDelete = [
+        '2024年人工智能在医疗领域的应用',
+        '2023年AI发展趋势分析',
+        '如何使用ChatGPT提高工作效率'
+    ];
+    
     keysToClean.forEach(storageKey => {
         try {
             // 获取存储数据
@@ -1526,7 +1533,11 @@ function cleanupTestArticles() {
                         return false;
                     }
                     // 检查标题
-                    if (item.title && (item.title.toLowerCase() === 'test 3' || item.title.toLowerCase().startsWith('test'))) {
+                    if (item.title && (
+                        item.title.toLowerCase() === 'test 3' || 
+                        item.title.toLowerCase().startsWith('test') ||
+                        specificArticlesToDelete.includes(item.title)
+                    )) {
                         return false;
                     }
                     return true;
@@ -1548,7 +1559,8 @@ function cleanupTestArticles() {
                     // 检查值中的标题
                     if (data[key].title && (
                         data[key].title.toLowerCase() === 'test 3' || 
-                        data[key].title.toLowerCase().startsWith('test')
+                        data[key].title.toLowerCase().startsWith('test') ||
+                        specificArticlesToDelete.includes(data[key].title)
                     )) {
                         removedCount++;
                         continue;
@@ -1565,27 +1577,31 @@ function cleanupTestArticles() {
         }
     });
     
-    // 尝试直接从DOM中删除测试文章
+    // 尝试直接从DOM中删除测试文章和特定文章
     try {
         // 查找标题包含"test"的博客文章，从DOM直接删除
         document.querySelectorAll('.blog-card-title').forEach(titleElement => {
-            if (titleElement.textContent.toLowerCase().includes('test')) {
+            if (titleElement.textContent.toLowerCase().includes('test') || 
+                specificArticlesToDelete.includes(titleElement.textContent)) {
                 const card = titleElement.closest('.blog-card');
                 if (card && card.parentNode) {
                     card.parentNode.removeChild(card);
-                    console.log('从DOM直接移除测试文章:', titleElement.textContent);
+                    console.log('从DOM直接移除文章:', titleElement.textContent);
                 }
             }
         });
         
-        // 同样清理热门文章列表中的测试文章
+        // 同样清理热门文章列表中的测试文章和特定文章
         document.querySelectorAll('.popular-post').forEach(postLink => {
             const title = postLink.textContent || postLink.getAttribute('data-title') || '';
-            if (title.toLowerCase().includes('test')) {
+            if (title.toLowerCase().includes('test') || specificArticlesToDelete.includes(title)) {
                 const listItem = postLink.closest('li');
                 if (listItem && listItem.parentNode) {
                     listItem.parentNode.removeChild(listItem);
-                    console.log('从热门文章列表移除测试文章:', title);
+                    console.log('从热门文章列表移除文章:', title);
+                    
+                    // 同时将这些文章标题保存到已删除文章列表中
+                    saveDeletedPopularPost(title);
                 }
             }
         });
@@ -1594,9 +1610,61 @@ function cleanupTestArticles() {
     }
     
     // 显示清理完成通知
-    showNotification('所有测试文章已全面清理完成');
+    showNotification('所有测试文章和指定文章已全面清理完成');
     
-    console.log('测试文章清理完成，页面将在1秒后刷新');
+    console.log('文章清理完成，页面将在1秒后刷新');
+    
+    // 刷新页面以反映更改
+    setTimeout(() => {
+        window.location.reload();
+    }, 1000);
+}
+
+// 添加单独删除特定文章的功能
+function deleteSpecificArticle(title) {
+    if (!title) return;
+    
+    console.log(`尝试删除特定文章: ${title}`);
+    
+    // 保存到已删除热门文章列表
+    saveDeletedPopularPost(title);
+    
+    // 从DOM中移除
+    document.querySelectorAll('.popular-post').forEach(postLink => {
+        if (postLink.textContent === title || postLink.getAttribute('data-title') === title) {
+            const listItem = postLink.closest('li');
+            if (listItem && listItem.parentNode) {
+                listItem.parentNode.removeChild(listItem);
+                console.log('已从热门文章列表移除:', title);
+            }
+        }
+    });
+    
+    // 清理localStorage中的相关数据
+    ['blogViewCounts', 'blogPosts', 'userBlogs'].forEach(storageKey => {
+        try {
+            let data = JSON.parse(localStorage.getItem(storageKey) || '{}');
+            
+            if (Array.isArray(data)) {
+                // 过滤数组
+                let cleanedData = data.filter(item => item.title !== title);
+                localStorage.setItem(storageKey, JSON.stringify(cleanedData));
+            } else if (typeof data === 'object') {
+                // 过滤对象
+                let cleanedData = {};
+                for (const key in data) {
+                    if (!(data[key].title && data[key].title === title)) {
+                        cleanedData[key] = data[key];
+                    }
+                }
+                localStorage.setItem(storageKey, JSON.stringify(cleanedData));
+            }
+        } catch (error) {
+            console.error(`清理 ${storageKey} 中的 "${title}" 时出错:`, error);
+        }
+    });
+    
+    showNotification(`文章 "${title}" 已删除`);
     
     // 刷新页面以反映更改
     setTimeout(() => {
@@ -1606,10 +1674,11 @@ function cleanupTestArticles() {
 
 // 添加清理测试文章的按钮 - 样式和位置优化
 function addCleanupButton() {
+    // 创建主清理按钮
     const cleanupBtn = document.createElement('button');
     cleanupBtn.textContent = '清理所有测试文章';
     cleanupBtn.style.position = 'fixed';
-    cleanupBtn.style.bottom = '70px';
+    cleanupBtn.style.bottom = '120px';
     cleanupBtn.style.right = '20px';
     cleanupBtn.style.zIndex = '9999';
     cleanupBtn.style.padding = '10px 16px';
@@ -1623,19 +1692,49 @@ function addCleanupButton() {
     cleanupBtn.style.fontWeight = 'bold';
     
     cleanupBtn.addEventListener('click', function() {
-        if (confirm('确定要彻底清理所有测试文章吗？\n\n这将删除所有包含"test"的文章，此操作不可撤销。')) {
+        if (confirm('确定要彻底清理所有测试文章和特定文章吗？\n\n这将删除所有测试文章和指定的特殊文章，此操作不可撤销。')) {
             cleanupTestArticles();
         }
     });
     
     document.body.appendChild(cleanupBtn);
     
+    // 创建医疗AI文章专用删除按钮
+    const deleteAiMedicalBtn = document.createElement('button');
+    deleteAiMedicalBtn.textContent = '删除医疗AI文章';
+    deleteAiMedicalBtn.style.position = 'fixed';
+    deleteAiMedicalBtn.style.bottom = '170px';
+    deleteAiMedicalBtn.style.right = '20px';
+    deleteAiMedicalBtn.style.zIndex = '9999';
+    deleteAiMedicalBtn.style.padding = '10px 16px';
+    deleteAiMedicalBtn.style.backgroundColor = '#f44336';
+    deleteAiMedicalBtn.style.color = 'white';
+    deleteAiMedicalBtn.style.border = 'none';
+    deleteAiMedicalBtn.style.borderRadius = '4px';
+    deleteAiMedicalBtn.style.cursor = 'pointer';
+    deleteAiMedicalBtn.style.boxShadow = '0 3px 8px rgba(0,0,0,0.4)';
+    deleteAiMedicalBtn.style.fontSize = '15px';
+    deleteAiMedicalBtn.style.fontWeight = 'bold';
+    
+    deleteAiMedicalBtn.addEventListener('click', function() {
+        if (confirm('确定要删除"2024年人工智能在医疗领域的应用"这篇文章吗？此操作不可撤销。')) {
+            deleteSpecificArticle('2024年人工智能在医疗领域的应用');
+        }
+    });
+    
+    document.body.appendChild(deleteAiMedicalBtn);
+    
     // 为移动设备适配
     const mediaQuery = window.matchMedia('(max-width: 768px)');
     if (mediaQuery.matches) {
-        cleanupBtn.style.bottom = '120px';
+        cleanupBtn.style.bottom = '170px';
         cleanupBtn.style.right = '10px';
         cleanupBtn.style.padding = '8px 12px';
         cleanupBtn.style.fontSize = '13px';
+        
+        deleteAiMedicalBtn.style.bottom = '220px';
+        deleteAiMedicalBtn.style.right = '10px';
+        deleteAiMedicalBtn.style.padding = '8px 12px';
+        deleteAiMedicalBtn.style.fontSize = '13px';
     }
 } 
