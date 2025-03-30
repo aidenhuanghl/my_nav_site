@@ -26,6 +26,9 @@ function initBlogFunctionality() {
     
     // 加载用户发布的博客
     loadBlogPosts();
+    
+    // 添加一个清理测试文章的按钮
+    addCleanupButton();
 }
 
 // 为现有静态博客卡片添加阅读全文功能
@@ -1500,4 +1503,73 @@ function initViewCountsForPopularPosts() {
     
     // 初始更新热门文章
     updatePopularArticles();
+}
+
+// 清理所有测试文章
+function cleanupTestArticles() {
+    console.log('开始清理测试文章...');
+    
+    // 清理博客浏览量数据
+    let viewCounts = JSON.parse(localStorage.getItem('blogViewCounts') || '{}');
+    let cleanedViewCounts = {};
+    
+    // 遍历所有浏览量数据，过滤掉测试文章
+    for (const blogId in viewCounts) {
+        if (!blogId.startsWith('test-')) {
+            cleanedViewCounts[blogId] = viewCounts[blogId];
+        }
+    }
+    
+    // 保存清理后的浏览量数据
+    localStorage.setItem('blogViewCounts', JSON.stringify(cleanedViewCounts));
+    
+    // 清理用户博客数据
+    let blogPosts = JSON.parse(localStorage.getItem('blogPosts') || '[]');
+    let cleanedBlogPosts = blogPosts.filter(blog => !blog.id.toString().startsWith('test-'));
+    
+    // 保存清理后的博客数据
+    localStorage.setItem('blogPosts', JSON.stringify(cleanedBlogPosts));
+    
+    // 清理userBlogs数据（如果有）
+    let userBlogs = JSON.parse(localStorage.getItem('userBlogs') || '[]');
+    let cleanedUserBlogs = userBlogs.filter(blog => !blog.id.toString().startsWith('test-'));
+    
+    // 保存清理后的用户博客数据
+    localStorage.setItem('userBlogs', JSON.stringify(cleanedUserBlogs));
+    
+    // 显示清理完成通知
+    showNotification('测试文章已全部清理完成');
+    
+    console.log('测试文章清理完成');
+    
+    // 刷新页面以反映更改
+    setTimeout(() => {
+        window.location.reload();
+    }, 1000);
+}
+
+// 添加清理测试文章的按钮
+function addCleanupButton() {
+    const cleanupBtn = document.createElement('button');
+    cleanupBtn.textContent = '清理测试文章';
+    cleanupBtn.style.position = 'fixed';
+    cleanupBtn.style.bottom = '70px';
+    cleanupBtn.style.right = '20px';
+    cleanupBtn.style.zIndex = '9999';
+    cleanupBtn.style.padding = '8px 12px';
+    cleanupBtn.style.backgroundColor = '#ff5722';
+    cleanupBtn.style.color = 'white';
+    cleanupBtn.style.border = 'none';
+    cleanupBtn.style.borderRadius = '4px';
+    cleanupBtn.style.cursor = 'pointer';
+    cleanupBtn.style.boxShadow = '0 2px 5px rgba(0,0,0,0.3)';
+    cleanupBtn.style.fontSize = '14px';
+    
+    cleanupBtn.addEventListener('click', function() {
+        if (confirm('确定要清理所有测试文章吗？此操作不可撤销。')) {
+            cleanupTestArticles();
+        }
+    });
+    
+    document.body.appendChild(cleanupBtn);
 } 
