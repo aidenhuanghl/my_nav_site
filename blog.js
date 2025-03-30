@@ -672,7 +672,6 @@ function publishBlog() {
     const category = document.getElementById('blog-category').value;
     const tagsInput = document.getElementById('blog-tags').value;
     const content = document.getElementById('blog-content').value;
-    const isPopular = document.getElementById('blog-is-popular').checked;
     
     // 验证必填字段
     if (!title || !content) {
@@ -692,7 +691,7 @@ function publishBlog() {
         content: content,
         date: new Date().toISOString().split('T')[0],
         author: '博客作者',
-        isPopular: isPopular,
+        isPopular: false, // 默认不设为热门
         viewCount: 0
     };
     
@@ -717,11 +716,6 @@ function saveBlogToLocalStorage(blog) {
     let userBlogs = JSON.parse(localStorage.getItem('userBlogs') || '[]');
     userBlogs.push(blog);
     localStorage.setItem('userBlogs', JSON.stringify(userBlogs));
-    
-    // 如果设为热门文章，添加到热门文章列表
-    if (blog.isPopular) {
-        addToPopularArticles(blog);
-    }
     
     // 清除草稿
     localStorage.removeItem('blogDraft');
@@ -1449,14 +1443,13 @@ function saveDraft() {
     const category = document.getElementById('blog-category').value;
     const tags = document.getElementById('blog-tags').value;
     const content = document.getElementById('blog-content').value;
-    const isPopular = document.getElementById('blog-is-popular').checked;
     
     const draft = {
         title: title,
         category: category,
         tags: tags,
         content: content,
-        isPopular: isPopular,
+        isPopular: false, // 默认不设为热门
         lastSaved: new Date().toISOString()
     };
     
@@ -1473,11 +1466,6 @@ function loadDraft() {
         document.getElementById('blog-category').value = draft.category || 'tech';
         document.getElementById('blog-tags').value = draft.tags || '';
         document.getElementById('blog-content').value = draft.content || '';
-        
-        // 设置热门文章复选框
-        if (draft.isPopular) {
-            document.getElementById('blog-is-popular').checked = true;
-        }
     }
 }
 
