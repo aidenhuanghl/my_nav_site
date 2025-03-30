@@ -20,6 +20,12 @@ function initBlogFunctionality() {
     // 初始化现有博客卡片的阅读全文功能
     initExistingBlogCards();
     
+    // 初始化热门文章链接点击
+    initPopularPostLinks();
+    
+    // 加载时隐藏已删除的热门文章 (Moved from index.html)
+    hideDeletedPopularPosts();
+    
     // 加载用户发布的博客
     loadBlogPosts();
 }
@@ -463,47 +469,89 @@ function createBlogCard(blog) {
 // 显示博客详情
 function showBlogDetail(blogIdOrObject) {
     let blog;
-    
-    // 如果传入的是对象，直接使用
-    if (typeof blogIdOrObject === 'object') {
+    let blogId; // Ensure we have a consistent blogId
+
+    // Determine blog object and blogId
+    if (typeof blogIdOrObject === 'object' && blogIdOrObject !== null) {
         blog = blogIdOrObject;
-    } else {
-        // 否则查找博客
-        const blogs = JSON.parse(localStorage.getItem('blogPosts') || '[]');
-        blog = blogs.find(b => b.id == blogIdOrObject);
-        if (!blog) return;
-    }
-    
-    // 创建博客详情模态框
-    const detailModal = document.createElement('div');
-    detailModal.className = 'blog-detail-modal';
-    
-    // 格式化日期
-    let formattedDate;
-    if (typeof blog.date === 'string') {
-        if (blog.date.includes('T')) {
-            // ISO格式日期
-            const date = new Date(blog.date);
-            formattedDate = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
-        } else {
-            // 已经格式化的日期
-            formattedDate = blog.date;
+        blogId = blog.id || ('blog-' + Date.now()); // Assign an ID if missing
+        // Ensure the passed object gets a proper ID if it's missing one before use
+        if (!blog.id) {
+             blog.id = blogId;
         }
     } else {
-        formattedDate = '未知日期';
+        // If it's an ID, find the blog post
+        blogId = blogIdOrObject;
+        const userBlogs = JSON.parse(localStorage.getItem('blogPosts') || '[]');
+        const staticBlogs = []; // Need a way to represent static blogs if finding by ID
+
+        // Attempt to find in user blogs first
+        blog = userBlogs.find(b => b.id == blogId);
+
+        // If not found, check if it's a static or popular post ID (logic might need refinement)
+        if (!blog) {
+            // Handling for static/popular posts if needed when opened by ID directly
+            // This part is tricky as static/popular posts don't have persistent storage by ID
+            // For now, primarily rely on passing the object directly for static/popular
+            console.warn('Could not find blog by ID:', blogId, '. Displaying may fail or be incomplete.');
+             // We might need to reconstruct a temporary object based on the ID type
+             if (blogId.startsWith('popular-') || blogId.startsWith('static-')) {
+                 // Attempt reconstruction or show error
+                 // For now, let's assume the object was passed for these types.
+                 return; // Or display an error message modal
+             } else {
+                 return; // Couldn't find user blog by ID
+             }
+        }
     }
-    
-    // 确定博客详情中使用的图片
+
+    // If blog is still not found, exit
+    if (!blog) {
+         console.error('Blog object could not be determined for:', blogIdOrObject);
+         return;
+    }
+
+
+    // --- Create Modal ---
+    const detailModal = document.createElement('div');
+    detailModal.className = 'blog-detail-modal';
+
+    // Format date
+    let formattedDate = '未知日期';
+    if (blog.date) {
+       try {
+           // Handle different date formats gracefully
+           const dateObj = new Date(blog.date);
+           if (!isNaN(dateObj.getTime())) { // Check if date is valid
+               formattedDate = `${dateObj.getFullYear()}-${(dateObj.getMonth() + 1).toString().padStart(2, '0')}-${dateObj.getDate().toString().padStart(2, '0')}`;
+           } else if (typeof blog.date === 'string') {
+               // If it's a string but not parsable, use it as is (might be pre-formatted)
+               formattedDate = blog.date;
+           }
+       } catch (e) {
+           console.error('Error parsing date:', blog.date, e);
+           formattedDate = typeof blog.date === 'string' ? blog.date : '无效日期'; // Fallback
+       }
+    }
+
+
+    // Image HTML
     let detailImageHtml = '';
-    if (blog.imageData) {
-        detailImageHtml = `<div class="blog-detail-image"><img src="${blog.imageData}" alt="${blog.title}"></div>`;
+    // Use imageData (from user posts/drafts) or imageUrl (from static posts)
+    const imageSource = blog.imageData || blog.imageUrl;
+    if (imageSource) {
+        detailImageHtml = `<div class="blog-detail-image"><img src="${imageSource}" alt="${blog.title || '博客图片'}"></div>`;
     }
-    
+
+    // --- Set Modal Inner HTML (Includes Delete Button) ---
     detailModal.innerHTML = `
         <div class="blog-detail-content">
             <div class="blog-detail-header">
-                <h2>${blog.title}</h2>
-                <button class="close-detail-btn">&times;</button>
+                <h2>${blog.title || '无标题'}</h2>
+                <div class="blog-detail-actions">
+                    <button class="blog-detail-delete" data-blog-id="${blogId}"><i class="fas fa-trash"></i> 删除</button>
+                    <button class="close-detail-btn">&times;</button>
+                </div>
             </div>
             <div class="blog-detail-meta">
                 <span class="blog-detail-date"><i class="far fa-calendar-alt"></i> ${formattedDate}</span>
@@ -519,35 +567,54 @@ function showBlogDetail(blogIdOrObject) {
             </div>
         </div>
     `;
-    
+
     document.body.appendChild(detailModal);
     document.body.style.overflow = 'hidden';
-    
-    // 添加渐变效果
-    setTimeout(() => {
+
+    // Add fade-in effect
+    requestAnimationFrame(() => {
         detailModal.classList.add('active');
-    }, 10);
-    
-    // 关闭详情模态框
+    });
+
+
+    // --- Add Event Listeners ---
+
+    // Close button
     const closeBtn = detailModal.querySelector('.close-detail-btn');
     if (closeBtn) {
-        closeBtn.addEventListener('click', function() {
+        closeBtn.addEventListener('click', () => {
             detailModal.classList.remove('active');
             setTimeout(() => {
-                document.body.removeChild(detailModal);
-                document.body.style.overflow = '';
+                 if (document.body.contains(detailModal)) {
+                    document.body.removeChild(detailModal);
+                    document.body.style.overflow = '';
+                 }
             }, 300);
         });
     }
-    
-    // 点击模态框外部关闭
-    detailModal.addEventListener('click', function(e) {
+
+    // Delete button
+    const deleteBtn = detailModal.querySelector('.blog-detail-delete');
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation(); // Prevent modal close if clicking button area
+            const currentBlogId = deleteBtn.getAttribute('data-blog-id');
+            console.log('Delete button clicked from showBlogDetail, ID:', currentBlogId);
+            showDeleteConfirmation(currentBlogId, detailModal); // Call the confirmation modal
+        });
+    }
+
+    // Click outside modal to close
+    detailModal.addEventListener('click', (e) => {
         if (e.target === detailModal) {
-            detailModal.classList.remove('active');
-            setTimeout(() => {
-                document.body.removeChild(detailModal);
-                document.body.style.overflow = '';
-            }, 300);
+             detailModal.classList.remove('active');
+             setTimeout(() => {
+                 if (document.body.contains(detailModal)) {
+                    document.body.removeChild(detailModal);
+                    document.body.style.overflow = '';
+                 }
+             }, 300);
         }
     });
 }
@@ -779,4 +846,283 @@ function showNotification(message) {
             notification.remove();
         }, 300);
     }, 3000);
+}
+
+// 显示删除确认模态框
+function showDeleteConfirmation(blogId, parentModal) {
+    // 创建确认模态框
+    const confirmModal = document.createElement('div');
+    confirmModal.className = 'delete-confirm-modal';
+
+    confirmModal.innerHTML = `
+        <div class="delete-confirm-content">
+            <h3>确认删除</h3>
+            <p>您确定要删除这篇博客文章吗？此操作无法撤销。</p>
+            <div class="delete-confirm-actions">
+                <button class="cancel-delete-btn">取消</button>
+                <button class="confirm-delete-btn" data-blog-id="${blogId}">确认删除</button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(confirmModal);
+
+    // 添加渐变效果
+    setTimeout(() => {
+        confirmModal.classList.add('active');
+    }, 10);
+
+    // 取消删除
+    const cancelBtn = confirmModal.querySelector('.cancel-delete-btn');
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', function() {
+            confirmModal.classList.remove('active');
+            setTimeout(() => {
+                if (document.body.contains(confirmModal)) {
+                    document.body.removeChild(confirmModal);
+                }
+            }, 300);
+        });
+    }
+
+    // 确认删除
+    const confirmBtn = confirmModal.querySelector('.confirm-delete-btn');
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', function() {
+            const blogIdToDelete = this.getAttribute('data-blog-id');
+
+            // 执行删除操作
+            deleteBlog(blogIdToDelete);
+
+            // 关闭确认模态框
+            confirmModal.classList.remove('active');
+            setTimeout(() => {
+                 if (document.body.contains(confirmModal)) {
+                    document.body.removeChild(confirmModal);
+                 }
+            }, 300);
+
+            // 关闭父级博客详情模态框
+            if (parentModal && document.body.contains(parentModal)) {
+                parentModal.classList.remove('active');
+                setTimeout(() => {
+                    if (document.body.contains(parentModal)) {
+                        document.body.removeChild(parentModal);
+                        document.body.style.overflow = '';
+                    }
+                }, 300);
+            }
+        });
+    }
+}
+
+// 删除博客文章 (Handles static, popular, and user blogs)
+function deleteBlog(blogId) {
+    console.log('尝试删除博客，ID:', blogId);
+
+    let deleted = false;
+    let blogTitle = blogTitleFromId(blogId); // Try to get title early
+
+    // Handle popular posts deletion (identified by title stored in localStorage)
+    if (blogId.startsWith('popular-')) {
+        saveDeletedPopularPost(blogTitle); // Save title to localStorage
+        // Attempt to remove from DOM directly
+        const popularPostElement = document.querySelector(`.popular-post[data-title="${blogTitle}"]`);
+        if (popularPostElement) {
+            const listItem = popularPostElement.closest('li');
+            if (listItem) {
+                 listItem.style.opacity = '0';
+                 listItem.style.height = '0';
+                 setTimeout(() => {
+                     if (listItem.parentNode) {
+                         listItem.parentNode.removeChild(listItem);
+                     }
+                 }, 500);
+                 deleted = true;
+            }
+        } else {
+             // Fallback: iterate and check data-title if direct match failed
+             document.querySelectorAll('.popular-post').forEach(post => {
+                if (post.getAttribute('data-title') === blogTitle) {
+                    saveDeletedPopularPost(post.getAttribute('data-title')); // Ensure correct title saved
+                    const listItem = post.closest('li');
+                    if (listItem) {
+                        listItem.style.opacity = '0';
+                        listItem.style.height = '0';
+                        setTimeout(() => {
+                             if (listItem.parentNode) {
+                                 listItem.parentNode.removeChild(listItem);
+                             }
+                        }, 500);
+                        deleted = true;
+                    }
+                }
+            });
+        }
+    }
+    // Handle static blog cards (identified by index)
+    else if (blogId.startsWith('static-')) {
+        const index = parseInt(blogId.replace('static-', ''), 10);
+        const allBlogCards = document.querySelectorAll('.blog-grid .blog-card'); // Be more specific
+
+        if (!isNaN(index) && index >= 0 && index < allBlogCards.length) {
+            const blogCard = allBlogCards[index];
+            if (blogCard && blogCard.parentNode) { // Check parentNode exists
+                 blogCard.style.opacity = '0';
+                 blogCard.style.transform = 'scale(0.8)';
+                 setTimeout(() => {
+                    if (blogCard.parentNode) {
+                        blogCard.parentNode.removeChild(blogCard);
+                        checkIfBlogGridEmpty(); // Check if grid is empty after removal
+                    }
+                 }, 500);
+                 deleted = true;
+            }
+        }
+    }
+    // Handle user-created blog posts (from localStorage)
+    else {
+        let userBlogs = JSON.parse(localStorage.getItem('blogPosts') || '[]');
+        const initialLength = userBlogs.length;
+        userBlogs = userBlogs.filter(blog => blog.id != blogId); // Use != for potential type difference
+
+        if (userBlogs.length < initialLength) {
+            localStorage.setItem('blogPosts', JSON.stringify(userBlogs));
+            deleted = true;
+            // Re-render the blog list to reflect the deletion
+            loadBlogPosts();
+        }
+    }
+
+    if (deleted) {
+        showNotification('博客文章已成功删除');
+    } else {
+        console.warn('未能删除博客，ID 未匹配:', blogId);
+        showNotification('删除博客文章失败');
+    }
+}
+
+// Helper to check if the blog grid is empty and add a message
+function checkIfBlogGridEmpty() {
+    const blogGrid = document.querySelector('.blog-grid');
+    if (blogGrid && blogGrid.children.length === 0) {
+         if (!blogGrid.querySelector('.no-blogs')) {
+             const noBlogsMessage = document.createElement('div');
+             noBlogsMessage.className = 'no-blogs';
+             noBlogsMessage.textContent = '暂无博客文章，点击右下角按钮开始写作吧！';
+             blogGrid.appendChild(noBlogsMessage);
+         }
+    } else if (blogGrid && blogGrid.querySelector('.no-blogs')) {
+         // Remove message if grid is no longer empty
+         const noBlogsMessage = blogGrid.querySelector('.no-blogs');
+         if (noBlogsMessage) {
+             blogGrid.removeChild(noBlogsMessage);
+         }
+    }
+}
+
+
+// 从博客ID提取标题 (Improved version)
+function blogTitleFromId(blogId) {
+     // Try getting title from the open modal first (most reliable for popular posts)
+    const openModal = document.querySelector('.blog-detail-modal.active');
+    if (openModal) {
+        const titleElement = openModal.querySelector('.blog-detail-header h2');
+        if (titleElement) return titleElement.textContent;
+    }
+
+    // Try finding popular post element by data-blog-id if available
+    if (typeof blogId === 'string' && blogId.startsWith('popular-')) {
+         const popularPostElement = document.querySelector(`.popular-post[data-blog-id="${blogId}"]`);
+         if (popularPostElement) {
+             return popularPostElement.getAttribute('data-title');
+         }
+         // Fallback for older popular post ID format or if data-blog-id is missing
+         const titleFromId = blogId.replace(/^popular-/, '').replace(/-/g, ' ');
+         // Attempt to find by title match (less reliable)
+         const posts = document.querySelectorAll('.popular-post');
+         for (const post of posts) {
+            const dataTitle = post.getAttribute('data-title');
+            // Normalize titles for comparison
+            if (dataTitle && dataTitle.toLowerCase().replace(/\s+/g, ' ') === titleFromId.toLowerCase()) {
+                return dataTitle; // Return the actual title from data-attribute
+            }
+         }
+         return titleFromId; // Return parsed title as last resort
+    }
+
+     // Handle static posts - title isn't stored reliably with just index, return generic
+     if (typeof blogId === 'string' && blogId.startsWith('static-')) {
+         return '静态博客文章'; // Or try to find card by index and get title? Less reliable after deletions.
+     }
+
+     // Handle user blogs - retrieve from localStorage
+     if (typeof blogId !== 'object') { // If it's an ID, not the object itself
+        const blogs = JSON.parse(localStorage.getItem('blogPosts') || '[]');
+        const blog = blogs.find(b => b.id == blogId);
+        if (blog) return blog.title;
+     }
+
+    return '未知文章'; // Default fallback
+}
+
+
+// 保存已删除的热门文章标题
+function saveDeletedPopularPost(title) {
+    if (!title || title === '未知文章') return; // Avoid saving invalid titles
+    let deletedPosts = JSON.parse(localStorage.getItem('deletedPopularPosts') || '[]');
+    if (!deletedPosts.includes(title)) {
+        deletedPosts.push(title);
+        localStorage.setItem('deletedPopularPosts', JSON.stringify(deletedPosts));
+        console.log('已记录删除的热门文章标题:', title);
+    }
+}
+
+// 在初始化时检查和隐藏已删除的热门文章
+function hideDeletedPopularPosts() {
+    const deletedPosts = JSON.parse(localStorage.getItem('deletedPopularPosts') || '[]');
+    if (deletedPosts.length > 0) {
+        document.querySelectorAll('.popular-post').forEach(post => {
+            const postTitle = post.getAttribute('data-title');
+            if (postTitle && deletedPosts.includes(postTitle)) {
+                const listItem = post.closest('li');
+                if (listItem) {
+                    listItem.style.display = 'none';
+                }
+            }
+        });
+    }
+}
+
+// NEW FUNCTION: Initialize popular post links in the sidebar
+function initPopularPostLinks() {
+    document.querySelectorAll('.popular-post').forEach(postLink => {
+        // Remove existing listeners first to prevent duplicates if this runs multiple times
+        // (Better practice: ensure init functions run only once)
+        // For now, we add the listener directly
+
+        postLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const title = this.getAttribute('data-title');
+            const category = this.getAttribute('data-category') || '未分类'; 
+            // Create a unique but consistent ID for popular posts based on title
+            const blogId = 'popular-' + title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+
+            // Create a temporary blog object to pass to showBlogDetail
+            const blog = {
+                id: blogId,
+                title: title,
+                content: "这是热门文章的摘要或部分内容。详细内容正在加载或编写中...", // Placeholder content
+                date: new Date().toISOString().split('T')[0], // Use current date as placeholder
+                author: '网站作者', // Assuming author
+                category: category,
+                tags: [category], // Use category as a tag
+                imageUrl: null // Popular posts in sidebar likely don't have images associated this way
+            };
+            
+            // Use the unified showBlogDetail function
+            showBlogDetail(blog);
+        });
+    });
 } 
