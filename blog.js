@@ -1,4 +1,8 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // 删除所有热门文章
+    deleteAllPopularArticles();
+    
+    // 然后初始化博客功能
     initBlogFunctionality();
 });
 
@@ -20,9 +24,6 @@ function initBlogFunctionality() {
     
     // 初始化热门文章链接点击
     initPopularPostLinks();
-    
-    // 加载时隐藏已删除的热门文章 (Moved from index.html)
-    hideDeletedPopularPosts();
     
     // 加载用户发布的博客
     loadBlogPosts();
@@ -1528,6 +1529,25 @@ function initViewCountsForPopularPosts() {
     
     // 初始更新热门文章
     updatePopularArticles();
+}
+
+// 添加一个删除所有热门文章的函数
+function deleteAllPopularArticles() {
+    console.log('正在删除所有热门文章...');
+    
+    // 1. 清空相关的localStorage数据
+    localStorage.removeItem('deletedPopularPosts'); // 删除已删除文章列表
+    localStorage.removeItem('blogViewCounts'); // 删除浏览量数据
+    
+    // 2. 删除DOM中的所有热门文章条目
+    const popularPostsList = document.querySelector('.sidebar-posts');
+    if (popularPostsList) {
+        // 清空热门文章列表
+        popularPostsList.innerHTML = '';
+    }
+    
+    // 3. 触发页面刷新以确保更改生效
+    console.log('所有热门文章已删除');
 }
 
 // 清理所有测试文章 - 保留空方法以防被调用
