@@ -5,6 +5,8 @@ let API_BASE_URL = 'http://localhost:3000/api';
 class BlogAPI {
   constructor(baseURL = API_BASE_URL) {
     this.baseURL = baseURL;
+    // 设置默认超时时间（毫秒）
+    this.timeout = 60000; // 60秒
   }
   
   // 设置API基础URL的方法
@@ -23,19 +25,38 @@ class BlogAPI {
     return this.baseURL;
   }
   
+  // 设置超时时间
+  setTimeout(timeout) {
+    if (typeof timeout === 'number' && timeout > 0) {
+      this.timeout = timeout;
+      console.log(`API超时设置已更新为: ${timeout}ms`);
+      return true;
+    }
+    console.error('无效的超时设置');
+    return false;
+  }
+  
   // 通用fetch方法
   async fetchAPI(endpoint, options = {}) {
     try {
       // 显示连接提示
       console.log(`正在连接API: ${this.baseURL}${endpoint}`);
       
+      // 创建AbortController用于超时控制
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+      
       const response = await fetch(`${this.baseURL}${endpoint}`, {
         headers: {
           'Content-Type': 'application/json',
           ...options.headers
         },
+        signal: controller.signal,
         ...options
       });
+      
+      // 清除超时定时器
+      clearTimeout(timeoutId);
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -48,6 +69,8 @@ class BlogAPI {
       // 提供更多错误细节，方便调试
       if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
         console.error('网络连接错误，请检查API服务器是否运行或网络连接是否正常');
+      } else if (error.name === 'AbortError') {
+        console.error(`请求超时，已超过${this.timeout}ms`);
       }
       throw error;
     }
@@ -145,14 +168,30 @@ class BlogAPI {
     const userBlogs = JSON.parse(localStorage.getItem('userBlogs') || '[]');
     const deletedPosts = JSON.parse(localStorage.getItem('deletedPopularPosts') || '[]');
     
-    return this.fetchAPI('/import-local-storage', {
-      method: 'POST',
-      body: JSON.stringify({
-        blogPosts,
-        userBlogs,
-        deletedPosts
-      })
-    });
+    console.log(`准备从localStorage导入数据: ${blogPosts.length}篇博客, ${userBlogs.length}篇用户博客, ${deletedPosts.length}条已删除记录`);
+    
+    // 针对大数据量操作临时增加超时时间
+    const originalTimeout = this.timeout;
+    this.timeout = 120000; // 临时设为2分钟
+    
+    try {
+      const result = await this.fetchAPI('/import-local-storage', {
+        method: 'POST',
+        body: JSON.stringify({
+          blogPosts,
+          userBlogs,
+          deletedPosts
+        })
+      });
+      
+      // 恢复原超时设置
+      this.timeout = originalTimeout;
+      return result;
+    } catch (error) {
+      // 恢复原超时设置
+      this.timeout = originalTimeout;
+      throw error;
+    }
   }
 }
 

@@ -25,9 +25,11 @@ console.log('Server constants set');
 // 中间件
 app.use(cors());
 console.log('CORS enabled');
-app.use(express.json());  // 解析JSON请求体
-app.use(express.urlencoded({ extended: true }));  // 解析URL编码的请求体
-console.log('Body parsers enabled');
+
+// 增加请求体大小限制 - 解决PayloadTooLargeError
+app.use(express.json({ limit: '50mb' }));  // 解析JSON请求体，最大50MB
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));  // 解析URL编码的请求体，最大50MB
+console.log('Body parsers enabled with increased size limits');
 
 // 静态文件服务
 app.use(express.static(path.join(__dirname, './')));
