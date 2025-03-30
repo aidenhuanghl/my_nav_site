@@ -1,5 +1,3 @@
-// 博客功能交互脚本
-
 document.addEventListener('DOMContentLoaded', function() {
     initBlogFunctionality();
 });
@@ -493,15 +491,45 @@ function showBlogDetail(blogIdOrObject) {
             // Handling for static/popular posts if needed when opened by ID directly
             // This part is tricky as static/popular posts don't have persistent storage by ID
             // For now, primarily rely on passing the object directly for static/popular
-            console.warn('Could not find blog by ID:', blogId, '. Displaying may fail or be incomplete.');
-             // We might need to reconstruct a temporary object based on the ID type
-             if (blogId.startsWith('popular-') || blogId.startsWith('static-')) {
-                 // Attempt reconstruction or show error
-                 // For now, let's assume the object was passed for these types.
-                 return; // Or display an error message modal
-             } else {
-                 return; // Couldn't find user blog by ID
-             }
+            console.warn('Could not find blog by ID:', blogId, '. Creating a placeholder blog.');
+            // 创建一个默认的博客对象而不是直接返回
+            if (blogId.startsWith('popular-')) {
+                // 尝试从ID中提取标题信息
+                const titleFromId = blogId.replace(/^popular-/, '').replace(/-/g, ' ');
+                blog = {
+                    id: blogId,
+                    title: titleFromId || '热门文章',
+                    content: "这是热门文章的摘要或部分内容。详细内容正在加载或编写中...",
+                    date: new Date().toISOString().split('T')[0],
+                    author: '网站作者',
+                    category: '未分类',
+                    tags: ['热门'],
+                    imageUrl: null
+                };
+            } else if (blogId.startsWith('static-')) {
+                const index = parseInt(blogId.replace('static-', ''), 10);
+                blog = {
+                    id: blogId,
+                    title: '静态博客文章 ' + (index + 1),
+                    content: "这是预设的静态博客文章。您可以点击右下角的\"写博客\"按钮创建自己的博客内容。",
+                    date: new Date().toISOString().split('T')[0],
+                    author: '网站作者',
+                    category: '技术',
+                    tags: ['技术'],
+                    imageUrl: null
+                };
+            } else {
+                blog = {
+                    id: blogId,
+                    title: '未知文章',
+                    content: "无法找到这篇文章的内容。",
+                    date: new Date().toISOString().split('T')[0],
+                    author: '未知',
+                    category: '未分类',
+                    tags: [],
+                    imageUrl: null
+                };
+            }
         }
     }
 
@@ -543,13 +571,16 @@ function showBlogDetail(blogIdOrObject) {
         detailImageHtml = `<div class="blog-detail-image"><img src="${imageSource}" alt="${blog.title || '博客图片'}"></div>`;
     }
 
-    // --- Set Modal Inner HTML (Includes Delete Button) ---
+    // 为所有博客文章显示删除按钮，不再根据类型区分
+    const deleteButtonHtml = `<button class="blog-detail-delete" data-blog-id="${blogId}"><i class="fas fa-trash"></i> 删除</button>`;
+
+    // --- Set Modal Inner HTML (Always include Delete Button) ---
     detailModal.innerHTML = `
         <div class="blog-detail-content">
             <div class="blog-detail-header">
                 <h2>${blog.title || '无标题'}</h2>
                 <div class="blog-detail-actions">
-                    <button class="blog-detail-delete" data-blog-id="${blogId}"><i class="fas fa-trash"></i> 删除</button>
+                    ${deleteButtonHtml}
                     <button class="close-detail-btn">&times;</button>
                 </div>
             </div>
