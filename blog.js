@@ -432,7 +432,7 @@ function addToPopularArticles(blog) {
 }
 
 // 递增文章浏览量并更新排序
-function incrementViewCount(blogId, blogTitle) {
+function incrementViewCount(blogId, blogTitle, category) {
     // 获取视图计数数据
     let viewCounts = JSON.parse(localStorage.getItem('blogViewCounts') || '{}');
     
@@ -440,7 +440,8 @@ function incrementViewCount(blogId, blogTitle) {
     if (!viewCounts[blogId]) {
         viewCounts[blogId] = {
             count: 0,
-            title: blogTitle
+            title: blogTitle,
+            category: category || '未分类'
         };
     }
     viewCounts[blogId].count++;
@@ -463,8 +464,8 @@ function incrementViewCount(blogId, blogTitle) {
         popularPost.setAttribute('data-view-count', viewCounts[blogId].count);
     }
     
-    // 对热门文章进行排序
-    updatePopularArticlesSorting();
+    // 更新热门文章列表
+    updatePopularArticles();
     
     // 更新控制台记录
     console.log(`文章"${blogTitle}"的浏览量增加到 ${viewCounts[blogId].count}`);
@@ -472,59 +473,88 @@ function incrementViewCount(blogId, blogTitle) {
     return viewCounts[blogId].count;
 }
 
-// 更新热门文章排序
-function updatePopularArticlesSorting() {
-    const popularPostsList = document.querySelector('.sidebar-posts');
-    if (!popularPostsList) return;
-    
+// 更新热门文章列表，完全基于浏览量自动排序
+function updatePopularArticles() {
     // 获取所有浏览量数据
     const viewCounts = JSON.parse(localStorage.getItem('blogViewCounts') || '{}');
     
-    // 获取所有热门文章项目
-    const popularItems = Array.from(popularPostsList.querySelectorAll('li'));
+    // 将对象转换为数组以便排序
+    let articlesWithViews = [];
+    for (const blogId in viewCounts) {
+        if (viewCounts[blogId].count > 0) { // 只考虑有浏览量的文章
+            articlesWithViews.push({
+                id: blogId,
+                title: viewCounts[blogId].title,
+                count: viewCounts[blogId].count,
+                category: viewCounts[blogId].category || '未分类'
+            });
+        }
+    }
     
-    // 为每个项目添加浏览量数据
-    popularItems.forEach(item => {
+    // 根据浏览量排序
+    articlesWithViews.sort((a, b) => b.count - a.count);
+    
+    // 选择前N篇文章（例如前10篇）
+    const topArticles = articlesWithViews.slice(0, 10);
+    
+    // 更新热门文章列表
+    updatePopularArticlesList(topArticles);
+}
+
+// 更新热门文章列表的UI
+function updatePopularArticlesList(articles) {
+    const popularPostsList = document.querySelector('.sidebar-posts');
+    if (!popularPostsList) return;
+    
+    // 保留原始的静态热门文章
+    const staticPopularPosts = Array.from(popularPostsList.querySelectorAll('li')).filter(item => {
         const link = item.querySelector('.popular-post');
-        if (link) {
-            const title = link.getAttribute('data-title');
-            const blogId = link.getAttribute('data-blog-id') || '';
+        if (!link) return false;
+        const blogId = link.getAttribute('data-blog-id');
+        // 如果没有blogId或者不是以'popular-'开头，视为静态热门文章
+        return !blogId || !blogId.startsWith('popular-');
+    });
+    
+    // 清空现有列表
+    popularPostsList.innerHTML = '';
+    
+    // 先添加基于浏览量的文章
+    articles.forEach(article => {
+        // 只添加有一定浏览量的文章（浏览量>0）
+        if (article.count > 0) {
+            const li = document.createElement('li');
+            const link = document.createElement('a');
             
-            // 查找浏览量
-            let viewCount = 0;
+            link.href = "#";
+            link.className = "popular-post";
+            link.setAttribute("data-title", article.title);
+            link.setAttribute("data-category", article.category);
+            link.setAttribute("data-blog-id", article.id);
+            link.setAttribute("data-view-count", article.count);
+            link.textContent = article.title;
             
-            // 优先通过ID查找
-            if (blogId && viewCounts[blogId]) {
-                viewCount = viewCounts[blogId].count;
-            } else {
-                // 通过标题查找
-                for (const id in viewCounts) {
-                    if (viewCounts[id].title === title) {
-                        viewCount = viewCounts[id].count;
-                        // 顺便更新ID
-                        link.setAttribute('data-blog-id', id);
-                        break;
-                    }
-                }
-            }
+            // 添加点击事件
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                showBlogDetail(article.id);
+            });
             
-            // 更新浏览量属性
-            link.setAttribute('data-view-count', viewCount);
+            li.appendChild(link);
+            popularPostsList.appendChild(li);
         }
     });
     
-    // 根据浏览量排序
-    popularItems.sort((a, b) => {
-        const countA = parseInt(a.querySelector('.popular-post')?.getAttribute('data-view-count') || '0');
-        const countB = parseInt(b.querySelector('.popular-post')?.getAttribute('data-view-count') || '0');
-        return countB - countA; // 降序排列
-    });
-    
-    // 清空列表并按新顺序重新添加
-    popularPostsList.innerHTML = '';
-    popularItems.forEach(item => {
-        popularPostsList.appendChild(item);
-    });
+    // 如果基于浏览量的文章不足6篇，补充静态热门文章
+    if (articles.length < 6 && staticPopularPosts.length > 0) {
+        const remainingSlots = 6 - articles.length;
+        
+        for (let i = 0; i < Math.min(remainingSlots, staticPopularPosts.length); i++) {
+            popularPostsList.appendChild(staticPopularPosts[i].cloneNode(true));
+        }
+        
+        // 为新添加的静态热门文章添加事件监听器
+        initPopularPostLinks();
+    }
 }
 
 // 初始化热门文章链接
@@ -924,11 +954,8 @@ function showBlogDetail(blogIdOrObject) {
         // Attempt to find in user blogs first
         blog = userBlogs.find(b => b.id == blogId);
 
-        // If not found, check if it's a static or popular post ID (logic might need refinement)
+        // 如果未找到，尝试查找热门文章
         if (!blog) {
-            // Handling for static/popular posts if needed when opened by ID directly
-            // This part is tricky as static/popular posts don't have persistent storage by ID
-            // For now, primarily rely on passing the object directly for static/popular
             console.warn('Could not find blog by ID:', blogId, '. Creating a placeholder blog.');
             // 创建一个默认的博客对象而不是直接返回
             if (blogId.startsWith('popular-')) {
@@ -980,8 +1007,8 @@ function showBlogDetail(blogIdOrObject) {
          return;
     }
 
-    // 递增文章浏览量
-    const currentViewCount = incrementViewCount(blogId, blog.title);
+    // 递增文章浏览量，传递分类信息
+    const currentViewCount = incrementViewCount(blogId, blog.title, blog.category);
 
     // --- Create Modal ---
     const detailModal = document.createElement('div');
@@ -1345,6 +1372,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 初始化热门文章浏览量
     initViewCountsForPopularPosts();
+    
+    // 更新热门文章列表
+    updatePopularArticles();
 });
 
 // 初始化所有热门文章的浏览量统计
