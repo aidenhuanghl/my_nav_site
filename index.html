@@ -282,6 +282,9 @@
 
         // 待DOM加载完成后执行初始化
         document.addEventListener('DOMContentLoaded', function() {
+            // 为调试目的输出日志
+            console.log('DOM loaded, initializing...');
+            
             // 处理导航链接点击事件
             document.querySelectorAll('.nav-link').forEach(link => {
                 link.addEventListener('click', function(e) {
@@ -303,6 +306,17 @@
                             });
                         }
                     }
+                });
+            });
+            
+            // 调试代码：检查阅读全文链接
+            console.log('Checking read more links...');
+            document.querySelectorAll('.blog-read-more').forEach((link, index) => {
+                console.log(`Read more link ${index}:`, link);
+                console.log(`  - data-blog-id:`, link.getAttribute('data-blog-id'));
+                // 确保有点击事件
+                link.addEventListener('click', function(e) {
+                    console.log(`Read more link ${index} clicked`);
                 });
             });
 
@@ -349,6 +363,13 @@
                     document.getElementById('message').value = '';
                 });
             }
+            
+            // 全局错误处理
+            window.onerror = function(message, source, lineno, colno, error) {
+                console.error('JavaScript错误:', message);
+                console.error('错误详情:', error);
+                return false;
+            };
         });
     </script>
 </body>

@@ -40,6 +40,9 @@ function initExistingBlogCards() {
             const blogCard = this.closest('.blog-card');
             if (!blogCard) return;
             
+            // 检查是否已有预设的博客ID
+            const blogId = this.getAttribute('data-blog-id') || ('static-' + index);
+            
             // 获取博客信息
             const title = blogCard.querySelector('.blog-card-title').textContent;
             const excerpt = blogCard.querySelector('.blog-card-excerpt').textContent;
@@ -58,7 +61,7 @@ function initExistingBlogCards() {
             
             // 创建临时博客对象
             const blog = {
-                id: 'static-' + index,
+                id: blogId,
                 title: title,
                 content: excerpt + '\n\n这是预设的静态博客文章。您可以点击右下角的"写博客"按钮创建自己的博客内容。',
                 date: date,
@@ -66,6 +69,8 @@ function initExistingBlogCards() {
                 category: category,
                 tags: tags
             };
+            
+            console.log('Opening blog with ID:', blogId);
             
             // 显示博客详情
             showBlogDetail(blog);
@@ -934,6 +939,8 @@ function hideDeletedPopularPosts() {
 
 // 显示博客详情
 function showBlogDetail(blogIdOrObject) {
+    console.log('showBlogDetail called with:', blogIdOrObject);
+    
     let blog;
     let blogId; // Ensure we have a consistent blogId
 
@@ -941,6 +948,7 @@ function showBlogDetail(blogIdOrObject) {
     if (typeof blogIdOrObject === 'object' && blogIdOrObject !== null) {
         blog = blogIdOrObject;
         blogId = blog.id || ('blog-' + Date.now()); // Assign an ID if missing
+        console.log('Processing blog object, extracted ID:', blogId);
         // Ensure the passed object gets a proper ID if it's missing one before use
         if (!blog.id) {
              blog.id = blogId;
@@ -948,6 +956,7 @@ function showBlogDetail(blogIdOrObject) {
     } else {
         // If it's an ID, find the blog post
         blogId = blogIdOrObject;
+        console.log('Processing blog ID:', blogId);
         const userBlogs = JSON.parse(localStorage.getItem('blogPosts') || '[]');
         const staticBlogs = []; // Need a way to represent static blogs if finding by ID
 
