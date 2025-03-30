@@ -215,4 +215,21 @@ router.post('/import-local-storage', async (req, res) => {
   }
 });
 
+// 删除所有博客内容（文章、草稿和删除记录）
+router.delete('/all-content', async (req, res) => {
+  try {
+    const blogPostDAO = await getBlogPostDAO();
+    const result = await blogPostDAO.deleteAllContent();
+    
+    console.log('已删除所有博客内容:', result);
+    res.json({ 
+      message: '所有博客内容已成功删除',
+      ...result
+    });
+  } catch (error) {
+    console.error('删除所有博客内容失败:', error);
+    res.status(500).json({ error: '服务器错误', message: error.message });
+  }
+});
+
 module.exports = router; 

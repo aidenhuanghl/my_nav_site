@@ -139,6 +139,14 @@ class BlogAPI {
     return this.fetchAPI('/deleted-posts');
   }
   
+  // 删除所有博客内容（文章、草稿和删除记录）
+  async deleteAllContent() {
+    console.log('正在删除所有博客内容...');
+    return this.fetchAPI('/all-content', {
+      method: 'DELETE'
+    });
+  }
+  
   // 测试API连接
   async testConnection() {
     try {

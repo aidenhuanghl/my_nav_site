@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>清空博客数据</title>
+    <style>
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        h1 {
+            color: #333;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .warning {
+            color: #ff4d4f;
+            font-weight: bold;
+        }
+        button {
+            background-color: #ff4d4f;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+        button:hover {
+            background-color: #ff7875;
+        }
+        button:disabled {
+            background-color: #ffccc7;
+            cursor: not-allowed;
+        }
+        .confirm-text {
+            margin-top: 20px;
+        }
+        input {
+            padding: 8px;
+            width: 100%;
+            margin-top: 5px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            display: none;
+        }
+        .success {
+            background-color: #f6ffed;
+            border: 1px solid #b7eb8f;
+            color: #52c41a;
+        }
+        .error {
+            background-color: #fff2f0;
+            border: 1px solid #ffccc7;
+            color: #ff4d4f;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>清空博客数据</h1>
+        <p class="warning">警告：此操作将删除所有博客文章、草稿和删除记录。此操作不可逆！</p>
+        <p>此操作将永久删除数据库中的所有博客内容，包括：</p>
+        <ul>
+            <li>所有博客文章</li>
+            <li>所有草稿</li>
+            <li>所有删除记录</li>
+        </ul>
+        
+        <div class="confirm-text">
+            <p>请输入"DELETE ALL DATA"以确认删除：</p>
+            <input type="text" id="confirmation" placeholder="DELETE ALL DATA">
+        </div>
+        
+        <button id="deleteButton" disabled>删除所有数据</button>
+        
+        <div id="result" class="result"></div>
+    </div>
+
+    <script src="blog-api.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const confirmationInput = document.getElementById('confirmation');
+            const deleteButton = document.getElementById('deleteButton');
+            const resultDiv = document.getElementById('result');
+            
+            // 验证输入
+            confirmationInput.addEventListener('input', function() {
+                deleteButton.disabled = this.value !== 'DELETE ALL DATA';
+            });
+            
+            // 删除操作
+            deleteButton.addEventListener('click', async function() {
+                if (confirmationInput.value !== 'DELETE ALL DATA') return;
+                
+                deleteButton.disabled = true;
+                deleteButton.textContent = '正在删除...';
+                
+                try {
+                    const result = await window.blogAPI.deleteAllContent();
+                    
+                    resultDiv.className = 'result success';
+                    resultDiv.style.display = 'block';
+                    resultDiv.innerHTML = `
+                        <h3>删除成功！</h3>
+                        <p>已删除 ${result.deletedPostsCount} 篇文章</p>
+                        <p>已删除 ${result.deletedDraftsCount} 篇草稿</p>
+                        <p>已删除 ${result.deletedRecordsCount} 条删除记录</p>
+                        <p>总计删除 ${result.totalDeleted} 项</p>
+                        <p>现在您可以重新开始添加内容了。</p>
+                    `;
+                    
+                    // 清空确认输入
+                    confirmationInput.value = '';
+                } catch (error) {
+                    resultDiv.className = 'result error';
+                    resultDiv.style.display = 'block';
+                    resultDiv.innerHTML = `
+                        <h3>删除失败</h3>
+                        <p>${error.message || '发生未知错误'}</p>
+                    `;
+                } finally {
+                    deleteButton.disabled = false;
+                    deleteButton.textContent = '删除所有数据';
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

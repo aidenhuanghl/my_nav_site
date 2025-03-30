@@ -169,6 +169,34 @@ class BlogPostDAO {
 
     return { importedCount };
   }
+
+  // 删除所有文章、草稿和删除记录
+  async deleteAllContent() {
+    try {
+      // 删除所有文章并记录数量
+      const postsResult = await this.postsCollection.deleteMany({});
+      const deletedPostsCount = postsResult.deletedCount || 0;
+      
+      // 删除所有草稿并记录数量
+      const draftsResult = await this.draftsCollection.deleteMany({});
+      const deletedDraftsCount = draftsResult.deletedCount || 0;
+      
+      // 删除所有删除记录并记录数量
+      const deletedRecordsResult = await this.deletedPostsCollection.deleteMany({});
+      const deletedRecordsCount = deletedRecordsResult.deletedCount || 0;
+      
+      // 返回删除的总数
+      return {
+        deletedPostsCount,
+        deletedDraftsCount,
+        deletedRecordsCount,
+        totalDeleted: deletedPostsCount + deletedDraftsCount + deletedRecordsCount
+      };
+    } catch (error) {
+      console.error('删除所有内容失败:', error);
+      throw error;
+    }
+  }
 }
 
 module.exports = { BlogPostDAO, createBlogPost, createDraft }; 
