@@ -504,52 +504,6 @@
                     });
                 });
             });
-            
-            // 为静态博客卡片添加阅读全文功能
-            document.querySelectorAll('.blog-card .blog-read-more').forEach((link, index) => {
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    
-                    // 获取父级博客卡片
-                    const blogCard = this.closest('.blog-card');
-                    if (!blogCard) return;
-                    
-                    // 获取博客信息
-                    const title = blogCard.querySelector('.blog-card-title').textContent;
-                    const excerpt = blogCard.querySelector('.blog-card-excerpt').textContent;
-                    const dateElement = blogCard.querySelector('.blog-card-date');
-                    const date = dateElement ? dateElement.textContent : new Date().toISOString().split('T')[0];
-                    
-                    // 获取标签
-                    const tags = [];
-                    blogCard.querySelectorAll('.blog-tag').forEach(tag => {
-                        tags.push(tag.textContent);
-                    });
-                    
-                    // 获取分类
-                    const categories = blogCard.getAttribute('data-categories') || '';
-                    const category = categories.split(',')[0] || 'tech';
-                    
-                    // 博客图片
-                    const imgElement = blogCard.querySelector('.blog-card-image img');
-                    const imageUrl = imgElement ? imgElement.src : '';
-                    
-                    // 创建临时博客对象
-                    const blog = {
-                        id: 'static-' + index,
-                        title: title,
-                        content: excerpt + '\n\n这是预设的静态博客文章。详细内容正在编写中，敬请期待完整版本。',
-                        date: date,
-                        author: '网站作者',
-                        category: category,
-                        tags: tags,
-                        imageUrl: imageUrl
-                    };
-                    
-                    // 创建并显示博客详情模态框
-                    showBlogDetailModal(blog);
-                });
-            });
         }
         
         // 显示博客详情模态框
