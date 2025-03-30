@@ -27,29 +27,306 @@ document.addEventListener('DOMContentLoaded', async function() {
 });
 
 function initBlogFunctionality() {
-    // 初始化写博客模态框
-    initWriteBlogModal();
+    console.log("初始化博客功能...");
     
-    // 初始化博客分类筛选
-    initBlogCategories();
+    // 检查API服务器配置
+    checkAPIServerConfig();
     
-    // 初始化博客搜索
-    initBlogSearch();
+    initPopularPostsCounters();
+    updateBlogPostsList();
+    updatePopularArticlesList();
+    setupNewPostButton();
+    setupDraftFunctionality();
+}
+
+// 检查API服务器配置
+function checkAPIServerConfig() {
+    const apiServerConfig = localStorage.getItem('api_server_config');
     
-    // 初始化博客分页
-    initBlogPagination();
+    if (apiServerConfig) {
+        try {
+            const config = JSON.parse(apiServerConfig);
+            if (config.baseURL) {
+                // 应用保存的API服务器配置
+                blogAPI.setBaseURL(config.baseURL);
+                console.log(`已从本地存储加载API服务器配置: ${config.baseURL}`);
+            }
+        } catch (error) {
+            console.error('解析API服务器配置失败:', error);
+        }
+    }
     
-    // 初始化现有博客卡片的阅读全文功能
-    initExistingBlogCards();
+    // 添加API服务器配置按钮
+    addAPIConfigButton();
+}
+
+// 添加API服务器配置按钮
+function addAPIConfigButton() {
+    const controlsContainer = document.querySelector('.blog-controls') || createBlogControlsContainer();
     
-    // 初始化热门文章链接点击
-    initPopularPostLinks();
+    // 检查是否已存在配置按钮
+    if (document.getElementById('api-config-button')) {
+        return;
+    }
     
-    // 加载时隐藏已删除的热门文章 (Moved from index.html)
-    hideDeletedPopularPosts();
+    // 创建配置按钮
+    const configButton = document.createElement('button');
+    configButton.id = 'api-config-button';
+    configButton.className = 'control-button';
+    configButton.innerHTML = '<i class="fas fa-cog"></i> 配置API服务器';
+    configButton.style.backgroundColor = '#4a6da7';
+    configButton.style.color = 'white';
+    configButton.style.marginLeft = '10px';
     
-    // 加载用户发布的博客
-    loadBlogPosts();
+    // 添加点击事件
+    configButton.addEventListener('click', showAPIConfigDialog);
+    
+    // 添加到控制容器
+    controlsContainer.appendChild(configButton);
+}
+
+// 创建博客控制容器（如果不存在）
+function createBlogControlsContainer() {
+    const blogSection = document.querySelector('.blog-section');
+    const controlsContainer = document.createElement('div');
+    controlsContainer.className = 'blog-controls';
+    controlsContainer.style.marginBottom = '20px';
+    controlsContainer.style.display = 'flex';
+    controlsContainer.style.justifyContent = 'flex-end';
+    
+    // 将控制容器添加到博客区域的顶部
+    if (blogSection.firstChild) {
+        blogSection.insertBefore(controlsContainer, blogSection.firstChild);
+    } else {
+        blogSection.appendChild(controlsContainer);
+    }
+    
+    return controlsContainer;
+}
+
+// 显示API配置对话框
+function showAPIConfigDialog() {
+    // 创建对话框
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.position = 'fixed';
+    modal.style.left = '0';
+    modal.style.top = '0';
+    modal.style.width = '100%';
+    modal.style.height = '100%';
+    modal.style.backgroundColor = 'rgba(0,0,0,0.5)';
+    modal.style.display = 'flex';
+    modal.style.alignItems = 'center';
+    modal.style.justifyContent = 'center';
+    modal.style.zIndex = '1000';
+    
+    // 创建对话框内容
+    const modalContent = document.createElement('div');
+    modalContent.className = 'modal-content';
+    modalContent.style.backgroundColor = 'white';
+    modalContent.style.padding = '20px';
+    modalContent.style.borderRadius = '8px';
+    modalContent.style.width = '500px';
+    modalContent.style.maxWidth = '90%';
+    modalContent.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)';
+    
+    // 创建标题
+    const title = document.createElement('h2');
+    title.textContent = 'API服务器配置';
+    title.style.marginTop = '0';
+    title.style.color = '#333';
+    
+    // 创建当前配置信息
+    const currentConfig = document.createElement('div');
+    currentConfig.innerHTML = `<p><strong>当前API服务器:</strong> <span id="current-api-url">${blogAPI.getBaseURL()}</span></p>`;
+    
+    // 创建输入表单
+    const form = document.createElement('form');
+    form.style.marginTop = '20px';
+    
+    const inputGroup = document.createElement('div');
+    inputGroup.style.marginBottom = '15px';
+    
+    const label = document.createElement('label');
+    label.htmlFor = 'api-base-url';
+    label.textContent = 'API服务器地址:';
+    label.style.display = 'block';
+    label.style.marginBottom = '5px';
+    label.style.fontWeight = 'bold';
+    
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.id = 'api-base-url';
+    input.value = blogAPI.getBaseURL();
+    input.placeholder = 'http://your-api-server.com/api';
+    input.style.width = '100%';
+    input.style.padding = '8px';
+    input.style.boxSizing = 'border-box';
+    input.style.border = '1px solid #ccc';
+    input.style.borderRadius = '4px';
+    
+    // 创建测试连接结果显示区域
+    const testResult = document.createElement('div');
+    testResult.id = 'test-result';
+    testResult.style.marginTop = '10px';
+    testResult.style.padding = '8px';
+    testResult.style.display = 'none';
+    
+    // 创建按钮容器
+    const buttonGroup = document.createElement('div');
+    buttonGroup.style.display = 'flex';
+    buttonGroup.style.justifyContent = 'space-between';
+    buttonGroup.style.marginTop = '20px';
+    
+    // 创建保存按钮
+    const saveButton = document.createElement('button');
+    saveButton.type = 'button';
+    saveButton.textContent = '保存配置';
+    saveButton.style.padding = '8px 16px';
+    saveButton.style.backgroundColor = '#4CAF50';
+    saveButton.style.color = 'white';
+    saveButton.style.border = 'none';
+    saveButton.style.borderRadius = '4px';
+    saveButton.style.cursor = 'pointer';
+    
+    // 创建测试连接按钮
+    const testButton = document.createElement('button');
+    testButton.type = 'button';
+    testButton.textContent = '测试连接';
+    testButton.style.padding = '8px 16px';
+    testButton.style.backgroundColor = '#2196F3';
+    testButton.style.color = 'white';
+    testButton.style.border = 'none';
+    testButton.style.borderRadius = '4px';
+    testButton.style.cursor = 'pointer';
+    
+    // 创建恢复默认按钮
+    const resetButton = document.createElement('button');
+    resetButton.type = 'button';
+    resetButton.textContent = '恢复默认';
+    resetButton.style.padding = '8px 16px';
+    resetButton.style.backgroundColor = '#607D8B';
+    resetButton.style.color = 'white';
+    resetButton.style.border = 'none';
+    resetButton.style.borderRadius = '4px';
+    resetButton.style.cursor = 'pointer';
+    
+    // 创建取消按钮
+    const cancelButton = document.createElement('button');
+    cancelButton.type = 'button';
+    cancelButton.textContent = '取消';
+    cancelButton.style.padding = '8px 16px';
+    cancelButton.style.backgroundColor = '#f44336';
+    cancelButton.style.color = 'white';
+    cancelButton.style.border = 'none';
+    cancelButton.style.borderRadius = '4px';
+    cancelButton.style.cursor = 'pointer';
+    
+    // 保存配置
+    saveButton.addEventListener('click', function() {
+        const newBaseURL = input.value.trim();
+        if (newBaseURL) {
+            // 更新API基础URL
+            const success = blogAPI.setBaseURL(newBaseURL);
+            
+            if (success) {
+                // 保存配置到localStorage
+                localStorage.setItem('api_server_config', JSON.stringify({
+                    baseURL: newBaseURL
+                }));
+                
+                // 更新当前配置显示
+                document.getElementById('current-api-url').textContent = newBaseURL;
+                
+                // 显示成功消息
+                alert('API服务器配置已保存');
+                
+                // 关闭对话框
+                document.body.removeChild(modal);
+            } else {
+                alert('无效的URL格式');
+            }
+        } else {
+            alert('请输入有效的API服务器地址');
+        }
+    });
+    
+    // 测试连接
+    testButton.addEventListener('click', async function() {
+        const testURL = input.value.trim();
+        if (!testURL) {
+            alert('请输入API服务器地址');
+            return;
+        }
+        
+        // 更改按钮状态和文本
+        testButton.disabled = true;
+        testButton.textContent = '测试中...';
+        
+        // 显示测试结果区域
+        testResult.style.display = 'block';
+        testResult.textContent = '正在测试连接...';
+        testResult.style.backgroundColor = '#FFF9C4';
+        testResult.style.border = '1px solid #FBC02D';
+        
+        try {
+            // 创建临时API实例进行测试
+            const tempAPI = new BlogAPI(testURL);
+            const result = await tempAPI.testConnection();
+            
+            if (result.connected) {
+                testResult.textContent = `连接成功！延迟: ${result.latency}ms`;
+                testResult.style.backgroundColor = '#E8F5E9';
+                testResult.style.border = '1px solid #4CAF50';
+            } else {
+                testResult.textContent = `连接失败: ${result.error || '无法连接到API服务器'}`;
+                testResult.style.backgroundColor = '#FFEBEE';
+                testResult.style.border = '1px solid #F44336';
+            }
+        } catch (error) {
+            testResult.textContent = `测试出错: ${error.message}`;
+            testResult.style.backgroundColor = '#FFEBEE';
+            testResult.style.border = '1px solid #F44336';
+        } finally {
+            // 恢复按钮状态
+            testButton.disabled = false;
+            testButton.textContent = '测试连接';
+        }
+    });
+    
+    // 恢复默认配置
+    resetButton.addEventListener('click', function() {
+        // 设置为默认值
+        const defaultURL = 'http://localhost:3000/api';
+        input.value = defaultURL;
+        
+        // 显示提示
+        alert('已重置为默认API服务器地址，请点击"保存配置"以应用更改');
+    });
+    
+    // 取消并关闭对话框
+    cancelButton.addEventListener('click', function() {
+        document.body.removeChild(modal);
+    });
+    
+    // 组装对话框
+    inputGroup.appendChild(label);
+    inputGroup.appendChild(input);
+    form.appendChild(inputGroup);
+    form.appendChild(testResult);
+    
+    buttonGroup.appendChild(saveButton);
+    buttonGroup.appendChild(testButton);
+    buttonGroup.appendChild(resetButton);
+    buttonGroup.appendChild(cancelButton);
+    
+    modalContent.appendChild(title);
+    modalContent.appendChild(currentConfig);
+    modalContent.appendChild(form);
+    modalContent.appendChild(buttonGroup);
+    
+    modal.appendChild(modalContent);
+    document.body.appendChild(modal);
 }
 
 // 为现有静态博客卡片添加阅读全文功能
