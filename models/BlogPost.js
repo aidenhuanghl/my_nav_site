@@ -1,3 +1,5 @@
+const { ObjectId } = require('mongodb');
+
 /**
  * 博客文章数据模型
  * 定义博客文章在MongoDB中的数据结构
@@ -9,16 +11,24 @@ const DRAFTS_COLLECTION = 'drafts';
 const DELETED_POSTS_COLLECTION = 'deleted_posts';
 
 // 创建博客文章对象
-function createBlogPost(postData) {
+function createBlogPost(data) {
+  // 转换标签数组
+  let tags = [];
+  if (data.tags) {
+    tags = Array.isArray(data.tags) ? data.tags : data.tags.split(',').map(tag => tag.trim());
+  }
+
+  // 创建博客文章
   return {
-    title: postData.title,
-    content: postData.content,
-    category: postData.category || '未分类',
-    tags: postData.tags || [],
-    imageData: postData.imageData || '',
-    isPopular: postData.isPopular || false,
-    views: postData.views || 0,
-    createdAt: postData.createdAt || new Date(),
+    title: data.title || '无标题',
+    content: data.content || '',
+    category: data.category || '未分类',
+    tags: tags,
+    author: data.author || '网站作者',
+    imageData: data.imageData || null,
+    isPopular: data.isPopular || false,
+    viewCount: data.viewCount || 0,
+    createdAt: new Date(),
     updatedAt: new Date()
   };
 }
@@ -58,7 +68,29 @@ class BlogPostDAO {
 
   // 获取单个文章
   async getPostById(id) {
-    return this.postsCollection.findOne({ _id: id });
+    try {
+      // 尝试将ID转换为ObjectId，如果不是有效的ObjectId则直接使用原始ID
+      let postId;
+      try {
+        postId = new ObjectId(id);
+      } catch (err) {
+        console.log('ID不是有效的ObjectId，使用原始ID:', id);
+        postId = id;
+      }
+      
+      // 查找文章，同时支持_id和id字段
+      const post = await this.postsCollection.findOne({ 
+        $or: [
+          { _id: postId },
+          { id: id }
+        ]
+      });
+      
+      return post;
+    } catch (error) {
+      console.error('获取文章详情失败:', error);
+      return null;
+    }
   }
 
   // 获取热门文章
@@ -70,7 +102,14 @@ class BlogPostDAO {
   async createPost(postData) {
     const newPost = createBlogPost(postData);
     const result = await this.postsCollection.insertOne(newPost);
-    return { ...newPost, _id: result.insertedId };
+    
+    // 确保返回的对象同时包含id和_id
+    const id = result.insertedId.toString();
+    return { 
+      ...newPost, 
+      _id: result.insertedId,
+      id: id 
+    };
   }
 
   // 更新文章

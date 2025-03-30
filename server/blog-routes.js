@@ -40,7 +40,7 @@ router.get('/posts', async (req, res) => {
 router.get('/posts/:id', async (req, res) => {
   try {
     const blogPostDAO = await getBlogPostDAO();
-    const post = await blogPostDAO.getPostById(req.objectId);
+    const post = await blogPostDAO.getPostById(req.params.id);
     
     if (!post) {
       return res.status(404).json({ error: '未找到指定文章' });
