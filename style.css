@@ -1237,6 +1237,7 @@ ul {
     background-color: var(--bg-secondary);
     border-radius: var(--border-radius);
     border: 1px dashed var(--card-border);
+    margin: 30px 0;
 }
 
 /* 图片预览样式 */
@@ -1329,4 +1330,151 @@ ul {
 /* 搜索结果高亮标题 */
 .search-highlight .blog-card-title {
     color: #4285f4;
+}
+
+/* 博客详情操作按钮 */
+.blog-detail-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.blog-detail-delete {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s ease;
+}
+
+.blog-detail-delete:hover {
+    background: rgba(239, 68, 68, 0.2);
+}
+
+/* 删除确认模态框 */
+.delete-confirm-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1100;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.delete-confirm-modal.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.delete-confirm-content {
+    background-color: var(--bg-primary);
+    border-radius: var(--border-radius);
+    padding: 25px;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: var(--shadow-lg);
+    transform: translateY(20px);
+    transition: all 0.3s ease;
+}
+
+.delete-confirm-modal.active .delete-confirm-content {
+    transform: translateY(0);
+}
+
+.delete-confirm-content h3 {
+    font-size: 1.4rem;
+    margin-bottom: 15px;
+    color: var(--text-primary);
+}
+
+.delete-confirm-content p {
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+    line-height: 1.6;
+}
+
+.delete-confirm-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+}
+
+.cancel-delete-btn {
+    padding: 8px 16px;
+    background-color: var(--bg-secondary);
+    color: var(--text-secondary);
+    border: 1px solid var(--card-border);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 0.95rem;
+}
+
+.cancel-delete-btn:hover {
+    background-color: var(--card-border);
+}
+
+.confirm-delete-btn {
+    padding: 8px 16px;
+    background-color: #ef4444;
+    color: white;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 0.95rem;
+}
+
+.confirm-delete-btn:hover {
+    background-color: #dc2626;
+}
+
+/* 通知消息 */
+.notification {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background-color: var(--primary-color);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 4px;
+    box-shadow: var(--shadow-md);
+    z-index: 1200;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.notification.active {
+    transform: translateX(-50%) translateY(0);
+}
+
+/* 博客卡片删除动画 */
+.blog-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.5s ease;
+}
+
+/* 无博客提示样式完善 */
+.no-blogs {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    background-color: var(--bg-secondary);
+    border-radius: var(--border-radius);
+    border: 1px dashed var(--card-border);
+    margin: 30px 0;
 }
