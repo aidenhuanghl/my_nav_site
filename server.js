@@ -1,7 +1,13 @@
 console.log('server.js execution started');
 
+// 加载环境变量
 require('dotenv').config();
 console.log('dotenv configured');
+
+// 连接到MongoDB
+console.log(`MongoDB URI: ${process.env.MONGODB_URI ? '已配置' : '未配置'}`);
+console.log(`MongoDB数据库: ${process.env.MONGODB_DB_NAME || 'ainav_db'}`);
+console.log(`环境: ${process.env.NODE_ENV || 'development'}`);
 
 const express = require('express');
 console.log('express loaded');
@@ -54,4 +60,5 @@ app.listen(port, host, () => {
   console.log(`服务器运行在 http://${host}:${port}`);
   console.log(`主页: http://${host}:${port}`);
   console.log(`API: http://${host}:${port}/api`);
+  console.log(`使用MongoDB: ${process.env.MONGODB_URI ? 'Atlas云服务' : '本地服务'}`);
 }); 

@@ -5,10 +5,12 @@
 
 const clientPromise = require('./db');
 const { UserDAO } = require('./models/User');
+const { BlogPostDAO } = require('./models/BlogPost');
 
-// 数据库名称
-const DB_NAME = 'ainav_db';
+// 从环境变量获取数据库名称
+const DB_NAME = process.env.MONGODB_DB_NAME || 'ainav_db';
 let userDAO = null;
+let blogPostDAO = null;
 
 /**
  * 获取指定的MongoDB集合
@@ -49,8 +51,29 @@ async function getUserDAO() {
   return userDAO;
 }
 
+/**
+ * 获取博客文章数据访问对象
+ * @returns {Promise<BlogPostDAO>} - 博客文章数据访问对象
+ */
+async function getBlogPostDAO() {
+  if (!blogPostDAO) {
+    const db = await getDatabase();
+    blogPostDAO = new BlogPostDAO(db);
+    
+    // 创建必要的索引
+    try {
+      await blogPostDAO.createIndexes();
+      console.log('博客文章集合索引已创建');
+    } catch (error) {
+      console.error('创建博客文章集合索引失败:', error);
+    }
+  }
+  return blogPostDAO;
+}
+
 module.exports = {
   getCollection,
   getDatabase,
-  getUserDAO
+  getUserDAO,
+  getBlogPostDAO
 }; 
