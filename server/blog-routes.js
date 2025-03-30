@@ -142,16 +142,15 @@ router.post('/posts/:id/increment-view', async (req, res) => {
   }
 });
 
-// 获取已删除的文章
+// 获取已删除的文章列表
 router.get('/deleted-posts', async (req, res) => {
-  try {
-    const blogPostDAO = await getBlogPostDAO();
-    const deletedPosts = await blogPostDAO.getDeletedPosts();
-    res.json(deletedPosts);
-  } catch (error) {
-    console.error('获取已删除文章失败:', error);
-    res.status(500).json({ error: '服务器错误', message: error.message });
-  }
+    try {
+        const deletedPosts = await getBlogPostDAO().getDeletedPosts();
+        res.json(deletedPosts);
+    } catch (error) {
+        console.error('获取已删除文章失败:', error);
+        res.status(500).json({ error: '获取已删除文章失败' });
+    }
 });
 
 // 草稿相关API

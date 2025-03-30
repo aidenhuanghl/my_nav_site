@@ -117,7 +117,16 @@ class BlogPostDAO {
 
   // 获取已删除的文章
   async getDeletedPosts() {
-    return this.deletedPostsCollection.find({}).sort({ deletedAt: -1 }).toArray();
+    try {
+        const deletedPosts = await this.deletedPostsCollection
+            .find({})
+            .sort({ deletedAt: -1 })
+            .toArray();
+        return deletedPosts || [];
+    } catch (error) {
+        console.error('获取已删除文章失败:', error);
+        throw error;
+    }
   }
 
   // 保存草稿

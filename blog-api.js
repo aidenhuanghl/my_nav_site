@@ -134,7 +134,7 @@ class BlogAPI {
     });
   }
   
-  // 获取已删除的文章标题列表
+  // 获取已删除的文章列表
   async getDeletedPosts() {
     return this.fetchAPI('/deleted-posts');
   }

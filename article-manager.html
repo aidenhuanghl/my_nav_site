@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文章管理 | 个人博客</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="blog-api.js"></script>
+    <style>
+        .article-manager-container {
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .manager-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .manager-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .action-btn {
+            padding: 8px 15px;
+            background-color: #4a6da7;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s;
+        }
+        
+        .action-btn:hover {
+            background-color: #3b5998;
+        }
+        
+        .action-btn.delete-all {
+            background-color: #ff4d4f;
+        }
+        
+        .action-btn.delete-all:hover {
+            background-color: #cf1322;
+        }
+        
+        .manager-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .manager-tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            position: relative;
+            font-weight: 500;
+        }
+        
+        .manager-tab.active {
+            color: #4a6da7;
+        }
+        
+        .manager-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: #4a6da7;
+        }
+        
+        .article-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .article-table th,
+        .article-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .article-table th {
+            background-color: #f9f9f9;
+            font-weight: 500;
+        }
+        
+        .article-table tr:hover {
+            background-color: #f5f8ff;
+        }
+        
+        .table-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .table-action-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #666;
+            transition: all 0.3s;
+        }
+        
+        .table-action-btn:hover {
+            color: #4a6da7;
+        }
+        
+        .table-action-btn.edit:hover {
+            color: #52c41a;
+        }
+        
+        .table-action-btn.delete:hover {
+            color: #ff4d4f;
+        }
+        
+        .article-status {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        
+        .status-published {
+            background-color: #e6f7ff;
+            color: #1890ff;
+        }
+        
+        .status-draft {
+            background-color: #fff7e6;
+            color: #fa8c16;
+        }
+        
+        .status-deleted {
+            background-color: #fff1f0;
+            color: #ff4d4f;
+        }
+        
+        .empty-message {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        
+        .search-box {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        
+        .search-input {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px 0 0 4px;
+        }
+        
+        .search-btn {
+            background-color: #4a6da7;
+            color: white;
+            border: none;
+            padding: 0 15px;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #4a6da7;
+            text-decoration: none;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .pagination-item {
+            padding: 8px 12px;
+            margin: 0 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .pagination-item.active {
+            background-color: #4a6da7;
+            color: white;
+            border-color: #4a6da7;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        
+        .modal-content {
+            background-color: #fff;
+            margin: 10% auto;
+            padding: 20px;
+            width: 50%;
+            max-width: 500px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .modal-btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .modal-btn.cancel {
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .modal-btn.confirm {
+            background-color: #ff4d4f;
+            color: white;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4a6da7;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 2s linear infinite;
+            margin: 0 auto;
+            margin-bottom: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="article-manager-container">
+        <a href="index.html" class="back-link">
+            <i class="fas fa-arrow-left"></i> 返回首页
+        </a>
+        
+        <div class="manager-header">
+            <h1 class="manager-title">文章管理</h1>
+            <div class="action-buttons">
+                <button class="action-btn refresh-btn" id="refresh-btn">
+                    <i class="fas fa-sync-alt"></i> 刷新列表
+                </button>
+                <button class="action-btn" id="new-article-btn">
+                    <i class="fas fa-plus"></i> 新建文章
+                </button>
+                <button class="action-btn delete-all" id="clear-all-btn">
+                    <i class="fas fa-trash"></i> 清空所有数据
+                </button>
+            </div>
+        </div>
+        
+        <div class="manager-tabs">
+            <div class="manager-tab active" data-tab="published">已发布文章</div>
+            <div class="manager-tab" data-tab="drafts">草稿箱</div>
+            <div class="manager-tab" data-tab="deleted">回收站</div>
+        </div>
+        
+        <div class="search-box">
+            <input type="text" class="search-input" id="search-input" placeholder="搜索文章标题或内容...">
+            <button class="search-btn" id="search-btn">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
+        
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>正在加载文章...</p>
+        </div>
+        
+        <div id="articles-container">
+            <table class="article-table" id="articles-table">
+                <thead>
+                    <tr>
+                        <th width="40%">标题</th>
+                        <th width="15%">日期</th>
+                        <th width="15%">分类</th>
+                        <th width="15%">浏览量</th>
+                        <th width="15%">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="articles-list">
+                    <!-- 文章列表将在这里动态加载 -->
+                </tbody>
+            </table>
+            
+            <div id="empty-message" class="empty-message" style="display: none;">
+                <p>暂无文章</p>
+            </div>
+        </div>
+        
+        <div class="pagination" id="pagination">
+            <!-- 分页将在这里动态加载 -->
+        </div>
+    </div>
+    
+    <!-- 删除确认模态框 -->
+    <div id="delete-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">确认删除</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            <p>您确定要删除这篇文章吗？此操作不可撤销。</p>
+            <div class="modal-actions">
+                <button class="modal-btn cancel" id="cancel-delete">取消</button>
+                <button class="modal-btn confirm" id="confirm-delete">确认删除</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 清空确认模态框 -->
+    <div id="clear-all-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">确认清空所有数据</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            <p>您确定要清空所有文章数据吗？此操作将删除所有已发布文章、草稿和回收站内容，且不可撤销！</p>
+            <div class="modal-actions">
+                <button class="modal-btn cancel" id="cancel-clear">取消</button>
+                <button class="modal-btn confirm" id="confirm-clear">确认清空</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化文章API
+            const articleManager = {
+                currentTab: 'published',
+                searchKeyword: '',
+                currentPage: 1,
+                articlesPerPage: 10,
+                totalArticles: 0,
+                articles: [],
+                currentArticleId: null,
+                
+                init: function() {
+                    this.bindEvents();
+                    this.loadArticles();
+                },
+                
+                bindEvents: function() {
+                    // 标签切换
+                    document.querySelectorAll('.manager-tab').forEach(tab => {
+                        tab.addEventListener('click', (e) => {
+                            document.querySelectorAll('.manager-tab').forEach(t => t.classList.remove('active'));
+                            e.target.classList.add('active');
+                            this.currentTab = e.target.getAttribute('data-tab');
+                            this.currentPage = 1;
+                            this.loadArticles();
+                        });
+                    });
+                    
+                    // 搜索功能
+                    document.getElementById('search-btn').addEventListener('click', () => {
+                        this.searchKeyword = document.getElementById('search-input').value.trim();
+                        this.currentPage = 1;
+                        this.loadArticles();
+                    });
+                    
+                    document.getElementById('search-input').addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') {
+                            this.searchKeyword = document.getElementById('search-input').value.trim();
+                            this.currentPage = 1;
+                            this.loadArticles();
+                        }
+                    });
+                    
+                    // 刷新按钮
+                    document.getElementById('refresh-btn').addEventListener('click', () => {
+                        this.loadArticles();
+                    });
+                    
+                    // 新建文章按钮
+                    document.getElementById('new-article-btn').addEventListener('click', () => {
+                        window.location.href = 'index.html#write-blog';
+                    });
+                    
+                    // 清空所有数据按钮
+                    document.getElementById('clear-all-btn').addEventListener('click', () => {
+                        this.showClearAllModal();
+                    });
+                    
+                    // 关闭模态框
+                    document.querySelectorAll('.close-modal, #cancel-delete, #cancel-clear').forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            document.querySelectorAll('.modal').forEach(modal => {
+                                modal.style.display = 'none';
+                            });
+                        });
+                    });
+                    
+                    // 确认删除
+                    document.getElementById('confirm-delete').addEventListener('click', () => {
+                        if (this.currentArticleId) {
+                            this.deleteArticle(this.currentArticleId);
+                        }
+                    });
+                    
+                    // 确认清空所有数据
+                    document.getElementById('confirm-clear').addEventListener('click', () => {
+                        this.clearAllData();
+                    });
+                },
+                
+                loadArticles: function() {
+                    document.getElementById('loading').style.display = 'block';
+                    document.getElementById('articles-container').style.display = 'none';
+                    
+                    let apiPromise;
+                    
+                    if (this.currentTab === 'published') {
+                        apiPromise = window.blogAPI.getAllPosts();
+                    } else if (this.currentTab === 'drafts') {
+                        apiPromise = window.blogAPI.getAllDrafts();
+                    } else if (this.currentTab === 'deleted') {
+                        apiPromise = window.blogAPI.getDeletedPosts();
+                    }
+                    
+                    apiPromise.then(articles => {
+                        this.articles = articles;
+                        
+                        // 搜索过滤
+                        if (this.searchKeyword) {
+                            this.articles = this.articles.filter(article => 
+                                article.title.toLowerCase().includes(this.searchKeyword.toLowerCase()) || 
+                                (article.content && article.content.toLowerCase().includes(this.searchKeyword.toLowerCase()))
+                            );
+                        }
+                        
+                        this.totalArticles = this.articles.length;
+                        this.renderArticles();
+                        this.renderPagination();
+                        
+                        document.getElementById('loading').style.display = 'none';
+                        document.getElementById('articles-container').style.display = 'block';
+                    }).catch(error => {
+                        console.error('加载文章失败:', error);
+                        document.getElementById('loading').style.display = 'none';
+                        document.getElementById('articles-container').style.display = 'block';
+                        document.getElementById('articles-list').innerHTML = `
+                            <tr>
+                                <td colspan="5" class="empty-message">加载失败: ${error.message || '未知错误'}</td>
+                            </tr>
+                        `;
+                    });
+                },
+                
+                renderArticles: function() {
+                    const articlesList = document.getElementById('articles-list');
+                    const emptyMessage = document.getElementById('empty-message');
+                    
+                    if (this.articles.length === 0) {
+                        articlesList.innerHTML = '';
+                        emptyMessage.style.display = 'block';
+                        return;
+                    }
+                    
+                    emptyMessage.style.display = 'none';
+                    
+                    // 计算当前页的文章
+                    const startIndex = (this.currentPage - 1) * this.articlesPerPage;
+                    const endIndex = Math.min(startIndex + this.articlesPerPage, this.totalArticles);
+                    const currentPageArticles = this.articles.slice(startIndex, endIndex);
+                    
+                    articlesList.innerHTML = '';
+                    
+                    currentPageArticles.forEach(article => {
+                        const formattedDate = this.formatDate(article.date);
+                        
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${article.title}</td>
+                            <td>${formattedDate}</td>
+                            <td>${article.category || '未分类'}</td>
+                            <td>${article.viewCount || 0}</td>
+                            <td class="table-actions">
+                                <button class="table-action-btn view" data-id="${article.id}" title="查看">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="table-action-btn edit" data-id="${article.id}" title="编辑">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="table-action-btn delete" data-id="${article.id}" title="删除">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        `;
+                        
+                        articlesList.appendChild(row);
+                    });
+                    
+                    // 绑定操作按钮事件
+                    this.bindActionButtons();
+                },
+                
+                renderPagination: function() {
+                    const pagination = document.getElementById('pagination');
+                    pagination.innerHTML = '';
+                    
+                    const totalPages = Math.ceil(this.totalArticles / this.articlesPerPage);
+                    
+                    if (totalPages <= 1) {
+                        return;
+                    }
+                    
+                    // 上一页
+                    if (this.currentPage > 1) {
+                        const prevBtn = document.createElement('div');
+                        prevBtn.className = 'pagination-item';
+                        prevBtn.innerHTML = '&laquo;';
+                        prevBtn.addEventListener('click', () => {
+                            this.goToPage(this.currentPage - 1);
+                        });
+                        pagination.appendChild(prevBtn);
+                    }
+                    
+                    // 页码
+                    for (let i = 1; i <= totalPages; i++) {
+                        const pageBtn = document.createElement('div');
+                        pageBtn.className = 'pagination-item';
+                        if (i === this.currentPage) {
+                            pageBtn.classList.add('active');
+                        }
+                        pageBtn.textContent = i;
+                        pageBtn.addEventListener('click', () => {
+                            this.goToPage(i);
+                        });
+                        pagination.appendChild(pageBtn);
+                    }
+                    
+                    // 下一页
+                    if (this.currentPage < totalPages) {
+                        const nextBtn = document.createElement('div');
+                        nextBtn.className = 'pagination-item';
+                        nextBtn.innerHTML = '&raquo;';
+                        nextBtn.addEventListener('click', () => {
+                            this.goToPage(this.currentPage + 1);
+                        });
+                        pagination.appendChild(nextBtn);
+                    }
+                },
+                
+                goToPage: function(page) {
+                    this.currentPage = page;
+                    this.renderArticles();
+                    this.renderPagination();
+                },
+                
+                bindActionButtons: function() {
+                    // 查看按钮
+                    document.querySelectorAll('.table-action-btn.view').forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            const id = e.currentTarget.getAttribute('data-id');
+                            window.location.href = `index.html?view=${id}`;
+                        });
+                    });
+                    
+                    // 编辑按钮
+                    document.querySelectorAll('.table-action-btn.edit').forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            const id = e.currentTarget.getAttribute('data-id');
+                            window.location.href = `index.html?edit=${id}`;
+                        });
+                    });
+                    
+                    // 删除按钮
+                    document.querySelectorAll('.table-action-btn.delete').forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            const id = e.currentTarget.getAttribute('data-id');
+                            this.showDeleteModal(id);
+                        });
+                    });
+                },
+                
+                showDeleteModal: function(id) {
+                    this.currentArticleId = id;
+                    document.getElementById('delete-modal').style.display = 'block';
+                },
+                
+                showClearAllModal: function() {
+                    document.getElementById('clear-all-modal').style.display = 'block';
+                },
+                
+                deleteArticle: function(id) {
+                    document.getElementById('delete-modal').style.display = 'none';
+                    document.getElementById('loading').style.display = 'block';
+                    
+                    window.blogAPI.deletePost(id)
+                        .then(() => {
+                            this.showNotification('文章已成功删除');
+                            this.loadArticles();
+                        })
+                        .catch(error => {
+                            console.error('删除文章失败:', error);
+                            this.showNotification('删除文章失败: ' + (error.message || '未知错误'), 'error');
+                        })
+                        .finally(() => {
+                            document.getElementById('loading').style.display = 'none';
+                        });
+                },
+                
+                clearAllData: function() {
+                    document.getElementById('clear-all-modal').style.display = 'none';
+                    document.getElementById('loading').style.display = 'block';
+                    
+                    window.blogAPI.deleteAllContent()
+                        .then(result => {
+                            this.showNotification(`已清空所有数据: ${result.totalDeleted} 项内容被删除`);
+                            this.loadArticles();
+                        })
+                        .catch(error => {
+                            console.error('清空数据失败:', error);
+                            this.showNotification('清空数据失败: ' + (error.message || '未知错误'), 'error');
+                        })
+                        .finally(() => {
+                            document.getElementById('loading').style.display = 'none';
+                        });
+                },
+                
+                formatDate: function(dateString) {
+                    if (!dateString) return '未知日期';
+                    
+                    try {
+                        const date = new Date(dateString);
+                        return date.toISOString().split('T')[0];
+                    } catch (error) {
+                        return dateString;
+                    }
+                },
+                
+                showNotification: function(message, type = 'success') {
+                    // 创建通知元素
+                    const notification = document.createElement('div');
+                    notification.className = `notification ${type}`;
+                    notification.textContent = message;
+                    notification.style.position = 'fixed';
+                    notification.style.bottom = '20px';
+                    notification.style.right = '20px';
+                    notification.style.padding = '10px 20px';
+                    notification.style.borderRadius = '4px';
+                    notification.style.zIndex = '9999';
+                    
+                    if (type === 'success') {
+                        notification.style.backgroundColor = '#f6ffed';
+                        notification.style.border = '1px solid #b7eb8f';
+                        notification.style.color = '#52c41a';
+                    } else {
+                        notification.style.backgroundColor = '#fff2f0';
+                        notification.style.border = '1px solid #ffccc7';
+                        notification.style.color = '#ff4d4f';
+                    }
+                    
+                    document.body.appendChild(notification);
+                    
+                    // 3秒后自动移除
+                    setTimeout(() => {
+                        notification.style.opacity = '0';
+                        notification.style.transition = 'opacity 0.5s';
+                        
+                        setTimeout(() => {
+                            document.body.removeChild(notification);
+                        }, 500);
+                    }, 3000);
+                }
+            };
+            
+            // 初始化文章管理器
+            articleManager.init();
+        });
+    </script>
+</body>
+</html> 
