@@ -1,0 +1,24 @@
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的个人网站</title>
+</head>
+
+<script>
+    // 添加页面加载时强制刷新机制
+    window.addEventListener('load', function() {
+        // 清除可能的缓存数据
+        localStorage.removeItem('blogPosts');
+        localStorage.removeItem('userBlogs');
+        localStorage.removeItem('deletedPopularPosts');
+        
+        // 如果URL中没有nocache参数，添加并刷新页面（只执行一次）
+        if (!window.location.search.includes('nocache')) {
+            const timestamp = new Date().getTime();
+            window.location.href = window.location.pathname + '?nocache=' + timestamp;
+        }
+    });
+</script> 

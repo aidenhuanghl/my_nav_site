@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>彻底清空所有博客数据</title>
+    <style>
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        h1 {
+            color: #333;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .warning {
+            color: #ff4d4f;
+            font-weight: bold;
+        }
+        button {
+            background-color: #ff4d4f;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #ff7875;
+        }
+        button:disabled {
+            background-color: #ffccc7;
+            cursor: not-allowed;
+        }
+        .confirm-text {
+            margin-top: 20px;
+        }
+        input {
+            padding: 8px;
+            width: 100%;
+            margin-top: 5px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            display: none;
+        }
+        .success {
+            background-color: #f6ffed;
+            border: 1px solid #b7eb8f;
+            color: #52c41a;
+        }
+        .error {
+            background-color: #fff2f0;
+            border: 1px solid #ffccc7;
+            color: #ff4d4f;
+        }
+        .steps {
+            margin-top: 20px;
+        }
+        .step {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-left: 3px solid #1890ff;
+            background-color: #f0f5ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>彻底清空所有博客数据</h1>
+        <p class="warning">警告：此操作将删除所有博客数据，包括数据库中的数据和浏览器本地存储的数据。此操作不可逆！</p>
+        
+        <div class="steps">
+            <div class="step">
+                <h3>步骤 1: 清除数据库中的所有数据</h3>
+                <p>此操作将删除MongoDB数据库中的所有文章、草稿和删除记录</p>
+                <button id="clearDbButton">清除数据库数据</button>
+                <div id="dbResult" class="result"></div>
+            </div>
+            
+            <div class="step">
+                <h3>步骤 2: 清除浏览器本地存储的所有数据</h3>
+                <p>此操作将删除浏览器localStorage中保存的所有数据</p>
+                <button id="clearLocalButton">清除本地存储数据</button>
+                <div id="localResult" class="result"></div>
+            </div>
+            
+            <div class="step">
+                <h3>步骤 3: 刷新页面和缓存</h3>
+                <p>此操作将刷新浏览器缓存并重新加载页面</p>
+                <button id="refreshButton">刷新页面和缓存</button>
+            </div>
+        </div>
+        
+        <div class="confirm-text">
+            <p>请输入"DELETE ALL DATA"以确认彻底清除所有数据：</p>
+            <input type="text" id="confirmation" placeholder="DELETE ALL DATA">
+            <button id="deleteAllButton" disabled>彻底清除所有数据</button>
+        </div>
+        
+        <div id="finalResult" class="result"></div>
+    </div>
+
+    <script src="blog-api.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const confirmationInput = document.getElementById('confirmation');
+            const deleteAllButton = document.getElementById('deleteAllButton');
+            const clearDbButton = document.getElementById('clearDbButton');
+            const clearLocalButton = document.getElementById('clearLocalButton');
+            const refreshButton = document.getElementById('refreshButton');
+            const dbResult = document.getElementById('dbResult');
+            const localResult = document.getElementById('localResult');
+            const finalResult = document.getElementById('finalResult');
+            
+            // 验证输入
+            confirmationInput.addEventListener('input', function() {
+                deleteAllButton.disabled = this.value !== 'DELETE ALL DATA';
+            });
+            
+            // 清除数据库数据
+            clearDbButton.addEventListener('click', async function() {
+                clearDbButton.disabled = true;
+                clearDbButton.textContent = '正在清除...';
+                
+                try {
+                    const result = await window.blogAPI.deleteAllContent();
+                    
+                    dbResult.className = 'result success';
+                    dbResult.style.display = 'block';
+                    dbResult.innerHTML = `
+                        <h4>数据库清除成功！</h4>
+                        <p>已删除 ${result.deletedPostsCount} 篇文章</p>
+                        <p>已删除 ${result.deletedDraftsCount} 篇草稿</p>
+                        <p>已删除 ${result.deletedRecordsCount} 条删除记录</p>
+                        <p>总计删除 ${result.totalDeleted} 项</p>
+                    `;
+                } catch (error) {
+                    dbResult.className = 'result error';
+                    dbResult.style.display = 'block';
+                    dbResult.innerHTML = `
+                        <h4>数据库清除失败</h4>
+                        <p>${error.message || '发生未知错误'}</p>
+                    `;
+                } finally {
+                    clearDbButton.disabled = false;
+                    clearDbButton.textContent = '清除数据库数据';
+                }
+            });
+            
+            // 清除本地存储数据
+            clearLocalButton.addEventListener('click', function() {
+                try {
+                    // 清除与博客相关的localStorage数据
+                    localStorage.removeItem('blogPosts');
+                    localStorage.removeItem('userBlogs');
+                    localStorage.removeItem('deletedPopularPosts');
+                    localStorage.removeItem('dataMigratedToMongoDB');
+                    localStorage.removeItem('api_server_config');
+                    
+                    // 显示成功信息
+                    localResult.className = 'result success';
+                    localResult.style.display = 'block';
+                    localResult.innerHTML = `
+                        <h4>本地存储清除成功！</h4>
+                        <p>已删除博客文章、用户博客、删除记录和配置数据</p>
+                    `;
+                } catch (error) {
+                    localResult.className = 'result error';
+                    localResult.style.display = 'block';
+                    localResult.innerHTML = `
+                        <h4>本地存储清除失败</h4>
+                        <p>${error.message || '发生未知错误'}</p>
+                    `;
+                }
+            });
+            
+            // 刷新页面和缓存
+            refreshButton.addEventListener('click', function() {
+                window.location.href = '/index.html?nocache=' + new Date().getTime();
+            });
+            
+            // 彻底清除所有数据
+            deleteAllButton.addEventListener('click', async function() {
+                if (confirmationInput.value !== 'DELETE ALL DATA') return;
+                
+                deleteAllButton.disabled = true;
+                deleteAllButton.textContent = '正在清除所有数据...';
+                
+                try {
+                    // 1. 清除数据库数据
+                    await window.blogAPI.deleteAllContent();
+                    
+                    // 2. 清除本地存储数据
+                    localStorage.removeItem('blogPosts');
+                    localStorage.removeItem('userBlogs');
+                    localStorage.removeItem('deletedPopularPosts');
+                    localStorage.removeItem('dataMigratedToMongoDB');
+                    localStorage.removeItem('api_server_config');
+                    
+                    // 显示成功信息
+                    finalResult.className = 'result success';
+                    finalResult.style.display = 'block';
+                    finalResult.innerHTML = `
+                        <h3>所有数据已成功清除！</h3>
+                        <p>数据库和本地存储的所有博客数据已被删除</p>
+                        <p>请点击下方按钮刷新页面：</p>
+                        <button onclick="window.location.href='/index.html?nocache='+new Date().getTime()">刷新页面</button>
+                    `;
+                } catch (error) {
+                    finalResult.className = 'result error';
+                    finalResult.style.display = 'block';
+                    finalResult.innerHTML = `
+                        <h3>清除数据失败</h3>
+                        <p>${error.message || '发生未知错误'}</p>
+                    `;
+                } finally {
+                    deleteAllButton.disabled = false;
+                    deleteAllButton.textContent = '彻底清除所有数据';
+                    confirmationInput.value = '';
+                }
+            });
+        });
+    </script>
+</body>
+</html> 
