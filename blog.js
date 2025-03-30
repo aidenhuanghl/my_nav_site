@@ -26,6 +26,49 @@ document.addEventListener('DOMContentLoaded', async function() {
     initBlogFunctionality();
 });
 
+// 显示通知消息
+function showNotification(message, duration = 3000) {
+    console.log('显示通知:', message);
+    
+    // 创建通知元素
+    const notification = document.createElement('div');
+    notification.className = 'notification';
+    notification.textContent = message;
+    
+    // 设置样式
+    notification.style.position = 'fixed';
+    notification.style.bottom = '20px';
+    notification.style.right = '20px';
+    notification.style.backgroundColor = '#4a6da7';
+    notification.style.color = 'white';
+    notification.style.padding = '12px 20px';
+    notification.style.borderRadius = '4px';
+    notification.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
+    notification.style.zIndex = '9999';
+    notification.style.transition = 'all 0.3s ease';
+    notification.style.opacity = '0';
+    
+    // 添加到文档
+    document.body.appendChild(notification);
+    
+    // 显示通知
+    setTimeout(() => {
+        notification.style.opacity = '1';
+    }, 10);
+    
+    // 设置定时器，自动隐藏通知
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        
+        // 完全隐藏后移除元素
+        setTimeout(() => {
+            if (document.body.contains(notification)) {
+                document.body.removeChild(notification);
+            }
+        }, 300);
+    }, duration);
+}
+
 function initBlogFunctionality() {
     console.log("初始化博客功能...");
     
@@ -473,24 +516,8 @@ function initWriteBlogModal() {
                 return;
             }
             
-            // 保存博客（包含上传的图片数据）
-            const newBlog = saveBlogPost(title, content, category, tags, uploadedImageData, false);
-            
-            // 提交成功
-            alert('博客发布成功！');
-            modal.classList.remove('active');
-            document.body.style.overflow = '';
-            form.reset();
-            
-            // 清除图片预览
-            const previewContainer = document.querySelector('.image-preview-container');
-            if (previewContainer) {
-                previewContainer.style.display = 'none';
-            }
-            uploadedImageData = null;
-            
-            // 刷新博客列表
-            loadBlogPosts();
+            // 调用发布博客函数
+            publishBlog();
         });
     }
     
@@ -1298,6 +1325,74 @@ function saveDraft() {
             
             // 作为备份，保存到localStorage
             localStorage.setItem('blogDraft', JSON.stringify(draft));
+        });
+}
+
+// 发布博客函数
+function publishBlog() {
+    console.log('正在发布博客...');
+    
+    // 获取表单数据
+    const title = document.getElementById('blog-title').value;
+    const content = document.getElementById('blog-content').value;
+    const category = document.getElementById('blog-category').value;
+    const tags = document.getElementById('blog-tags').value;
+    const imageInput = document.getElementById('blog-image');
+    
+    // 验证必填字段
+    if (!title || !content) {
+        alert('请填写标题和内容');
+        return;
+    }
+    
+    // 获取上传的图片数据
+    let uploadedImageData = null;
+    const previewContainer = document.querySelector('.image-preview-container');
+    if (previewContainer) {
+        const previewImg = previewContainer.querySelector('.image-preview');
+        if (previewImg && previewImg.src) {
+            uploadedImageData = previewImg.src;
+        }
+    }
+    
+    // 显示加载状态
+    const publishBtn = document.querySelector('.publish-btn');
+    const originalText = publishBtn.textContent;
+    publishBtn.textContent = '发布中...';
+    publishBtn.disabled = true;
+    
+    // 调用保存博客函数
+    saveBlogPost(title, content, category, tags, uploadedImageData, false)
+        .then(blog => {
+            console.log('博客发布成功:', blog);
+            
+            // 关闭模态框
+            const modal = document.querySelector('.write-blog-modal');
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+            
+            // 重置表单
+            document.querySelector('.write-blog-form').reset();
+            
+            // 清除图片预览
+            if (previewContainer) {
+                previewContainer.style.display = 'none';
+            }
+            
+            // 刷新博客列表
+            loadBlogPosts();
+            
+            // 显示成功通知
+            showNotification('博客发布成功！');
+        })
+        .catch(error => {
+            console.error('发布博客失败:', error);
+            alert('发布博客失败: ' + (error.message || '未知错误'));
+        })
+        .finally(() => {
+            // 恢复按钮状态
+            publishBtn.textContent = originalText;
+            publishBtn.disabled = false;
         });
 }
 
