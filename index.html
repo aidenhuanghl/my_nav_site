@@ -9,947 +9,113 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="ai-assistant-container">
-        <div class="ai-assistant">
-            <div class="ai-assistant-icon">
-                <i class="fas fa-robot"></i>
+    <div class="site-container">
+        <!-- 顶部导航栏 -->
+        <header class="top-header">
+            <div class="logo-container">
+                <a href="/">
+                    <img src="https://api.dicebear.com/7.x/bottts/svg?seed=aiNavigation" alt="AI导航" class="avatar-logo">
+                </a>
             </div>
-            <div class="ai-assistant-message">
-                <p id="ai-message">您好！欢迎使用AI导航。需要什么帮助吗？</p>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="#social-media" class="nav-link">社交媒体</a></li>
+                    <li><a href="#courses" class="nav-link">资源</a></li>
+                    <li><a href="#tools" class="nav-link">工具</a></li>
+                    <li><a href="#contact" class="nav-link">咨询</a></li>
+                    <li><a href="#about" class="nav-link">关于</a></li>
+                </ul>
+            </nav>
+            <div class="right-nav">
+                <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                <a href="#" class="social-icon"><i class="fab fa-weixin"></i></a>
+                <a href="#" class="social-icon"><i class="far fa-envelope"></i></a>
+                <div class="more-options">
+                    <a href="#" class="more-link">更多 <i class="fas fa-angle-down"></i></a>
+                </div>
             </div>
-        </div>
-    </div>
+        </header>
 
-    <div class="theme-switch-wrapper">
-        <label class="theme-switch" for="theme-toggle">
-            <input type="checkbox" id="theme-toggle" />
-            <div class="slider round">
-                <i class="fas fa-sun"></i>
-                <i class="fas fa-moon"></i>
-            </div>
-        </label>
-        <button id="settings-toggle" class="settings-button glass-effect">
-            <i class="fas fa-cog"></i>
-        </button>
-    </div>
+        <!-- 主要内容区 -->
+        <main class="main-content">
+            <section class="site-intro">
+                <h1 class="site-title">AI导航世界</h1>
+                <h2 class="site-tagline">探索你好奇的一切</h2>
+            </section>
 
-    <!-- 设置面板 -->
-    <div class="settings-panel">
-        <div class="settings-header">
-            <h3><i class="fas fa-sliders-h"></i> 个性化设置</h3>
-            <button id="close-settings" class="close-button"><i class="fas fa-times"></i></button>
-        </div>
-        <div class="settings-content">
-            <div class="settings-section">
-                <h4>外观</h4>
-                <div class="setting-item">
-                    <label for="accent-color">主题色调</label>
-                    <div class="color-options">
-                        <button class="color-option active" data-color="default" style="background: linear-gradient(135deg, #6e56cf, #00c2ff);"></button>
-                        <button class="color-option" data-color="green" style="background: linear-gradient(135deg, #10b981, #3b82f6);"></button>
-                        <button class="color-option" data-color="red" style="background: linear-gradient(135deg, #ef4444, #f59e0b);"></button>
-                        <button class="color-option" data-color="pink" style="background: linear-gradient(135deg, #ec4899, #8b5cf6);"></button>
+            <section class="content-grid">
+                <!-- 搜索引擎卡片 -->
+                <div class="card">
+                    <h3>搜索引擎</h3>
+                    <p>2023年度精选搜索引擎，全球各地高质量搜索工具集合，让信息获取更高效。</p>
+                    <div class="card-footer">
+                        <a href="#" class="card-link">查看 <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                    <div class="card-image">
+                        <img src="https://source.unsplash.com/random/400x300/?search" alt="搜索引擎">
                     </div>
                 </div>
+
+                <!-- AI工具卡片 -->
+                <div class="card">
+                    <h3>AI工具</h3>
+                    <p>提供高效生产和智能生活的AI工具，Tech Geeks必备集合 👍 体验</p>
+                    <div class="card-footer">
+                        <a href="#" class="card-link">体验 <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                    <div class="card-image">
+                        <img src="https://source.unsplash.com/random/400x300/?ai" alt="AI工具">
+                    </div>
+                </div>
+
+                <!-- Web开发卡片 -->
+                <div class="card">
+                    <h3>Web开发资源</h3>
+                    <p>拥抱AI辅助编程，但坚持人类主导，让你快速掌握现代全栈开发技能 👉 加入</p>
+                    <div class="card-footer">
+                        <a href="#" class="card-link">加入 <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                    <div class="card-image">
+                        <img src="https://source.unsplash.com/random/400x300/?coding" alt="Web开发">
+                    </div>
+                </div>
+
+                <!-- 咨询服务卡片 -->
+                <div class="card">
+                    <h3>向我咨询</h3>
+                    <p>AI导航与工具使用咨询，技术实现咨询，日本生活咨询，等等。👋 预约</p>
+                    <div class="card-footer">
+                        <a href="#" class="card-link">预约 <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                    <div class="card-image">
+                        <img src="https://source.unsplash.com/random/400x300/?consulting" alt="咨询服务">
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- 底部版权信息 -->
+        <footer class="site-footer">
+            <div class="footer-social">
+                <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                <a href="#" class="social-icon"><i class="fab fa-weixin"></i></a>
+                <a href="#" class="social-icon"><i class="fas fa-graduation-cap"></i></a>
+                <a href="#" class="social-icon"><i class="far fa-envelope"></i></a>
+                <a href="#" class="social-icon"><i class="fas fa-link"></i></a>
+                <a href="#" class="social-icon"><i class="fas fa-image"></i></a>
+                <a href="#" class="social-icon"><i class="fas fa-link"></i></a>
             </div>
-            <div class="settings-section">
-                <h4>布局设置</h4>
-                <div class="setting-item">
-                    <label for="content-density">内容密度</label>
-                    <select id="content-density" class="settings-select">
-                        <option value="compact">紧凑</option>
-                        <option value="normal" selected>普通</option>
-                        <option value="comfortable">舒适</option>
-                    </select>
-                </div>
+            <div class="copyright">
+                Copyright © <span id="current-year">2024</span> AI导航. All rights reserved.
             </div>
-            <div class="settings-section">
-                <h4>常用功能</h4>
-                <div class="setting-item toggle-setting">
-                    <label for="save-history">保存搜索历史</label>
-                    <label class="toggle">
-                        <input type="checkbox" id="save-history" checked>
-                        <span class="toggle-slider"></span>
-                    </label>
-                </div>
-                <div class="setting-item toggle-setting">
-                    <label for="show-recommendations">显示智能推荐</label>
-                    <label class="toggle">
-                        <input type="checkbox" id="show-recommendations" checked>
-                        <span class="toggle-slider"></span>
-                    </label>
-                </div>
-            </div>
-            <div class="settings-section">
-                <h4>视觉效果</h4>
-                <div class="setting-item toggle-setting">
-                    <label for="enable-particles">粒子背景</label>
-                    <label class="toggle">
-                        <input type="checkbox" id="enable-particles" checked>
-                        <span class="toggle-slider"></span>
-                    </label>
-                </div>
-                <div class="setting-item toggle-setting">
-                    <label for="enable-data-streams">数据流效果</label>
-                    <label class="toggle">
-                        <input type="checkbox" id="enable-data-streams" checked>
-                        <span class="toggle-slider"></span>
-                    </label>
-                </div>
-                <div class="setting-item toggle-setting">
-                    <label for="enable-morphing-bg">动态背景</label>
-                    <label class="toggle">
-                        <input type="checkbox" id="enable-morphing-bg" checked>
-                        <span class="toggle-slider"></span>
-                    </label>
-                </div>
-                <div class="setting-item toggle-setting">
-                    <label for="enable-mouse-effects">鼠标光效</label>
-                    <label class="toggle">
-                        <input type="checkbox" id="enable-mouse-effects">
-                        <span class="toggle-slider"></span>
-                    </label>
-                </div>
-            </div>
-            <div class="settings-section">
-                <h4>重置选项</h4>
-                <button id="reset-settings" class="reset-button">恢复默认设置</button>
-            </div>
-        </div>
+        </footer>
     </div>
 
-    <!-- 遮罩层 -->
-    <div class="overlay"></div>
-
-    <header class="glass-effect">
-        <div class="logo">
-            <div class="pulse-effect"></div>
-            <h1><i class="fas fa-brain"></i> AI<span>导航</span></h1>
-        </div>
-        <div class="search-container">
-            <div class="search-bar">
-                <i class="fas fa-search"></i>
-                <input type="text" id="search-input" placeholder="输入关键词探索网络世界...">
-                <button id="voice-search"><i class="fas fa-microphone"></i></button>
-            </div>
-        </div>
-    </header>
-
-    <nav class="glass-effect">
-        <ul>
-            <li><a href="#search" class="nav-link active" data-section="search"><i class="fas fa-search"></i> <span>搜索引擎</span></a></li>
-            <li><a href="#social" class="nav-link" data-section="social"><i class="fas fa-share-alt"></i> <span>社交媒体</span></a></li>
-            <li><a href="#tools" class="nav-link" data-section="tools"><i class="fas fa-tools"></i> <span>实用工具</span></a></li>
-            <li><a href="#ai" class="nav-link" data-section="ai"><i class="fas fa-robot"></i> <span>AI工具</span></a></li>
-            <li><a href="#mechanical" class="nav-link" data-section="mechanical"><i class="fas fa-cogs"></i> <span>机械资料</span></a></li>
-        </ul>
-    </nav>
-
-    <main>
-        <section id="search" class="content-section active glass-card">
-            <h2><i class="fas fa-search animated-icon"></i> 搜索引擎</h2>
-            <div class="section-controls">
-                <button class="sort-button" data-section="search"><i class="fas fa-sort"></i> 排序</button>
-            </div>
-            <div class="card-grid sortable" id="search-grid">
-                <a href="https://www.baidu.com/" target="_blank" class="card">
-                    <div class="card-icon"><i class="fas fa-compass"></i></div>
-                    <h3>百度</h3>
-                    <p>中国最大的搜索引擎</p>
-                </a>
-                <a href="https://www.google.com/" target="_blank" class="card">
-                    <div class="card-icon"><i class="fab fa-google"></i></div>
-                    <h3>Google</h3>
-                    <p>全球最大的搜索引擎</p>
-                </a>
-                <a href="https://www.bing.com/" target="_blank" class="card">
-                    <div class="card-icon"><i class="fab fa-microsoft"></i></div>
-                    <h3>Bing</h3>
-                    <p>微软的智能搜索引擎</p>
-                </a>
-            </div>
-        </section>
-
-        <section id="social" class="content-section glass-card">
-            <h2><i class="fas fa-share-alt animated-icon"></i> 社交媒体</h2>
-            <div class="section-controls">
-                <button class="sort-button" data-section="social"><i class="fas fa-sort"></i> 排序</button>
-            </div>
-            <div class="card-grid sortable" id="social-grid">
-                <a href="https://www.weibo.com/" target="_blank" class="card">
-                    <div class="card-icon"><i class="fab fa-weibo"></i></div>
-                    <h3>微博</h3>
-                    <p>中国热门的社交平台</p>
-                </a>
-                <a href="https://www.zhihu.com/" target="_blank" class="card">
-                    <div class="card-icon"><i class="fas fa-question-circle"></i></div>
-                    <h3>知乎</h3>
-                    <p>中国最大的问答社区</p>
-                </a>
-                <a href="https://www.douyin.com/" target="_blank" class="card">
-                    <div class="card-icon"><i class="fas fa-video"></i></div>
-                    <h3>抖音</h3>
-                    <p>流行的短视频平台</p>
-                </a>
-            </div>
-        </section>
-
-        <section id="tools" class="content-section glass-card">
-            <h2><i class="fas fa-tools animated-icon"></i> 实用工具</h2>
-            <div class="section-controls">
-                <button class="sort-button" data-section="tools"><i class="fas fa-sort"></i> 排序</button>
-            </div>
-            <div class="card-grid sortable" id="tools-grid">
-                <a href="https://translate.google.cn/" target="_blank" class="card">
-                    <div class="card-icon"><i class="fas fa-language"></i></div>
-                    <h3>谷歌翻译</h3>
-                    <p>在线翻译工具</p>
-                </a>
-                <a href="https://www.ilovepdf.com/" target="_blank" class="card">
-                    <div class="card-icon"><i class="far fa-file-pdf"></i></div>
-                    <h3>PDF工具</h3>
-                    <p>全能PDF编辑转换工具</p>
-                </a>
-                <a href="https://tool.lu/" target="_blank" class="card">
-                    <div class="card-icon"><i class="fas fa-toolbox"></i></div>
-                    <h3>在线工具箱</h3>
-                    <p>程序员的工具箱</p>
-                </a>
-            </div>
-        </section>
-
-        <section id="ai" class="content-section glass-card">
-            <h2><i class="fas fa-robot animated-icon"></i> AI工具</h2>
-            <div class="section-controls">
-                <button class="sort-button" data-section="ai"><i class="fas fa-sort"></i> 排序</button>
-            </div>
-            <div class="card-grid sortable" id="ai-grid">
-                <a href="https://chat.openai.com/" target="_blank" class="card">
-                    <div class="card-icon"><i class="fas fa-comment-dots"></i></div>
-                    <h3>ChatGPT</h3>
-                    <p>AI对话助手</p>
-                </a>
-                <a href="https://www.midjourney.com/" target="_blank" class="card">
-                    <div class="card-icon"><i class="fas fa-paint-brush"></i></div>
-                    <h3>Midjourney</h3>
-                    <p>AI图像生成工具</p>
-                </a>
-                <a href="https://claude.ai/" target="_blank" class="card">
-                    <div class="card-icon"><i class="fas fa-brain"></i></div>
-                    <h3>Claude</h3>
-                    <p>Anthropic的AI助手</p>
-                </a>
-            </div>
-        </section>
-
-        <section id="mechanical" class="content-section glass-card">
-            <h2><i class="fas fa-cogs animated-icon"></i> 机械资料</h2>
-            <div class="section-controls">
-                <button class="sort-button" data-section="mechanical"><i class="fas fa-sort"></i> 排序</button>
-            </div>
-            <div class="card-grid sortable" id="mechanical-grid">
-                <a href="https://www.164580.com/biaozhun/" target="_blank" class="card">
-                    <div class="card-icon"><i class="fas fa-wrench"></i></div>
-                    <h3>易紧通标准</h3>
-                    <p>紧固件标准查询</p>
-                </a>
-            </div>
-        </section>
-    </main>
-
-    <footer class="glass-effect">
-        <div class="wave"></div>
-        <p>&copy; 2023 AI导航 | 未来风格导航平台</p>
-        <div class="footer-links">
-            <a href="#"><i class="fab fa-github"></i></a>
-            <a href="#"><i class="fab fa-twitter"></i></a>
-            <a href="#"><i class="fab fa-linkedin"></i></a>
-        </div>
-    </footer>
-
-    <button id="back-to-top" class="glass-button">
-        <i class="fas fa-arrow-up"></i>
-    </button>
-    
-    <div class="search-engines-dropdown">
-        <div class="search-engine-option active" data-engine="google">
-            <i class="fab fa-google"></i> Google
-        </div>
-        <div class="search-engine-option" data-engine="baidu">
-            <i class="fas fa-compass"></i> 百度
-        </div>
-        <div class="search-engine-option" data-engine="bing">
-            <i class="fab fa-microsoft"></i> Bing
-        </div>
-    </div>
-
-    <div class="search-history-panel">
-        <div class="search-history-header">
-            <h3>搜索历史</h3>
-            <button id="clear-history"><i class="fas fa-trash-alt"></i></button>
-        </div>
-        <div id="search-history-list">
-            <!-- 将通过JavaScript动态填充 -->
-        </div>
-    </div>
-
-    <!-- 智能推荐区域 -->
-    <div id="recommendations" class="recommendations glass-card">
-        <h3><i class="fas fa-bolt animated-icon"></i> 智能推荐</h3>
-        <p class="recommendation-intro">根据您的使用习惯，我们为您推荐以下内容：</p>
-        <div class="recommendation-container">
-            <div class="recommendation-group">
-                <h4>常用网站</h4>
-                <div id="frequent-sites" class="recommendation-items">
-                    <!-- 动态填充内容 -->
-                </div>
-            </div>
-            <div class="recommendation-group">
-                <h4>您可能感兴趣</h4>
-                <div id="suggested-sites" class="recommendation-items">
-                    <!-- 动态填充内容 -->
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 背景效果 -->
-    <div id="particles-js" class="particles-container"></div>
-    <div class="data-streams">
-        <div class="data-stream"></div>
-        <div class="data-stream"></div>
-        <div class="data-stream"></div>
-        <div class="data-stream"></div>
-        <div class="data-stream"></div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vanilla-tilt@1.7.0/dist/vanilla-tilt.min.js"></script>
+    <!-- 设置和自定义选项可以通过下拉菜单实现 -->
     <script src="visual-effects.js"></script>
     <script>
-        // 主题切换功能
-        const themeToggle = document.getElementById('theme-toggle');
-        themeToggle.addEventListener('change', () => {
-            document.body.classList.toggle('dark-theme');
-            updateAIMessage();
-            saveUserPreferences();
-        });
-
-        // 返回顶部按钮
-        const backToTop = document.getElementById('back-to-top');
-        window.addEventListener('scroll', () => {
-            if (window.pageYOffset > 200) {
-                backToTop.classList.add('visible');
-            } else {
-                backToTop.classList.remove('visible');
-            }
-        });
-        backToTop.addEventListener('click', () => {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
-
-        // 导航切换
-        const navLinks = document.querySelectorAll('.nav-link');
-        const sections = document.querySelectorAll('.content-section');
-        
-        navLinks.forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                
-                // 更新导航激活状态
-                navLinks.forEach(link => link.classList.remove('active'));
-                link.classList.add('active');
-                
-                // 显示对应内容
-                const targetSection = link.getAttribute('data-section');
-                sections.forEach(section => {
-                    section.classList.remove('active');
-                    if (section.id === targetSection) {
-                        section.classList.add('active');
-                    }
-                });
-
-                // 平滑滚动
-                document.querySelector(`#${targetSection}`).scrollIntoView({
-                    behavior: 'smooth'
-                });
-            });
-        });
-
-        // AI助手消息
-        function updateAIMessage() {
-            const aiMessage = document.getElementById('ai-message');
-            const isDarkMode = document.body.classList.contains('dark-theme');
-            
-            if (isDarkMode) {
-                aiMessage.textContent = "夜间模式已启用，保护您的眼睛。需要其他帮助吗？";
-            } else {
-                aiMessage.textContent = "您好！欢迎使用AI导航。需要什么帮助吗？";
-            }
-        }
-
-        // 搜索功能
-        const searchInput = document.getElementById('search-input');
-        searchInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                const query = searchInput.value.trim();
-                if (query) {
-                    performSearch(query);
-                }
-            }
-        });
-        
-        searchInput.addEventListener('focus', () => {
-            showSearchHistory();
-        });
-
-        // 语音搜索
-        const voiceSearch = document.getElementById('voice-search');
-        voiceSearch.addEventListener('click', () => {
-            if ('webkitSpeechRecognition' in window) {
-                const recognition = new webkitSpeechRecognition();
-                recognition.lang = 'zh-CN';
-                recognition.start();
-                
-                voiceSearch.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-                
-                recognition.onresult = (event) => {
-                    const transcript = event.results[0][0].transcript;
-                    searchInput.value = transcript;
-                    voiceSearch.innerHTML = '<i class="fas fa-microphone"></i>';
-                };
-                
-                recognition.onerror = () => {
-                    voiceSearch.innerHTML = '<i class="fas fa-microphone"></i>';
-                };
-            } else {
-                alert('您的浏览器不支持语音识别');
-            }
-        });
-
-        // 页面加载动画
-        window.addEventListener('load', () => {
-            document.body.classList.add('loaded');
-            loadUserPreferences();
-            initSortables();
-            updateRecommendations();
-        });
-        
-        // 设置面板相关
-        const settingsToggle = document.getElementById('settings-toggle');
-        const settingsPanel = document.querySelector('.settings-panel');
-        const closeSettings = document.getElementById('close-settings');
-        const overlay = document.querySelector('.overlay');
-        
-        settingsToggle.addEventListener('click', () => {
-            settingsPanel.classList.add('active');
-            overlay.classList.add('active');
-        });
-        
-        closeSettings.addEventListener('click', () => {
-            settingsPanel.classList.remove('active');
-            overlay.classList.remove('active');
-        });
-        
-        overlay.addEventListener('click', () => {
-            settingsPanel.classList.remove('active');
-            overlay.classList.remove('active');
-        });
-        
-        // 颜色主题设置
-        const colorOptions = document.querySelectorAll('.color-option');
-        colorOptions.forEach(option => {
-            option.addEventListener('click', () => {
-                colorOptions.forEach(opt => opt.classList.remove('active'));
-                option.classList.add('active');
-                
-                const colorTheme = option.getAttribute('data-color');
-                document.body.setAttribute('data-color-theme', colorTheme);
-                saveUserPreferences();
-            });
-        });
-        
-        // 内容密度设置
-        const contentDensity = document.getElementById('content-density');
-        contentDensity.addEventListener('change', () => {
-            document.body.setAttribute('data-density', contentDensity.value);
-            saveUserPreferences();
-        });
-        
-        // 重置设置
-        const resetSettings = document.getElementById('reset-settings');
-        resetSettings.addEventListener('click', () => {
-            if (confirm('确定要重置所有设置吗？这将清除所有自定义配置。')) {
-                localStorage.removeItem('ai-nav-preferences');
-                localStorage.removeItem('ai-nav-card-order');
-                localStorage.removeItem('ai-nav-search-history');
-                localStorage.removeItem('ai-nav-site-visits');
-                location.reload();
-            }
-        });
-        
-        // 保存用户偏好设置
-        function saveUserPreferences() {
-            const preferences = {
-                theme: document.body.classList.contains('dark-theme'),
-                colorTheme: document.body.getAttribute('data-color-theme') || 'default',
-                density: document.body.getAttribute('data-density') || 'normal',
-                saveHistory: document.getElementById('save-history').checked,
-                showRecommendations: document.getElementById('show-recommendations').checked,
-                enableParticles: document.getElementById('enable-particles').checked,
-                enableDataStreams: document.getElementById('enable-data-streams').checked,
-                enableMorphingBg: document.getElementById('enable-morphing-bg').checked,
-                enableMouseEffects: document.getElementById('enable-mouse-effects').checked
-            };
-            
-            localStorage.setItem('ai-nav-preferences', JSON.stringify(preferences));
-            
-            // 应用视觉效果设置
-            applyVisualEffectsSettings(preferences);
-        }
-        
-        // 加载用户偏好设置
-        function loadUserPreferences() {
-            const preferences = JSON.parse(localStorage.getItem('ai-nav-preferences'));
-            
-            if (preferences) {
-                // 应用主题
-                if (preferences.theme) {
-                    document.body.classList.add('dark-theme');
-                    document.getElementById('theme-toggle').checked = true;
-                }
-                
-                // 应用颜色主题
-                if (preferences.colorTheme) {
-                    document.body.setAttribute('data-color-theme', preferences.colorTheme);
-                    colorOptions.forEach(option => {
-                        option.classList.remove('active');
-                        if (option.getAttribute('data-color') === preferences.colorTheme) {
-                            option.classList.add('active');
-                        }
-                    });
-                }
-                
-                // 应用内容密度
-                if (preferences.density) {
-                    document.body.setAttribute('data-density', preferences.density);
-                    contentDensity.value = preferences.density;
-                }
-                
-                // 应用其他设置
-                document.getElementById('save-history').checked = preferences.saveHistory !== false;
-                document.getElementById('show-recommendations').checked = preferences.showRecommendations !== false;
-                
-                // 应用视觉效果设置
-                if (preferences.enableParticles !== undefined) {
-                    document.getElementById('enable-particles').checked = preferences.enableParticles;
-                }
-                if (preferences.enableDataStreams !== undefined) {
-                    document.getElementById('enable-data-streams').checked = preferences.enableDataStreams;
-                }
-                if (preferences.enableMorphingBg !== undefined) {
-                    document.getElementById('enable-morphing-bg').checked = preferences.enableMorphingBg;
-                }
-                if (preferences.enableMouseEffects !== undefined) {
-                    document.getElementById('enable-mouse-effects').checked = preferences.enableMouseEffects;
-                }
-                
-                // 显示/隐藏推荐区域
-                if (preferences.showRecommendations) {
-                    document.getElementById('recommendations').classList.add('active');
-                }
-                
-                // 应用视觉效果设置
-                applyVisualEffectsSettings(preferences);
-            }
-            
-            // 加载卡片顺序
-            loadCardOrder();
-        }
-        
-        // 应用视觉效果设置
-        function applyVisualEffectsSettings(preferences) {
-            // 粒子背景
-            const particlesContainer = document.getElementById('particles-js');
-            if (particlesContainer) {
-                particlesContainer.style.display = preferences.enableParticles ? 'block' : 'none';
-            }
-            
-            // 数据流效果
-            const dataStreams = document.querySelector('.data-streams');
-            if (dataStreams) {
-                dataStreams.style.display = preferences.enableDataStreams ? 'block' : 'none';
-            }
-            
-            // 动态背景变化
-            if (window.stopMorphingBg) {
-                window.stopMorphingBg();
-            }
-            if (preferences.enableMorphingBg) {
-                window.requestMorphingBg();
-            }
-            
-            // 鼠标光效
-            if (preferences.enableMouseEffects) {
-                if (typeof initMouseGlow === 'function' && !document.querySelector('.mouse-glow')) {
-                    initMouseGlow();
-                }
-            } else {
-                const mouseGlow = document.querySelector('.mouse-glow');
-                if (mouseGlow) {
-                    mouseGlow.remove();
-                }
-            }
-        }
-        
-        // 初始化可排序功能
-        function initSortables() {
-            const sortableGrids = document.querySelectorAll('.sortable');
-            sortableGrids.forEach(grid => {
-                new Sortable(grid, {
-                    animation: 150,
-                    ghostClass: 'sortable-ghost',
-                    onEnd: function() {
-                        saveCardOrder();
-                    }
-                });
-            });
-            
-            // 添加排序按钮功能
-            const sortButtons = document.querySelectorAll('.sort-button');
-            sortButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    const section = button.getAttribute('data-section');
-                    const grid = document.getElementById(`${section}-grid`);
-                    
-                    if (grid.classList.contains('sorting-active')) {
-                        grid.classList.remove('sorting-active');
-                        button.innerHTML = '<i class="fas fa-sort"></i> 排序';
-                    } else {
-                        grid.classList.add('sorting-active');
-                        button.innerHTML = '<i class="fas fa-check"></i> 完成';
-                    }
-                });
-            });
-        }
-        
-        // 保存卡片顺序
-        function saveCardOrder() {
-            const cardOrder = {};
-            const sections = ['search', 'social', 'tools', 'ai', 'mechanical'];
-            
-            sections.forEach(section => {
-                const cards = document.querySelectorAll(`#${section}-grid .card`);
-                cardOrder[section] = Array.from(cards).map(card => card.getAttribute('href'));
-            });
-            
-            localStorage.setItem('ai-nav-card-order', JSON.stringify(cardOrder));
-        }
-        
-        // 加载卡片顺序
-        function loadCardOrder() {
-            const savedOrder = JSON.parse(localStorage.getItem('ai-nav-card-order'));
-            
-            if (savedOrder) {
-                Object.keys(savedOrder).forEach(section => {
-                    const grid = document.getElementById(`${section}-grid`);
-                    const urls = savedOrder[section];
-                    
-                    if (grid && urls && urls.length) {
-                        const cards = Array.from(grid.querySelectorAll('.card'));
-                        
-                        // 根据保存的顺序重新排序卡片
-                        urls.forEach(url => {
-                            const card = cards.find(c => c.getAttribute('href') === url);
-                            if (card) {
-                                grid.appendChild(card);
-                            }
-                        });
-                    }
-                });
-            }
-        }
-        
-        // 记录网站访问
-        document.querySelectorAll('.card').forEach(card => {
-            card.addEventListener('click', () => {
-                const url = card.getAttribute('href');
-                const title = card.querySelector('h3').textContent;
-                const icon = card.querySelector('.card-icon i').className;
-                
-                recordSiteVisit(url, title, icon);
-            });
-        });
-        
-        function recordSiteVisit(url, title, icon) {
-            let visits = JSON.parse(localStorage.getItem('ai-nav-site-visits')) || {};
-            
-            if (!visits[url]) {
-                visits[url] = {
-                    title: title,
-                    icon: icon,
-                    count: 0,
-                    lastVisit: Date.now()
-                };
-            }
-            
-            visits[url].count++;
-            visits[url].lastVisit = Date.now();
-            
-            localStorage.setItem('ai-nav-site-visits', JSON.stringify(visits));
-            
-            // 更新推荐
-            updateRecommendations();
-        }
-        
-        // 更新推荐内容
-        function updateRecommendations() {
-            const visits = JSON.parse(localStorage.getItem('ai-nav-site-visits')) || {};
-            const frequentSites = document.getElementById('frequent-sites');
-            const suggestedSites = document.getElementById('suggested-sites');
-            
-            // 清空现有内容
-            frequentSites.innerHTML = '';
-            suggestedSites.innerHTML = '';
-            
-            // 获取访问次数最多的5个网站
-            const sortedByFrequency = Object.entries(visits)
-                .sort((a, b) => b[1].count - a[1].count)
-                .slice(0, 4);
-            
-            if (sortedByFrequency.length === 0) {
-                frequentSites.innerHTML = '<p class="empty-state">暂无数据，请先浏览一些网站</p>';
-            } else {
-                sortedByFrequency.forEach(([url, data]) => {
-                    const item = document.createElement('a');
-                    item.className = 'recommendation-item';
-                    item.href = url;
-                    item.target = '_blank';
-                    item.innerHTML = `
-                        <div class="recommendation-icon"><i class="${data.icon}"></i></div>
-                        <div class="recommendation-text">${data.title}</div>
-                    `;
-                    frequentSites.appendChild(item);
-                });
-            }
-            
-            // 模拟一些推荐网站
-            const suggestions = [
-                { url: 'https://juejin.cn/', title: '掘金', icon: 'fas fa-code' },
-                { url: 'https://github.com/', title: 'GitHub', icon: 'fab fa-github' },
-                { url: 'https://www.bilibili.com/', title: 'B站', icon: 'fas fa-play-circle' },
-                { url: 'https://cloud.tencent.com/', title: '腾讯云', icon: 'fas fa-cloud' }
-            ];
-            
-            suggestions.forEach(suggestion => {
-                if (!Object.keys(visits).includes(suggestion.url)) {
-                    const item = document.createElement('a');
-                    item.className = 'recommendation-item';
-                    item.href = suggestion.url;
-                    item.target = '_blank';
-                    item.innerHTML = `
-                        <div class="recommendation-icon"><i class="${suggestion.icon}"></i></div>
-                        <div class="recommendation-text">${suggestion.title}</div>
-                    `;
-                    suggestedSites.appendChild(item);
-                }
-            });
-            
-            if (suggestedSites.children.length === 0) {
-                suggestedSites.innerHTML = '<p class="empty-state">没有更多推荐</p>';
-            }
-            
-            // 显示或隐藏推荐区域
-            const preferences = JSON.parse(localStorage.getItem('ai-nav-preferences')) || {};
-            if (preferences.showRecommendations !== false) {
-                document.getElementById('recommendations').classList.add('active');
-            } else {
-                document.getElementById('recommendations').classList.remove('active');
-            }
-        }
-        
-        // 增强搜索功能
-        const searchEngineOptions = document.querySelectorAll('.search-engine-option');
-        const searchBar = document.querySelector('.search-bar');
-        let currentSearchEngine = 'google';
-        
-        // 切换搜索引擎
-        searchBar.querySelector('i').addEventListener('click', (e) => {
-            const dropdown = document.querySelector('.search-engines-dropdown');
-            dropdown.classList.toggle('active');
-            e.stopPropagation();
-        });
-        
-        searchEngineOptions.forEach(option => {
-            option.addEventListener('click', () => {
-                const engine = option.getAttribute('data-engine');
-                currentSearchEngine = engine;
-                
-                // 更新图标
-                const icon = option.querySelector('i').className;
-                searchBar.querySelector('i').className = icon;
-                
-                // 更新活动状态
-                searchEngineOptions.forEach(opt => opt.classList.remove('active'));
-                option.classList.add('active');
-                
-                // 关闭下拉菜单
-                document.querySelector('.search-engines-dropdown').classList.remove('active');
-                
-                // 保存偏好
-                saveUserPreferences();
-            });
-        });
-        
-        // 关闭下拉菜单
-        document.addEventListener('click', () => {
-            document.querySelector('.search-engines-dropdown').classList.remove('active');
-            document.querySelector('.search-history-panel').classList.remove('active');
-        });
-        
-        function performSearch(query) {
-            // 保存搜索历史
-            const preferences = JSON.parse(localStorage.getItem('ai-nav-preferences')) || {};
-            if (preferences.saveHistory !== false) {
-                saveSearchHistory(query);
-            }
-            
-            let searchUrl;
-            switch (currentSearchEngine) {
-                case 'baidu':
-                    searchUrl = `https://www.baidu.com/s?wd=${encodeURIComponent(query)}`;
-                    break;
-                case 'bing':
-                    searchUrl = `https://www.bing.com/search?q=${encodeURIComponent(query)}`;
-                    break;
-                case 'google':
-                default:
-                    searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
-            }
-            
-            window.open(searchUrl, '_blank');
-        }
-        
-        // 保存搜索历史
-        function saveSearchHistory(query) {
-            let history = JSON.parse(localStorage.getItem('ai-nav-search-history')) || [];
-            
-            // 如果已经存在相同的查询，先删除旧的
-            history = history.filter(item => item.query !== query);
-            
-            // 添加到历史记录最前面
-            history.unshift({
-                query: query,
-                timestamp: Date.now(),
-                engine: currentSearchEngine
-            });
-            
-            // 只保留最近的15条记录
-            if (history.length > 15) {
-                history = history.slice(0, 15);
-            }
-            
-            localStorage.setItem('ai-nav-search-history', JSON.stringify(history));
-        }
-        
-        // 显示搜索历史
-        function showSearchHistory() {
-            const historyPanel = document.querySelector('.search-history-panel');
-            const historyList = document.getElementById('search-history-list');
-            const history = JSON.parse(localStorage.getItem('ai-nav-search-history')) || [];
-            
-            historyList.innerHTML = '';
-            
-            if (history.length === 0) {
-                historyList.innerHTML = '<p class="empty-history">无搜索历史</p>';
-            } else {
-                history.forEach(item => {
-                    const historyItem = document.createElement('div');
-                    historyItem.className = 'history-item';
-                    
-                    // 获取引擎图标
-                    let engineIcon;
-                    switch(item.engine) {
-                        case 'baidu':
-                            engineIcon = 'fas fa-compass';
-                            break;
-                        case 'bing':
-                            engineIcon = 'fab fa-microsoft';
-                            break;
-                        case 'google':
-                        default:
-                            engineIcon = 'fab fa-google';
-                    }
-                    
-                    historyItem.innerHTML = `
-                        <div class="history-icon"><i class="${engineIcon}"></i></div>
-                        <div class="history-query">${item.query}</div>
-                        <div class="history-time">${formatTime(item.timestamp)}</div>
-                    `;
-                    
-                    historyItem.addEventListener('click', () => {
-                        searchInput.value = item.query;
-                        historyPanel.classList.remove('active');
-                        performSearch(item.query);
-                    });
-                    
-                    historyList.appendChild(historyItem);
-                });
-            }
-            
-            historyPanel.classList.add('active');
-            event.stopPropagation();
-        }
-        
-        // 清除搜索历史
-        document.getElementById('clear-history').addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (confirm('确定要清除所有搜索历史吗？')) {
-                localStorage.removeItem('ai-nav-search-history');
-                document.getElementById('search-history-list').innerHTML = '<p class="empty-history">无搜索历史</p>';
-            }
-        });
-        
-        // 格式化时间
-        function formatTime(timestamp) {
-            const now = new Date();
-            const date = new Date(timestamp);
-            
-            const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
-            
-            if (diffDays === 0) {
-                return '今天';
-            } else if (diffDays === 1) {
-                return '昨天';
-            } else if (diffDays < 7) {
-                return `${diffDays}天前`;
-            } else {
-                return `${date.getMonth() + 1}月${date.getDate()}日`;
-            }
-        }
-        
-        // 保存其他设置更改
-        document.getElementById('save-history').addEventListener('change', saveUserPreferences);
-        document.getElementById('show-recommendations').addEventListener('change', () => {
-            saveUserPreferences();
-            updateRecommendations();
-        });
-        
-        // 视觉效果设置事件监听
-        document.getElementById('enable-particles').addEventListener('change', saveUserPreferences);
-        document.getElementById('enable-data-streams').addEventListener('change', saveUserPreferences);
-        document.getElementById('enable-morphing-bg').addEventListener('change', saveUserPreferences);
-        document.getElementById('enable-mouse-effects').addEventListener('change', saveUserPreferences);
+        // 设置当前年份
+        document.getElementById('current-year').textContent = new Date().getFullYear();
     </script>
-    <!-- 账号管理相关脚本 - 仅初始化 authAPI -->
-    <script>
-        window.authAPI = {}; // 确保 authAPI 对象在使用前已定义
-    </script>
-    <!-- 先加载API客户端 -->
-    <script src="auth-api.js"></script>
-    <!-- 再加载认证兼容层 -->
-    <script src="auth.js"></script>
-    <script src="account.js"></script>
 </body>
 </html>
