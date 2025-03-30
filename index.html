@@ -353,31 +353,8 @@
             // 检查并隐藏已删除的热门文章
             hideDeletedPopularPosts();
             
-            // 热门文章点击事件
-            document.querySelectorAll('.popular-post').forEach(post => {
-                post.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    
-                    // 创建一个临时博客对象
-                    const blog = {
-                        id: 'popular-' + this.getAttribute('data-title').replace(/\s+/g, '-').toLowerCase(),
-                        title: this.getAttribute('data-title'),
-                        content: "这是热门文章的内容。详细内容正在编写中...",
-                        category: this.getAttribute('data-category'),
-                        date: new Date().toISOString().split('T')[0],
-                        author: '网站作者',
-                        tags: [this.getAttribute('data-category')]
-                    };
-                    
-                    // 显示博客详情
-                    if (typeof showBlogDetail === 'function') {
-                        showBlogDetail(blog);
-                    } else {
-                        // 使用内置的博客详情模态框
-                        showBlogDetailModal(blog);
-                    }
-                });
-            });
+            // 初始化热门文章点击事件
+            initPopularPostEvents();
             
             // 标签云点击事件
             document.querySelectorAll('.sidebar-tag').forEach(tag => {
@@ -577,6 +554,8 @@
         
         // 显示博客详情模态框
         function showBlogDetailModal(blog) {
+            console.log('显示博客详情，博客ID:', blog.id);
+            
             // 创建博客详情模态框
             const detailModal = document.createElement('div');
             detailModal.className = 'blog-detail-modal';
@@ -640,10 +619,16 @@
             // 添加删除功能
             const deleteBtn = detailModal.querySelector('.blog-detail-delete');
             if (deleteBtn) {
-                deleteBtn.addEventListener('click', function() {
+                console.log('设置删除按钮事件监听器');
+                deleteBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
                     const blogId = this.getAttribute('data-blog-id');
+                    console.log('删除按钮被点击，博客ID:', blogId);
                     showDeleteConfirmation(blogId, detailModal);
                 });
+            } else {
+                console.error('未找到删除按钮');
             }
             
             // 点击模态框外部关闭
@@ -722,8 +707,55 @@
         
         // 删除博客文章
         function deleteBlog(blogId) {
-            // 检查博客ID前缀
-            if (blogId.startsWith('static-')) {
+            console.log('尝试删除博客，ID:', blogId);
+            
+            // 从热门文章URL中提取标题
+            if (blogId.startsWith('popular-')) {
+                // 尝试从DOM中查找这篇热门文章
+                const blogTitle = blogTitleFromId(blogId);
+                console.log('热门文章标题:', blogTitle);
+                
+                // 保存被删除文章的信息到本地存储
+                saveDeletedPopularPost(blogTitle);
+                
+                // 查找热门文章元素
+                const popularPostElement = document.querySelector(`.popular-post[data-title="${blogTitle}"]`);
+                if (popularPostElement) {
+                    // 从DOM中删除热门文章
+                    const listItem = popularPostElement.closest('li');
+                    if (listItem) {
+                        listItem.style.opacity = '0';
+                        listItem.style.height = '0';
+                        
+                        // 动画结束后从DOM中移除
+                        setTimeout(() => {
+                            listItem.parentNode.removeChild(listItem);
+                        }, 500);
+                    }
+                } else {
+                    console.log('未找到热门文章元素:', blogTitle);
+                    // 尝试通过data-title属性的部分匹配
+                    document.querySelectorAll('.popular-post').forEach(post => {
+                        if (post.getAttribute('data-title').toLowerCase().includes(blogTitle.toLowerCase())) {
+                            console.log('找到相似标题的热门文章:', post.getAttribute('data-title'));
+                            // 保存匹配的标题
+                            saveDeletedPopularPost(post.getAttribute('data-title'));
+                            
+                            // 从DOM中删除热门文章
+                            const listItem = post.closest('li');
+                            if (listItem) {
+                                listItem.style.opacity = '0';
+                                listItem.style.height = '0';
+                                
+                                // 动画结束后从DOM中移除
+                                setTimeout(() => {
+                                    listItem.parentNode.removeChild(listItem);
+                                }, 500);
+                            }
+                        }
+                    });
+                }
+            } else if (blogId.startsWith('static-')) {
                 // 静态博客，从DOM中删除
                 const index = parseInt(blogId.replace('static-', ''));
                 const allBlogCards = document.querySelectorAll('.blog-card');
@@ -745,26 +777,6 @@
                             }
                         }
                     }, 500);
-                }
-            } else if (blogId.startsWith('popular-')) {
-                // 热门文章删除处理
-                // 查找侧边栏中的热门文章
-                const popularPostElement = document.querySelector(`.popular-post[data-title="${blogTitleFromId(blogId)}"]`);
-                if (popularPostElement) {
-                    // 保存被删除文章的信息到本地存储
-                    saveDeletedPopularPost(popularPostElement.getAttribute('data-title'));
-                    
-                    // 从DOM中删除热门文章
-                    const listItem = popularPostElement.closest('li');
-                    if (listItem) {
-                        listItem.style.opacity = '0';
-                        listItem.style.height = '0';
-                        
-                        // 动画结束后从DOM中移除
-                        setTimeout(() => {
-                            listItem.parentNode.removeChild(listItem);
-                        }, 500);
-                    }
                 }
             } else {
                 // 用户创建的博客文章
@@ -788,20 +800,27 @@
         
         // 从博客ID提取标题
         function blogTitleFromId(blogId) {
-            // 尝试从页面中查找对应ID的博客详情标题
+            // 首先尝试使用全局变量或DOM元素中存储的当前博客标题
             const blogDetailTitle = document.querySelector('.blog-detail-header h2');
             if (blogDetailTitle) {
                 return blogDetailTitle.textContent;
             }
             
-            // 热门文章列表中查找对应ID的文章
-            const popularPosts = document.querySelectorAll('.popular-post');
-            for (const post of popularPosts) {
-                const postTitle = post.getAttribute('data-title');
-                const postId = 'popular-' + post.getAttribute('data-title').replace(/\s+/g, '-').toLowerCase();
-                if (postId === blogId || post.getAttribute('data-blog-id') === blogId) {
-                    return postTitle;
+            // 尝试从ID解析标题（仅适用于规范化的ID）
+            if (blogId.startsWith('popular-')) {
+                const titleFromId = blogId.replace('popular-', '').replace(/-/g, ' ');
+                
+                // 检查是否有匹配的热门文章
+                const posts = document.querySelectorAll('.popular-post');
+                for (const post of posts) {
+                    if (post.getAttribute('data-title').toLowerCase().replace(/\s+/g, ' ').includes(
+                        titleFromId.toLowerCase().replace(/\s+/g, ' '))) {
+                        return post.getAttribute('data-title');
+                    }
                 }
+                
+                // 如果没有精确匹配，返回ID中的标题
+                return titleFromId;
             }
             
             return '未知文章';
@@ -873,6 +892,38 @@
             formatted = formatted.replace(/`(.*?)`/g, '<code>$1</code>');
             
             return formatted;
+        }
+
+        // 热门文章点击事件
+        function initPopularPostEvents() {
+            document.querySelectorAll('.popular-post').forEach(post => {
+                console.log('初始化热门文章:', post.getAttribute('data-title'));
+                post.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // 创建一个临时博客对象，确保ID格式规范化
+                    const title = this.getAttribute('data-title');
+                    const normalizedId = 'popular-' + title.toLowerCase().replace(/\s+/g, '-');
+                    
+                    const blog = {
+                        id: normalizedId,
+                        title: title,
+                        content: "这是热门文章的内容。详细内容正在编写中...",
+                        category: this.getAttribute('data-category'),
+                        date: new Date().toISOString().split('T')[0],
+                        author: '网站作者',
+                        tags: [this.getAttribute('data-category')]
+                    };
+                    
+                    // 显示博客详情
+                    if (typeof showBlogDetail === 'function') {
+                        showBlogDetail(blog);
+                    } else {
+                        // 使用内置的博客详情模态框
+                        showBlogDetailModal(blog);
+                    }
+                });
+            });
         }
     </script>
 </body>
