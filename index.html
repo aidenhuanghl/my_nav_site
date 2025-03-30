@@ -425,13 +425,36 @@
             
             // 搜索功能
             const searchForm = document.querySelector('.blog-search');
-            if (searchForm) {
-                searchForm.addEventListener('submit', function(e) {
+            const searchInput = document.querySelector('.blog-search input');
+            const searchButton = document.querySelector('.blog-search button');
+            
+            if (searchForm && searchInput && searchButton) {
+                // 表单提交事件
+                searchForm.addEventListener('submit', performSearch);
+                
+                // 搜索按钮点击事件
+                searchButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    performSearch(e);
+                });
+                
+                // 输入框回车事件
+                searchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        performSearch(e);
+                    }
+                });
+                
+                // 搜索执行函数
+                function performSearch(e) {
                     e.preventDefault();
                     
-                    const searchTerm = this.querySelector('input').value.toLowerCase().trim();
+                    const searchTerm = searchInput.value.toLowerCase().trim();
+                    console.log('执行搜索：', searchTerm); // 调试信息
                     
                     if (!searchTerm) {
+                        alert('请输入搜索关键词');
                         return;
                     }
                     
@@ -445,6 +468,8 @@
                         
                         if (title.includes(searchTerm) || excerpt.includes(searchTerm)) {
                             card.style.display = '';
+                            card.classList.add('search-highlight'); // 高亮显示搜索结果
+                            setTimeout(() => card.classList.remove('search-highlight'), 2000); // 2秒后移除高亮
                             found = true;
                         } else {
                             card.style.display = 'none';
@@ -457,8 +482,12 @@
                         blogCards.forEach(card => {
                             card.style.display = '';
                         });
+                    } else {
+                        // 显示搜索结果数量
+                        const visibleCards = document.querySelectorAll('.blog-card[style=""]').length;
+                        console.log(`找到 ${visibleCards} 篇相关文章`);
                     }
-                });
+                }
             }
             
             // 分类筛选功能
