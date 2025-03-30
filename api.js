@@ -5,9 +5,11 @@
 
 const express = require('express');
 const router = express.Router();
+const path = require('path');
 
-// 导入博客路由
-const blogRoutes = require('./server/blog-routes');
+// 修复导入路径
+const blogRoutesPath = path.join(__dirname, 'server/blog-routes');
+const blogRoutes = require(blogRoutesPath);
 
 // API健康检查
 router.get('/health', (req, res) => {

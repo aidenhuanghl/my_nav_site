@@ -12,12 +12,10 @@ if (!process.env.MONGODB_URI) {
   throw new Error("请在环境变量中设置 MONGODB_URI");
 }
 
-// 创建MongoDB客户端配置
+// 创建MongoDB客户端配置 (移除已弃用的选项)
 const options = {
   serverSelectionTimeoutMS: 5000,
-  maxPoolSize: 10,
-  useNewUrlParser: true,
-  useUnifiedTopology: true
+  maxPoolSize: 10
 };
 
 // 添加副本集配置（如果有）

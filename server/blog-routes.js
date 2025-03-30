@@ -5,7 +5,10 @@
 
 const express = require('express');
 const { ObjectId } = require('mongodb');
-const { getBlogPostDAO } = require('../db-utils');
+const path = require('path');
+// 修复导入路径
+const dbUtilsPath = path.join(__dirname, '../db-utils');
+const { getBlogPostDAO } = require(dbUtilsPath);
 
 const router = express.Router();
 
