@@ -1,752 +1,713 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>文章管理 | 个人博客</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="blog-api.js"></script>
-    <style>
-        .article-manager-container {
-            max-width: 1200px;
-            margin: 50px auto;
-            padding: 20px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        
-        .manager-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .manager-title {
-            font-size: 24px;
-            font-weight: 600;
-            margin: 0;
-        }
-        
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .action-btn {
-            padding: 8px 15px;
-            background-color: #4a6da7;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            transition: all 0.3s;
-        }
-        
-        .action-btn:hover {
-            background-color: #3b5998;
-        }
-        
-        .action-btn.delete-all {
-            background-color: #ff4d4f;
-        }
-        
-        .action-btn.delete-all:hover {
-            background-color: #cf1322;
-        }
-        
-        .manager-tabs {
-            display: flex;
-            margin-bottom: 20px;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .manager-tab {
-            padding: 10px 20px;
-            cursor: pointer;
-            position: relative;
-            font-weight: 500;
-        }
-        
-        .manager-tab.active {
-            color: #4a6da7;
-        }
-        
-        .manager-tab.active::after {
-            content: '';
-            position: absolute;
-            bottom: -1px;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background-color: #4a6da7;
-        }
-        
-        .article-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        .article-table th,
-        .article-table td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .article-table th {
-            background-color: #f9f9f9;
-            font-weight: 500;
-        }
-        
-        .article-table tr:hover {
-            background-color: #f5f8ff;
-        }
-        
-        .table-actions {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .table-action-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: #666;
-            transition: all 0.3s;
-        }
-        
-        .table-action-btn:hover {
-            color: #4a6da7;
-        }
-        
-        .table-action-btn.edit:hover {
-            color: #52c41a;
-        }
-        
-        .table-action-btn.delete:hover {
-            color: #ff4d4f;
-        }
-        
-        .article-status {
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-        }
-        
-        .status-published {
-            background-color: #e6f7ff;
-            color: #1890ff;
-        }
-        
-        .status-draft {
-            background-color: #fff7e6;
-            color: #fa8c16;
-        }
-        
-        .status-deleted {
-            background-color: #fff1f0;
-            color: #ff4d4f;
-        }
-        
-        .empty-message {
-            text-align: center;
-            padding: 40px;
-            color: #999;
-        }
-        
-        .search-box {
-            display: flex;
-            margin-bottom: 20px;
-        }
-        
-        .search-input {
-            flex-grow: 1;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px 0 0 4px;
-        }
-        
-        .search-btn {
-            background-color: #4a6da7;
-            color: white;
-            border: none;
-            padding: 0 15px;
-            border-radius: 0 4px 4px 0;
-            cursor: pointer;
-        }
-        
-        .back-link {
-            display: inline-block;
-            margin-bottom: 20px;
-            color: #4a6da7;
-            text-decoration: none;
-        }
-        
-        .back-link:hover {
-            text-decoration: underline;
-        }
-        
-        .pagination {
-            display: flex;
-            justify-content: center;
-            margin-top: 20px;
-        }
-        
-        .pagination-item {
-            padding: 8px 12px;
-            margin: 0 5px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        
-        .pagination-item.active {
-            background-color: #4a6da7;
-            color: white;
-            border-color: #4a6da7;
-        }
-        
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-        }
-        
-        .modal-content {
-            background-color: #fff;
-            margin: 10% auto;
-            padding: 20px;
-            width: 50%;
-            max-width: 500px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        
-        .modal-title {
-            font-size: 20px;
-            font-weight: 600;
-            margin: 0;
-        }
-        
-        .close-modal {
-            background: none;
-            border: none;
-            font-size: 20px;
-            cursor: pointer;
-        }
-        
-        .modal-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        
-        .modal-btn {
-            padding: 8px 15px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        
-        .modal-btn.cancel {
-            background-color: #f5f5f5;
-            color: #333;
-        }
-        
-        .modal-btn.confirm {
-            background-color: #ff4d4f;
-            color: white;
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 20px;
-        }
-        
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #4a6da7;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 2s linear infinite;
-            margin: 0 auto;
-            margin-bottom: 10px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>文章管理 | 我的导航网站</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .article-list {
+      max-height: 600px;
+      overflow-y: auto;
+    }
+    
+    .search-bar {
+      margin-bottom: 20px;
+    }
+    
+    .pagination {
+      margin-top: 20px;
+    }
+    
+    .status-badge {
+      font-size: 0.8rem;
+      margin-left: 5px;
+    }
+    
+    .article-actions {
+      white-space: nowrap;
+    }
+    
+    .deleted-time {
+      font-size: 0.8rem;
+      color: #6c757d;
+    }
+    
+    .tab-content {
+      padding-top: 20px;
+    }
+    
+    .storage-mode {
+      padding: 8px 15px;
+      border-radius: 5px;
+      margin-bottom: 15px;
+      font-size: 0.9rem;
+    }
+    
+    .storage-mode.local {
+      background-color: #fff3cd;
+      color: #664d03;
+      border: 1px solid #ffecb5;
+    }
+    
+    .storage-mode.mongodb {
+      background-color: #d1e7dd;
+      color: #0f5132;
+      border: 1px solid #badbcc;
+    }
+    
+    .storage-mode.error {
+      background-color: #f8d7da;
+      color: #842029;
+      border: 1px solid #f5c2c7;
+    }
+
+    .modal-confirm {
+      color: #636363;
+    }
+    .modal-confirm .modal-content {
+      padding: 20px;
+      border-radius: 5px;
+      border: none;
+    }
+    .modal-confirm .modal-header {
+      border-bottom: none;   
+      position: relative;
+    }
+    .modal-confirm h4 {
+      text-align: center;
+      font-size: 26px;
+      margin: 30px 0 -15px;
+    }
+    .modal-confirm .form-control, .modal-confirm .btn {
+      min-height: 40px;
+      border-radius: 3px; 
+    }
+    .modal-confirm .close {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+    }
+    .modal-confirm .modal-footer {
+      border: none;
+      text-align: center;
+      border-radius: 5px;
+      font-size: 13px;
+    }
+    .modal-confirm .icon-box {
+      color: #fff;
+      position: absolute;
+      margin: 0 auto;
+      left: 0;
+      right: 0;
+      top: -70px;
+      width: 95px;
+      height: 95px;
+      border-radius: 50%;
+      z-index: 9;
+      background: #ef513a;
+      padding: 15px;
+      text-align: center;
+      box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.1);
+    }
+    .modal-confirm .icon-box i {
+      font-size: 56px;
+      position: relative;
+      top: 4px;
+    }
+    .modal-confirm.modal-dialog {
+      margin-top: 80px;
+    }
+    .modal-confirm .btn, .modal-confirm .btn:active {
+      color: #fff;
+      border-radius: 4px;
+      background: #ef513a;
+      text-decoration: none;
+      transition: all 0.4s;
+      line-height: normal;
+      border-radius: 30px;
+      margin-top: 10px;
+      padding: 6px 20px;
+      min-width: 150px;
+      border: none;
+    }
+    .modal-confirm .btn:hover, .modal-confirm .btn:focus {
+      background: #da2c12;
+      outline: none;
+    }
+    .trigger-btn {
+      display: inline-block;
+      margin: 100px auto;
+    }
+  </style>
 </head>
 <body>
-    <div class="article-manager-container">
-        <a href="index.html" class="back-link">
-            <i class="fas fa-arrow-left"></i> 返回首页
-        </a>
-        
-        <div class="manager-header">
-            <h1 class="manager-title">文章管理</h1>
-            <div class="action-buttons">
-                <button class="action-btn refresh-btn" id="refresh-btn">
-                    <i class="fas fa-sync-alt"></i> 刷新列表
-                </button>
-                <button class="action-btn" id="new-article-btn">
-                    <i class="fas fa-plus"></i> 新建文章
-                </button>
-                <button class="action-btn delete-all" id="clear-all-btn">
-                    <i class="fas fa-trash"></i> 清空所有数据
-                </button>
-            </div>
+  <header class="bg-dark text-white p-3">
+    <div class="container">
+      <div class="d-flex justify-content-between align-items-center">
+        <h1 class="h3 m-0">文章管理</h1>
+        <div>
+          <a href="index.html" class="btn btn-outline-light btn-sm me-2">
+            <i class="bi bi-house-door"></i> 返回首页
+          </a>
+          <a href="blog.html" class="btn btn-primary btn-sm">
+            <i class="bi bi-pencil-square"></i> 写文章
+          </a>
         </div>
-        
-        <div class="manager-tabs">
-            <div class="manager-tab active" data-tab="published">已发布文章</div>
-            <div class="manager-tab" data-tab="drafts">草稿箱</div>
-            <div class="manager-tab" data-tab="deleted">回收站</div>
-        </div>
-        
-        <div class="search-box">
-            <input type="text" class="search-input" id="search-input" placeholder="搜索文章标题或内容...">
-            <button class="search-btn" id="search-btn">
-                <i class="fas fa-search"></i>
+      </div>
+    </div>
+  </header>
+
+  <main class="container my-4">
+    <div id="storageInfo" class="storage-mode">
+      <i class="bi bi-info-circle"></i> 正在检查数据存储状态...
+    </div>
+    
+    <ul class="nav nav-tabs" id="articleTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="published-tab" data-bs-toggle="tab" data-bs-target="#published" type="button" role="tab" aria-controls="published" aria-selected="true">
+          已发布文章 <span id="publishedCount" class="badge bg-primary">0</span>
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="deleted-tab" data-bs-toggle="tab" data-bs-target="#deleted" type="button" role="tab" aria-controls="deleted" aria-selected="false">
+          回收站 <span id="deletedCount" class="badge bg-secondary">0</span>
+        </button>
+      </li>
+    </ul>
+    
+    <div class="tab-content" id="articleTabsContent">
+      <!-- 已发布文章 -->
+      <div class="tab-pane fade show active" id="published" role="tabpanel" aria-labelledby="published-tab">
+        <div class="search-bar">
+          <div class="input-group">
+            <input type="text" id="articleSearch" class="form-control" placeholder="搜索文章标题...">
+            <button class="btn btn-outline-secondary" type="button" id="searchBtn">
+              <i class="bi bi-search"></i> 搜索
             </button>
+          </div>
         </div>
         
-        <div id="loading" class="loading">
-            <div class="spinner"></div>
-            <p>正在加载文章...</p>
+        <div class="table-responsive article-list">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>标题</th>
+                <th>分类</th>
+                <th>浏览量</th>
+                <th>发布时间</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="articlesTableBody">
+              <tr>
+                <td colspan="5" class="text-center">加载中...</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
         
-        <div id="articles-container">
-            <table class="article-table" id="articles-table">
-                <thead>
-                    <tr>
-                        <th width="40%">标题</th>
-                        <th width="15%">日期</th>
-                        <th width="15%">分类</th>
-                        <th width="15%">浏览量</th>
-                        <th width="15%">操作</th>
-                    </tr>
-                </thead>
-                <tbody id="articles-list">
-                    <!-- 文章列表将在这里动态加载 -->
-                </tbody>
-            </table>
-            
-            <div id="empty-message" class="empty-message" style="display: none;">
-                <p>暂无文章</p>
-            </div>
+        <nav aria-label="Page navigation">
+          <ul class="pagination justify-content-center" id="pagination">
+            <!-- 分页将通过JS动态生成 -->
+          </ul>
+        </nav>
+      </div>
+      
+      <!-- 回收站 -->
+      <div class="tab-pane fade" id="deleted" role="tabpanel" aria-labelledby="deleted-tab">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="mb-0">已删除的文章</h5>
+          <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#confirmClearAll">
+            <i class="bi bi-trash"></i> 清空回收站
+          </button>
         </div>
         
-        <div class="pagination" id="pagination">
-            <!-- 分页将在这里动态加载 -->
+        <div class="table-responsive article-list">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>标题</th>
+                <th>删除时间</th>
+              </tr>
+            </thead>
+            <tbody id="deletedArticlesTableBody">
+              <tr>
+                <td colspan="2" class="text-center">加载中...</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
+      </div>
     </div>
-    
-    <!-- 删除确认模态框 -->
-    <div id="delete-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">确认删除</h2>
-                <button class="close-modal">&times;</button>
-            </div>
-            <p>您确定要删除这篇文章吗？此操作不可撤销。</p>
-            <div class="modal-actions">
-                <button class="modal-btn cancel" id="cancel-delete">取消</button>
-                <button class="modal-btn confirm" id="confirm-delete">确认删除</button>
-            </div>
+  </main>
+  
+  <!-- 确认删除模态框 -->
+  <div id="confirmDelete" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-confirm">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="icon-box">
+            <i class="bi bi-trash"></i>
+          </div>
+          <h4 class="modal-title">确定要删除吗？</h4>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-    </div>
-    
-    <!-- 清空确认模态框 -->
-    <div id="clear-all-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">确认清空所有数据</h2>
-                <button class="close-modal">&times;</button>
-            </div>
-            <p>您确定要清空所有文章数据吗？此操作将删除所有已发布文章、草稿和回收站内容，且不可撤销！</p>
-            <div class="modal-actions">
-                <button class="modal-btn cancel" id="cancel-clear">取消</button>
-                <button class="modal-btn confirm" id="confirm-clear">确认清空</button>
-            </div>
+        <div class="modal-body">
+          <p class="text-center">您确定要删除这篇文章吗？此操作无法撤销，但文章将移至回收站。</p>
         </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+          <button type="button" class="btn btn-danger" id="deleteConfirmBtn">删除</button>
+        </div>
+      </div>
     </div>
+  </div>
+  
+  <!-- 确认清空回收站模态框 -->
+  <div id="confirmClearAll" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-confirm">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="icon-box">
+            <i class="bi bi-exclamation-triangle"></i>
+          </div>
+          <h4 class="modal-title">警告！</h4>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-center">您确定要清空回收站吗？此操作将永久删除所有回收站中的文章，且无法恢复！</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+          <button type="button" class="btn btn-danger" id="clearAllConfirmBtn">确认清空</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 通知元素 -->
+  <div id="notification" class="position-fixed top-0 end-0 p-3" style="z-index: 1050; display: none;">
+    <div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="toast-header">
+        <strong class="me-auto">通知</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+      <div class="toast-body" id="notificationMessage">
+        操作成功！
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/blog-api.js"></script>
+  <script>
+    // 全局变量
+    let articles = [];
+    let deletedArticles = [];
+    let currentPage = 1;
+    let itemsPerPage = 10;
+    let currentArticleId = null;
+    let isMongoDBConnected = false;
+    let isUsingLocalStorage = false;
     
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // 初始化文章API
-            const articleManager = {
-                currentTab: 'published',
-                searchKeyword: '',
-                currentPage: 1,
-                articlesPerPage: 10,
-                totalArticles: 0,
-                articles: [],
-                currentArticleId: null,
-                
-                init: function() {
-                    this.bindEvents();
-                    this.loadArticles();
-                },
-                
-                bindEvents: function() {
-                    // 标签切换
-                    document.querySelectorAll('.manager-tab').forEach(tab => {
-                        tab.addEventListener('click', (e) => {
-                            document.querySelectorAll('.manager-tab').forEach(t => t.classList.remove('active'));
-                            e.target.classList.add('active');
-                            this.currentTab = e.target.getAttribute('data-tab');
-                            this.currentPage = 1;
-                            this.loadArticles();
-                        });
-                    });
-                    
-                    // 搜索功能
-                    document.getElementById('search-btn').addEventListener('click', () => {
-                        this.searchKeyword = document.getElementById('search-input').value.trim();
-                        this.currentPage = 1;
-                        this.loadArticles();
-                    });
-                    
-                    document.getElementById('search-input').addEventListener('keypress', (e) => {
-                        if (e.key === 'Enter') {
-                            this.searchKeyword = document.getElementById('search-input').value.trim();
-                            this.currentPage = 1;
-                            this.loadArticles();
-                        }
-                    });
-                    
-                    // 刷新按钮
-                    document.getElementById('refresh-btn').addEventListener('click', () => {
-                        this.loadArticles();
-                    });
-                    
-                    // 新建文章按钮
-                    document.getElementById('new-article-btn').addEventListener('click', () => {
-                        window.location.href = 'index.html#write-blog';
-                    });
-                    
-                    // 清空所有数据按钮
-                    document.getElementById('clear-all-btn').addEventListener('click', () => {
-                        this.showClearAllModal();
-                    });
-                    
-                    // 关闭模态框
-                    document.querySelectorAll('.close-modal, #cancel-delete, #cancel-clear').forEach(btn => {
-                        btn.addEventListener('click', () => {
-                            document.querySelectorAll('.modal').forEach(modal => {
-                                modal.style.display = 'none';
-                            });
-                        });
-                    });
-                    
-                    // 确认删除
-                    document.getElementById('confirm-delete').addEventListener('click', () => {
-                        if (this.currentArticleId) {
-                            this.deleteArticle(this.currentArticleId);
-                        }
-                    });
-                    
-                    // 确认清空所有数据
-                    document.getElementById('confirm-clear').addEventListener('click', () => {
-                        this.clearAllData();
-                    });
-                },
-                
-                loadArticles: function() {
-                    document.getElementById('loading').style.display = 'block';
-                    document.getElementById('articles-container').style.display = 'none';
-                    
-                    let apiPromise;
-                    
-                    if (this.currentTab === 'published') {
-                        apiPromise = window.blogAPI.getAllPosts();
-                    } else if (this.currentTab === 'drafts') {
-                        apiPromise = window.blogAPI.getAllDrafts();
-                    } else if (this.currentTab === 'deleted') {
-                        apiPromise = window.blogAPI.getDeletedPosts();
-                    }
-                    
-                    apiPromise.then(articles => {
-                        this.articles = articles;
-                        
-                        // 搜索过滤
-                        if (this.searchKeyword) {
-                            this.articles = this.articles.filter(article => 
-                                article.title.toLowerCase().includes(this.searchKeyword.toLowerCase()) || 
-                                (article.content && article.content.toLowerCase().includes(this.searchKeyword.toLowerCase()))
-                            );
-                        }
-                        
-                        this.totalArticles = this.articles.length;
-                        this.renderArticles();
-                        this.renderPagination();
-                        
-                        document.getElementById('loading').style.display = 'none';
-                        document.getElementById('articles-container').style.display = 'block';
-                    }).catch(error => {
-                        console.error('加载文章失败:', error);
-                        document.getElementById('loading').style.display = 'none';
-                        document.getElementById('articles-container').style.display = 'block';
-                        document.getElementById('articles-list').innerHTML = `
-                            <tr>
-                                <td colspan="5" class="empty-message">加载失败: ${error.message || '未知错误'}</td>
-                            </tr>
-                        `;
-                    });
-                },
-                
-                renderArticles: function() {
-                    const articlesList = document.getElementById('articles-list');
-                    const emptyMessage = document.getElementById('empty-message');
-                    
-                    if (this.articles.length === 0) {
-                        articlesList.innerHTML = '';
-                        emptyMessage.style.display = 'block';
-                        return;
-                    }
-                    
-                    emptyMessage.style.display = 'none';
-                    
-                    // 计算当前页的文章
-                    const startIndex = (this.currentPage - 1) * this.articlesPerPage;
-                    const endIndex = Math.min(startIndex + this.articlesPerPage, this.totalArticles);
-                    const currentPageArticles = this.articles.slice(startIndex, endIndex);
-                    
-                    articlesList.innerHTML = '';
-                    
-                    currentPageArticles.forEach(article => {
-                        const formattedDate = this.formatDate(article.date);
-                        
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${article.title}</td>
-                            <td>${formattedDate}</td>
-                            <td>${article.category || '未分类'}</td>
-                            <td>${article.viewCount || 0}</td>
-                            <td class="table-actions">
-                                <button class="table-action-btn view" data-id="${article.id}" title="查看">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                                <button class="table-action-btn edit" data-id="${article.id}" title="编辑">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="table-action-btn delete" data-id="${article.id}" title="删除">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </td>
-                        `;
-                        
-                        articlesList.appendChild(row);
-                    });
-                    
-                    // 绑定操作按钮事件
-                    this.bindActionButtons();
-                },
-                
-                renderPagination: function() {
-                    const pagination = document.getElementById('pagination');
-                    pagination.innerHTML = '';
-                    
-                    const totalPages = Math.ceil(this.totalArticles / this.articlesPerPage);
-                    
-                    if (totalPages <= 1) {
-                        return;
-                    }
-                    
-                    // 上一页
-                    if (this.currentPage > 1) {
-                        const prevBtn = document.createElement('div');
-                        prevBtn.className = 'pagination-item';
-                        prevBtn.innerHTML = '&laquo;';
-                        prevBtn.addEventListener('click', () => {
-                            this.goToPage(this.currentPage - 1);
-                        });
-                        pagination.appendChild(prevBtn);
-                    }
-                    
-                    // 页码
-                    for (let i = 1; i <= totalPages; i++) {
-                        const pageBtn = document.createElement('div');
-                        pageBtn.className = 'pagination-item';
-                        if (i === this.currentPage) {
-                            pageBtn.classList.add('active');
-                        }
-                        pageBtn.textContent = i;
-                        pageBtn.addEventListener('click', () => {
-                            this.goToPage(i);
-                        });
-                        pagination.appendChild(pageBtn);
-                    }
-                    
-                    // 下一页
-                    if (this.currentPage < totalPages) {
-                        const nextBtn = document.createElement('div');
-                        nextBtn.className = 'pagination-item';
-                        nextBtn.innerHTML = '&raquo;';
-                        nextBtn.addEventListener('click', () => {
-                            this.goToPage(this.currentPage + 1);
-                        });
-                        pagination.appendChild(nextBtn);
-                    }
-                },
-                
-                goToPage: function(page) {
-                    this.currentPage = page;
-                    this.renderArticles();
-                    this.renderPagination();
-                },
-                
-                bindActionButtons: function() {
-                    // 查看按钮
-                    document.querySelectorAll('.table-action-btn.view').forEach(btn => {
-                        btn.addEventListener('click', (e) => {
-                            const id = e.currentTarget.getAttribute('data-id');
-                            window.location.href = `index.html?view=${id}`;
-                        });
-                    });
-                    
-                    // 编辑按钮
-                    document.querySelectorAll('.table-action-btn.edit').forEach(btn => {
-                        btn.addEventListener('click', (e) => {
-                            const id = e.currentTarget.getAttribute('data-id');
-                            window.location.href = `index.html?edit=${id}`;
-                        });
-                    });
-                    
-                    // 删除按钮
-                    document.querySelectorAll('.table-action-btn.delete').forEach(btn => {
-                        btn.addEventListener('click', (e) => {
-                            const id = e.currentTarget.getAttribute('data-id');
-                            this.showDeleteModal(id);
-                        });
-                    });
-                },
-                
-                showDeleteModal: function(id) {
-                    this.currentArticleId = id;
-                    document.getElementById('delete-modal').style.display = 'block';
-                },
-                
-                showClearAllModal: function() {
-                    document.getElementById('clear-all-modal').style.display = 'block';
-                },
-                
-                deleteArticle: function(id) {
-                    document.getElementById('delete-modal').style.display = 'none';
-                    document.getElementById('loading').style.display = 'block';
-                    
-                    window.blogAPI.deletePost(id)
-                        .then(() => {
-                            this.showNotification('文章已成功删除');
-                            this.loadArticles();
-                        })
-                        .catch(error => {
-                            console.error('删除文章失败:', error);
-                            this.showNotification('删除文章失败: ' + (error.message || '未知错误'), 'error');
-                        })
-                        .finally(() => {
-                            document.getElementById('loading').style.display = 'none';
-                        });
-                },
-                
-                clearAllData: function() {
-                    document.getElementById('clear-all-modal').style.display = 'none';
-                    document.getElementById('loading').style.display = 'block';
-                    
-                    window.blogAPI.deleteAllContent()
-                        .then(result => {
-                            this.showNotification(`已清空所有数据: ${result.totalDeleted} 项内容被删除`);
-                            this.loadArticles();
-                        })
-                        .catch(error => {
-                            console.error('清空数据失败:', error);
-                            this.showNotification('清空数据失败: ' + (error.message || '未知错误'), 'error');
-                        })
-                        .finally(() => {
-                            document.getElementById('loading').style.display = 'none';
-                        });
-                },
-                
-                formatDate: function(dateString) {
-                    if (!dateString) return '未知日期';
-                    
-                    try {
-                        const date = new Date(dateString);
-                        return date.toISOString().split('T')[0];
-                    } catch (error) {
-                        return dateString;
-                    }
-                },
-                
-                showNotification: function(message, type = 'success') {
-                    // 创建通知元素
-                    const notification = document.createElement('div');
-                    notification.className = `notification ${type}`;
-                    notification.textContent = message;
-                    notification.style.position = 'fixed';
-                    notification.style.bottom = '20px';
-                    notification.style.right = '20px';
-                    notification.style.padding = '10px 20px';
-                    notification.style.borderRadius = '4px';
-                    notification.style.zIndex = '9999';
-                    
-                    if (type === 'success') {
-                        notification.style.backgroundColor = '#f6ffed';
-                        notification.style.border = '1px solid #b7eb8f';
-                        notification.style.color = '#52c41a';
-                    } else {
-                        notification.style.backgroundColor = '#fff2f0';
-                        notification.style.border = '1px solid #ffccc7';
-                        notification.style.color = '#ff4d4f';
-                    }
-                    
-                    document.body.appendChild(notification);
-                    
-                    // 3秒后自动移除
-                    setTimeout(() => {
-                        notification.style.opacity = '0';
-                        notification.style.transition = 'opacity 0.5s';
-                        
-                        setTimeout(() => {
-                            document.body.removeChild(notification);
-                        }, 500);
-                    }, 3000);
-                }
-            };
-            
-            // 初始化文章管理器
-            articleManager.init();
+    // 检查API状态并显示
+    async function checkApiStatus() {
+      try {
+        const storageInfo = document.getElementById('storageInfo');
+        
+        // 开始检查
+        storageInfo.className = 'storage-mode';
+        storageInfo.innerHTML = '<i class="bi bi-info-circle"></i> 正在检查数据存储状态...';
+        
+        const status = await window.BlogAPI.checkApiStatus();
+        
+        if (!status.apiAvailable) {
+          storageInfo.className = 'storage-mode error';
+          storageInfo.innerHTML = '<i class="bi bi-exclamation-triangle"></i> 无法连接到服务器，部分功能可能无法使用。';
+          isMongoDBConnected = false;
+          isUsingLocalStorage = false;
+          return status;
+        }
+        
+        isMongoDBConnected = status.isConnected;
+        isUsingLocalStorage = status.usingLocalStorage;
+        
+        if (status.usingLocalStorage) {
+          storageInfo.className = 'storage-mode local';
+          storageInfo.innerHTML = '<i class="bi bi-hdd"></i> 当前使用本地文件存储模式。您的数据将保存在服务器的本地文件中，而非MongoDB数据库。';
+        } else if (status.isConnected) {
+          storageInfo.className = 'storage-mode mongodb';
+          storageInfo.innerHTML = '<i class="bi bi-check-circle"></i> 已连接到MongoDB数据库。您的数据将安全地存储在云端。';
+        } else {
+          storageInfo.className = 'storage-mode error';
+          storageInfo.innerHTML = '<i class="bi bi-exclamation-circle"></i> 数据库连接失败，系统已切换到本地文件存储模式。';
+        }
+        
+        return status;
+      } catch (error) {
+        console.error('检查API状态失败:', error);
+        const storageInfo = document.getElementById('storageInfo');
+        storageInfo.className = 'storage-mode error';
+        storageInfo.innerHTML = '<i class="bi bi-exclamation-triangle"></i> 检查存储状态时出错: ' + error.message;
+        
+        isMongoDBConnected = false;
+        isUsingLocalStorage = false;
+        
+        return {
+          apiAvailable: false,
+          isConnected: false,
+          usingLocalStorage: false,
+          error: error.message
+        };
+      }
+    }
+    
+    // 显示通知
+    function showNotification(message, type = 'success') {
+      const notification = document.createElement('div');
+      notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+      notification.style.top = '20px';
+      notification.style.right = '20px';
+      notification.style.zIndex = '9999';
+      notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      `;
+      
+      document.body.appendChild(notification);
+      
+      // 自动关闭
+      setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+          document.body.removeChild(notification);
+        }, 150);
+      }, 5000);
+    }
+    
+    // 加载文章列表
+    async function loadArticles() {
+      try {
+        const tableBody = document.getElementById('articlesTableBody');
+        tableBody.innerHTML = '<tr><td colspan="5" class="text-center">加载中...</td></tr>';
+        
+        articles = await window.BlogAPI.getPosts();
+        
+        // 更新计数
+        document.getElementById('publishedCount').textContent = articles.length;
+        
+        if (articles.length === 0) {
+          tableBody.innerHTML = '<tr><td colspan="5" class="text-center">暂无文章</td></tr>';
+          return;
+        }
+        
+        renderArticles();
+        setupPagination();
+      } catch (error) {
+        console.error('加载文章失败:', error);
+        const tableBody = document.getElementById('articlesTableBody');
+        tableBody.innerHTML = `<tr><td colspan="5" class="text-center text-danger">加载文章失败: ${error.message}</td></tr>`;
+        showNotification('加载文章失败: ' + error.message, 'danger');
+      }
+    }
+    
+    // 加载已删除的文章
+    async function loadDeletedArticles() {
+      try {
+        const tableBody = document.getElementById('deletedArticlesTableBody');
+        tableBody.innerHTML = '<tr><td colspan="2" class="text-center">加载中...</td></tr>';
+        
+        deletedArticles = await window.BlogAPI.getDeletedPosts();
+        
+        // 更新计数
+        document.getElementById('deletedCount').textContent = deletedArticles.length;
+        
+        if (deletedArticles.length === 0) {
+          tableBody.innerHTML = '<tr><td colspan="2" class="text-center">回收站为空</td></tr>';
+          return;
+        }
+        
+        let html = '';
+        deletedArticles.forEach(article => {
+          const deletedTime = article.deletedAt ? new Date(article.deletedAt).toLocaleString() : '未知时间';
+          html += `
+            <tr>
+              <td>${article.title || '未知标题'}</td>
+              <td><span class="deleted-time">${deletedTime}</span></td>
+            </tr>
+          `;
         });
-    </script>
+        
+        tableBody.innerHTML = html;
+      } catch (error) {
+        console.error('加载已删除文章失败:', error);
+        const tableBody = document.getElementById('deletedArticlesTableBody');
+        tableBody.innerHTML = `<tr><td colspan="2" class="text-center text-danger">加载已删除文章失败: ${error.message}</td></tr>`;
+        showNotification('加载已删除文章失败: ' + error.message, 'danger');
+      }
+    }
+    
+    // 渲染文章列表
+    function renderArticles() {
+      const tableBody = document.getElementById('articlesTableBody');
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = Math.min(startIndex + itemsPerPage, articles.length);
+      const currentArticles = articles.slice(startIndex, endIndex);
+      
+      if (currentArticles.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="5" class="text-center">暂无文章</td></tr>';
+        return;
+      }
+      
+      let html = '';
+      currentArticles.forEach(article => {
+        const createdTime = article.createdAt ? new Date(article.createdAt).toLocaleString() : '未知时间';
+        html += `
+          <tr>
+            <td>${article.title || '未知标题'}</td>
+            <td>${article.category || '未分类'}</td>
+            <td>${article.viewCount || 0}</td>
+            <td>${createdTime}</td>
+            <td class="article-actions">
+              <a href="blog-detail.html?id=${article._id || article.id}" class="btn btn-sm btn-outline-primary" target="_blank">
+                <i class="bi bi-eye"></i>
+              </a>
+              <a href="blog.html?edit=${article._id || article.id}" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-pencil"></i>
+              </a>
+              <button class="btn btn-sm btn-outline-danger delete-btn" data-id="${article._id || article.id}">
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+      
+      tableBody.innerHTML = html;
+      
+      // 绑定删除按钮事件
+      document.querySelectorAll('.delete-btn').forEach(button => {
+        button.addEventListener('click', function() {
+          currentArticleId = this.getAttribute('data-id');
+          const modal = new bootstrap.Modal(document.getElementById('confirmDelete'));
+          modal.show();
+        });
+      });
+    }
+    
+    // 设置分页
+    function setupPagination() {
+      const paginationElement = document.getElementById('pagination');
+      const totalPages = Math.ceil(articles.length / itemsPerPage);
+      
+      let html = '';
+      
+      // 上一页按钮
+      html += `
+        <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+          <a class="page-link" href="#" data-page="${currentPage - 1}" aria-label="Previous">
+            <span aria-hidden="true">&laquo;</span>
+          </a>
+        </li>
+      `;
+      
+      // 页码按钮
+      for (let i = 1; i <= totalPages; i++) {
+        html += `
+          <li class="page-item ${i === currentPage ? 'active' : ''}">
+            <a class="page-link" href="#" data-page="${i}">${i}</a>
+          </li>
+        `;
+      }
+      
+      // 下一页按钮
+      html += `
+        <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+          <a class="page-link" href="#" data-page="${currentPage + 1}" aria-label="Next">
+            <span aria-hidden="true">&raquo;</span>
+          </a>
+        </li>
+      `;
+      
+      paginationElement.innerHTML = html;
+      
+      // 绑定分页事件
+      document.querySelectorAll('.page-link').forEach(link => {
+        link.addEventListener('click', function(e) {
+          e.preventDefault();
+          const page = parseInt(this.getAttribute('data-page'));
+          
+          // 确保页码在有效范围内
+          if (page >= 1 && page <= totalPages) {
+            currentPage = page;
+            renderArticles();
+            
+            // 更新active类
+            document.querySelectorAll('.page-item').forEach((item, index) => {
+              if (index === 0) {
+                item.classList.toggle('disabled', currentPage === 1);
+              } else if (index === document.querySelectorAll('.page-item').length - 1) {
+                item.classList.toggle('disabled', currentPage === totalPages);
+              } else {
+                item.classList.toggle('active', index === currentPage);
+              }
+            });
+          }
+        });
+      });
+    }
+    
+    // 搜索文章
+    function searchArticles() {
+      const searchTerm = document.getElementById('articleSearch').value.trim().toLowerCase();
+      
+      if (searchTerm === '') {
+        renderArticles();
+        return;
+      }
+      
+      const filteredArticles = articles.filter(article => 
+        article.title.toLowerCase().includes(searchTerm) ||
+        (article.category && article.category.toLowerCase().includes(searchTerm)) ||
+        (article.content && article.content.toLowerCase().includes(searchTerm))
+      );
+      
+      const tableBody = document.getElementById('articlesTableBody');
+      
+      if (filteredArticles.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="5" class="text-center">没有找到匹配的文章</td></tr>';
+        return;
+      }
+      
+      let html = '';
+      filteredArticles.forEach(article => {
+        const createdTime = article.createdAt ? new Date(article.createdAt).toLocaleString() : '未知时间';
+        html += `
+          <tr>
+            <td>${article.title || '未知标题'}</td>
+            <td>${article.category || '未分类'}</td>
+            <td>${article.viewCount || 0}</td>
+            <td>${createdTime}</td>
+            <td class="article-actions">
+              <a href="blog-detail.html?id=${article._id || article.id}" class="btn btn-sm btn-outline-primary" target="_blank">
+                <i class="bi bi-eye"></i>
+              </a>
+              <a href="blog.html?edit=${article._id || article.id}" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-pencil"></i>
+              </a>
+              <button class="btn btn-sm btn-outline-danger delete-btn" data-id="${article._id || article.id}">
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+      
+      tableBody.innerHTML = html;
+      
+      // 重新绑定删除按钮事件
+      document.querySelectorAll('.delete-btn').forEach(button => {
+        button.addEventListener('click', function() {
+          currentArticleId = this.getAttribute('data-id');
+          const modal = new bootstrap.Modal(document.getElementById('confirmDelete'));
+          modal.show();
+        });
+      });
+    }
+    
+    // 删除文章
+    async function deleteArticle() {
+      if (!currentArticleId) return;
+      
+      try {
+        const result = await window.BlogAPI.deletePost(currentArticleId);
+        console.log('删除结果:', result);
+        
+        // 从列表中移除
+        articles = articles.filter(article => article._id !== currentArticleId && article.id !== currentArticleId);
+        
+        // 更新UI
+        document.getElementById('publishedCount').textContent = articles.length;
+        renderArticles();
+        setupPagination();
+        
+        // 刷新回收站
+        await loadDeletedArticles();
+        
+        // 关闭模态框
+        const modal = bootstrap.Modal.getInstance(document.getElementById('confirmDelete'));
+        modal.hide();
+        
+        // 显示成功消息
+        showNotification('文章已成功删除并移至回收站', 'success');
+      } catch (error) {
+        console.error('删除文章失败:', error);
+        showNotification('删除文章失败: ' + error.message, 'danger');
+      } finally {
+        currentArticleId = null;
+      }
+    }
+    
+    // 清空回收站
+    async function clearRecycleBin() {
+      try {
+        // 这里假设后端有清空回收站的接口
+        const result = await window.BlogAPI.deleteAllContent();
+        console.log('清空回收站结果:', result);
+        
+        // 更新UI
+        document.getElementById('deletedCount').textContent = '0';
+        document.getElementById('deletedArticlesTableBody').innerHTML = '<tr><td colspan="2" class="text-center">回收站为空</td></tr>';
+        
+        // 关闭模态框
+        const modal = bootstrap.Modal.getInstance(document.getElementById('confirmClearAll'));
+        modal.hide();
+        
+        // 显示成功消息
+        showNotification('回收站已清空', 'success');
+      } catch (error) {
+        console.error('清空回收站失败:', error);
+        showNotification('清空回收站失败: ' + error.message, 'danger');
+      }
+    }
+    
+    // 初始化
+    document.addEventListener('DOMContentLoaded', async function() {
+      // 检查API状态
+      await checkApiStatus();
+      
+      // 加载文章
+      await loadArticles();
+      
+      // 加载已删除的文章
+      await loadDeletedArticles();
+      
+      // 搜索按钮事件
+      document.getElementById('searchBtn').addEventListener('click', searchArticles);
+      
+      // 搜索框回车事件
+      document.getElementById('articleSearch').addEventListener('keyup', function(e) {
+        if (e.key === 'Enter') {
+          searchArticles();
+        }
+      });
+      
+      // 删除确认按钮事件
+      document.getElementById('deleteConfirmBtn').addEventListener('click', deleteArticle);
+      
+      // 清空回收站确认按钮事件
+      document.getElementById('clearAllConfirmBtn').addEventListener('click', clearRecycleBin);
+      
+      // 标签切换事件
+      document.getElementById('articleTabs').addEventListener('shown.bs.tab', function(e) {
+        if (e.target.id === 'deleted-tab') {
+          loadDeletedArticles();
+        }
+      });
+    });
+  </script>
 </body>
 </html> 

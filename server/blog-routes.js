@@ -8,9 +8,29 @@ const { ObjectId } = require('mongodb');
 const path = require('path');
 // 修复导入路径
 const dbUtilsPath = path.join(__dirname, '../db-utils');
-const { getBlogPostDAO } = require(dbUtilsPath);
+const { getBlogPostDAO, isMongoDBConnected, isUsingLocalStorage } = require(dbUtilsPath);
+const multer = require('multer');
+const fs = require('fs');
 
 const router = express.Router();
+
+// 配置文件上传
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const uploadDir = path.join(__dirname, '../uploads');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const ext = path.extname(file.originalname);
+    cb(null, file.fieldname + '-' + uniqueSuffix + ext);
+  }
+});
+
+const upload = multer({ storage: storage });
 
 // 中间件：验证MongoDB ObjectId
 function validateObjectId(req, res, next, id) {
@@ -24,6 +44,21 @@ function validateObjectId(req, res, next, id) {
 // 参数中间件：验证ID参数
 router.param('id', validateObjectId);
 
+// 获取状态信息
+router.get('/status', async (req, res) => {
+  try {
+    const status = {
+      isConnected: isMongoDBConnected(),
+      usingLocalStorage: isUsingLocalStorage(),
+      serverTime: new Date().toISOString()
+    };
+    res.json(status);
+  } catch (error) {
+    console.error('获取状态信息失败:', error);
+    res.status(500).json({ error: '获取状态信息失败' });
+  }
+});
+
 // 获取所有博客文章
 router.get('/posts', async (req, res) => {
   try {
@@ -31,8 +66,8 @@ router.get('/posts', async (req, res) => {
     const posts = await blogPostDAO.getAllPosts();
     res.json(posts);
   } catch (error) {
-    console.error('获取博客文章失败:', error);
-    res.status(500).json({ error: '服务器错误', message: error.message });
+    console.error('获取文章失败:', error);
+    res.status(500).json({ error: '获取文章失败' });
   }
 });
 
@@ -240,6 +275,22 @@ router.delete('/all-content', async (req, res) => {
   } catch (error) {
     console.error('删除所有博客内容失败:', error);
     res.status(500).json({ error: '服务器错误', message: error.message });
+  }
+});
+
+// 上传图片
+router.post('/upload-image', upload.single('image'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: '没有上传文件' });
+    }
+    
+    // 返回图片URL
+    const imageUrl = `/uploads/${req.file.filename}`;
+    res.json({ url: imageUrl });
+  } catch (error) {
+    console.error('上传图片失败:', error);
+    res.status(500).json({ error: '上传图片失败' });
   }
 });
 
