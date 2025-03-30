@@ -133,26 +133,26 @@
                     <div class="sidebar-section">
                         <h4 class="sidebar-title">热门文章</h4>
                         <ul class="sidebar-posts">
-                            <li><a href="#">如何使用ChatGPT提高工作效率</a></li>
-                            <li><a href="#">日本工作签证申请完全指南</a></li>
-                            <li><a href="#">React vs Vue：2023年如何选择？</a></li>
-                            <li><a href="#">在日本远程工作的经验分享</a></li>
-                            <li><a href="#">Next.js 13新特性解析</a></li>
+                            <li><a href="#" class="popular-post" data-title="如何使用ChatGPT提高工作效率" data-category="ai">如何使用ChatGPT提高工作效率</a></li>
+                            <li><a href="#" class="popular-post" data-title="日本工作签证申请完全指南" data-category="japan">日本工作签证申请完全指南</a></li>
+                            <li><a href="#" class="popular-post" data-title="React vs Vue：2023年如何选择？" data-category="web">React vs Vue：2023年如何选择？</a></li>
+                            <li><a href="#" class="popular-post" data-title="在日本远程工作的经验分享" data-category="japan">在日本远程工作的经验分享</a></li>
+                            <li><a href="#" class="popular-post" data-title="Next.js 13新特性解析" data-category="web">Next.js 13新特性解析</a></li>
                         </ul>
                     </div>
                     
                     <div class="sidebar-section">
                         <h4 class="sidebar-title">标签云</h4>
                         <div class="sidebar-tags">
-                            <a href="#" class="sidebar-tag">AI</a>
-                            <a href="#" class="sidebar-tag">JavaScript</a>
-                            <a href="#" class="sidebar-tag">React</a>
-                            <a href="#" class="sidebar-tag">日本生活</a>
-                            <a href="#" class="sidebar-tag">移民</a>
-                            <a href="#" class="sidebar-tag">Web3</a>
-                            <a href="#" class="sidebar-tag">CSS</a>
-                            <a href="#" class="sidebar-tag">技术趋势</a>
-                            <a href="#" class="sidebar-tag">学习方法</a>
+                            <a href="#" class="sidebar-tag" data-tag="AI">AI</a>
+                            <a href="#" class="sidebar-tag" data-tag="JavaScript">JavaScript</a>
+                            <a href="#" class="sidebar-tag" data-tag="React">React</a>
+                            <a href="#" class="sidebar-tag" data-tag="日本生活">日本生活</a>
+                            <a href="#" class="sidebar-tag" data-tag="移民">移民</a>
+                            <a href="#" class="sidebar-tag" data-tag="Web3">Web3</a>
+                            <a href="#" class="sidebar-tag" data-tag="CSS">CSS</a>
+                            <a href="#" class="sidebar-tag" data-tag="技术趋势">技术趋势</a>
+                            <a href="#" class="sidebar-tag" data-tag="学习方法">学习方法</a>
                         </div>
                     </div>
                     
@@ -274,72 +274,362 @@
         // 设置当前年份
         document.getElementById('current-year').textContent = new Date().getFullYear();
 
-        // 处理导航链接点击事件
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.addEventListener('click', function(e) {
-                // 获取目标部分的ID
-                const targetId = this.getAttribute('href');
+        // 待DOM加载完成后执行初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 处理导航链接点击事件
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    // 获取目标部分的ID
+                    const targetId = this.getAttribute('href');
+                    
+                    // 如果是有效的内部链接
+                    if(targetId && targetId.startsWith('#')) {
+                        e.preventDefault();
+                        
+                        // 找到目标元素
+                        const targetElement = document.querySelector(targetId);
+                        
+                        // 如果找到目标元素，平滑滚动到该元素
+                        if(targetElement) {
+                            targetElement.scrollIntoView({ 
+                                behavior: 'smooth',
+                                block: 'start'
+                            });
+                        }
+                    }
+                });
+            });
+
+            // 更多选项下拉菜单
+            const moreOptionsToggle = document.getElementById('more-options-toggle');
+            const moreDropdown = document.getElementById('more-dropdown');
+            
+            if(moreOptionsToggle && moreDropdown) {
+                moreOptionsToggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    moreDropdown.classList.toggle('active');
+                });
                 
-                // 如果是有效的内部链接
-                if(targetId && targetId.startsWith('#')) {
+                // 点击页面其他地方关闭下拉菜单
+                document.addEventListener('click', function(e) {
+                    if(!moreOptionsToggle.contains(e.target) && !moreDropdown.contains(e.target)) {
+                        moreDropdown.classList.remove('active');
+                    }
+                });
+            }
+
+            // 联系表单提交处理
+            const contactForm = document.querySelector('.contact-form');
+            if(contactForm) {
+                contactForm.addEventListener('submit', function(e) {
                     e.preventDefault();
                     
-                    // 找到目标元素
-                    const targetElement = document.querySelector(targetId);
+                    // 获取表单数据
+                    const name = document.getElementById('name').value;
+                    const email = document.getElementById('email').value;
+                    const message = document.getElementById('message').value;
                     
-                    // 如果找到目标元素，平滑滚动到该元素
-                    if(targetElement) {
-                        targetElement.scrollIntoView({ 
-                            behavior: 'smooth',
-                            block: 'start'
-                        });
+                    if(!name || !email || !message) {
+                        alert('请填写完整的表单信息');
+                        return;
                     }
-                }
-            });
+                    
+                    // 在实际应用中，这里应该发送数据到服务器
+                    alert('您的留言已提交，我会尽快回复您！');
+                    
+                    // 清空表单
+                    document.getElementById('name').value = '';
+                    document.getElementById('email').value = '';
+                    document.getElementById('message').value = '';
+                });
+            }
+            
+            // 手动初始化博客功能
+            initManualBlogFunctions();
         });
-
-        // 更多选项下拉菜单
-        const moreOptionsToggle = document.getElementById('more-options-toggle');
-        const moreDropdown = document.getElementById('more-dropdown');
         
-        if(moreOptionsToggle && moreDropdown) {
-            moreOptionsToggle.addEventListener('click', function(e) {
-                e.preventDefault();
-                moreDropdown.classList.toggle('active');
+        // 手动初始化博客功能
+        function initManualBlogFunctions() {
+            // 热门文章点击事件
+            document.querySelectorAll('.popular-post').forEach(post => {
+                post.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // 创建一个临时博客对象
+                    const blog = {
+                        id: 'popular-' + Date.now(),
+                        title: this.getAttribute('data-title'),
+                        content: "这是热门文章的内容。详细内容正在编写中...",
+                        category: this.getAttribute('data-category'),
+                        date: new Date().toISOString().split('T')[0],
+                        author: '网站作者',
+                        tags: [this.getAttribute('data-category')]
+                    };
+                    
+                    // 显示博客详情
+                    if (typeof showBlogDetail === 'function') {
+                        showBlogDetail(blog);
+                    } else {
+                        alert('博客功能加载中，请稍后再试');
+                    }
+                });
             });
             
-            // 点击页面其他地方关闭下拉菜单
-            document.addEventListener('click', function(e) {
-                if(!moreOptionsToggle.contains(e.target) && !moreDropdown.contains(e.target)) {
-                    moreDropdown.classList.remove('active');
+            // 标签云点击事件
+            document.querySelectorAll('.sidebar-tag').forEach(tag => {
+                tag.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    const tagName = this.getAttribute('data-tag');
+                    
+                    // 查找带有此标签的博客卡片
+                    const blogCards = document.querySelectorAll('.blog-card');
+                    let found = false;
+                    
+                    blogCards.forEach(card => {
+                        const cardTags = Array.from(card.querySelectorAll('.blog-tag')).map(t => t.textContent);
+                        
+                        if (cardTags.some(t => t.includes(tagName))) {
+                            card.style.display = '';
+                            found = true;
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                    
+                    // 如果没找到任何匹配的博客，显示所有博客
+                    if (!found) {
+                        blogCards.forEach(card => {
+                            card.style.display = '';
+                        });
+                        alert('没有找到标签为"' + tagName + '"的博客');
+                    }
+                });
+            });
+            
+            // 订阅表单
+            const subscribeForm = document.querySelector('.sidebar-subscribe');
+            if (subscribeForm) {
+                subscribeForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const email = this.querySelector('input[type="email"]').value;
+                    
+                    if (email) {
+                        alert('感谢订阅！我们将向 ' + email + ' 发送最新博客更新。');
+                        this.querySelector('input[type="email"]').value = '';
+                    } else {
+                        alert('请输入有效的邮箱地址');
+                    }
+                });
+            }
+            
+            // 搜索功能
+            const searchForm = document.querySelector('.blog-search');
+            if (searchForm) {
+                searchForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const searchTerm = this.querySelector('input').value.toLowerCase().trim();
+                    
+                    if (!searchTerm) {
+                        return;
+                    }
+                    
+                    // 搜索博客标题和摘要
+                    const blogCards = document.querySelectorAll('.blog-card');
+                    let found = false;
+                    
+                    blogCards.forEach(card => {
+                        const title = card.querySelector('.blog-card-title').textContent.toLowerCase();
+                        const excerpt = card.querySelector('.blog-card-excerpt').textContent.toLowerCase();
+                        
+                        if (title.includes(searchTerm) || excerpt.includes(searchTerm)) {
+                            card.style.display = '';
+                            found = true;
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                    
+                    if (!found) {
+                        alert('没有找到包含"' + searchTerm + '"的博客文章');
+                        // 显示所有卡片
+                        blogCards.forEach(card => {
+                            card.style.display = '';
+                        });
+                    }
+                });
+            }
+            
+            // 分类筛选功能
+            document.querySelectorAll('.blog-category').forEach(category => {
+                category.addEventListener('click', function() {
+                    // 移除所有分类的active类
+                    document.querySelectorAll('.blog-category').forEach(c => {
+                        c.classList.remove('active');
+                    });
+                    
+                    // 给当前点击的分类添加active类
+                    this.classList.add('active');
+                    
+                    const filter = this.getAttribute('data-category');
+                    const blogCards = document.querySelectorAll('.blog-card');
+                    
+                    // 如果是"全部"类别，显示所有卡片
+                    if (filter === 'all') {
+                        blogCards.forEach(card => {
+                            card.style.display = '';
+                        });
+                        return;
+                    }
+                    
+                    // 筛选博客卡片
+                    blogCards.forEach(card => {
+                        const cardCategories = card.getAttribute('data-categories');
+                        if (cardCategories && cardCategories.includes(filter)) {
+                            card.style.display = '';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+            });
+            
+            // 为静态博客卡片添加阅读全文功能
+            document.querySelectorAll('.blog-card .blog-read-more').forEach((link, index) => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // 获取父级博客卡片
+                    const blogCard = this.closest('.blog-card');
+                    if (!blogCard) return;
+                    
+                    // 获取博客信息
+                    const title = blogCard.querySelector('.blog-card-title').textContent;
+                    const excerpt = blogCard.querySelector('.blog-card-excerpt').textContent;
+                    const dateElement = blogCard.querySelector('.blog-card-date');
+                    const date = dateElement ? dateElement.textContent : new Date().toISOString().split('T')[0];
+                    
+                    // 获取标签
+                    const tags = [];
+                    blogCard.querySelectorAll('.blog-tag').forEach(tag => {
+                        tags.push(tag.textContent);
+                    });
+                    
+                    // 获取分类
+                    const categories = blogCard.getAttribute('data-categories') || '';
+                    const category = categories.split(',')[0] || 'tech';
+                    
+                    // 博客图片
+                    const imgElement = blogCard.querySelector('.blog-card-image img');
+                    const imageUrl = imgElement ? imgElement.src : '';
+                    
+                    // 创建临时博客对象
+                    const blog = {
+                        id: 'static-' + index,
+                        title: title,
+                        content: excerpt + '\n\n这是预设的静态博客文章。详细内容正在编写中，敬请期待完整版本。',
+                        date: date,
+                        author: '网站作者',
+                        category: category,
+                        tags: tags,
+                        imageUrl: imageUrl
+                    };
+                    
+                    // 创建并显示博客详情模态框
+                    showBlogDetailModal(blog);
+                });
+            });
+        }
+        
+        // 显示博客详情模态框
+        function showBlogDetailModal(blog) {
+            // 创建博客详情模态框
+            const detailModal = document.createElement('div');
+            detailModal.className = 'blog-detail-modal';
+            
+            // 格式化日期
+            let formattedDate = blog.date;
+            
+            // 确定博客详情中使用的图片
+            let detailImageHtml = '';
+            if (blog.imageUrl) {
+                detailImageHtml = `<div class="blog-detail-image"><img src="${blog.imageUrl}" alt="${blog.title}"></div>`;
+            }
+            
+            detailModal.innerHTML = `
+                <div class="blog-detail-content">
+                    <div class="blog-detail-header">
+                        <h2>${blog.title}</h2>
+                        <button class="close-detail-btn">&times;</button>
+                    </div>
+                    <div class="blog-detail-meta">
+                        <span class="blog-detail-date"><i class="far fa-calendar-alt"></i> ${formattedDate}</span>
+                        <span class="blog-detail-author"><i class="far fa-user"></i> ${blog.author || '网站作者'}</span>
+                        <span class="blog-detail-category"><i class="far fa-folder"></i> ${blog.category || '未分类'}</span>
+                    </div>
+                    <div class="blog-detail-tags">
+                        ${Array.isArray(blog.tags) ? blog.tags.map(tag => `<span class="blog-tag">${tag}</span>`).join('') : ''}
+                    </div>
+                    ${detailImageHtml}
+                    <div class="blog-detail-body">
+                        ${formatBlogContent(blog.content)}
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(detailModal);
+            document.body.style.overflow = 'hidden';
+            
+            // 添加渐变效果
+            setTimeout(() => {
+                detailModal.classList.add('active');
+            }, 10);
+            
+            // 关闭详情模态框
+            const closeBtn = detailModal.querySelector('.close-detail-btn');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', function() {
+                    detailModal.classList.remove('active');
+                    setTimeout(() => {
+                        document.body.removeChild(detailModal);
+                        document.body.style.overflow = '';
+                    }, 300);
+                });
+            }
+            
+            // 点击模态框外部关闭
+            detailModal.addEventListener('click', function(e) {
+                if (e.target === detailModal) {
+                    detailModal.classList.remove('active');
+                    setTimeout(() => {
+                        document.body.removeChild(detailModal);
+                        document.body.style.overflow = '';
+                    }, 300);
                 }
             });
         }
-
-        // 联系表单提交处理
-        const contactForm = document.querySelector('.contact-form');
-        if(contactForm) {
-            contactForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                // 获取表单数据
-                const name = document.getElementById('name').value;
-                const email = document.getElementById('email').value;
-                const message = document.getElementById('message').value;
-                
-                if(!name || !email || !message) {
-                    alert('请填写完整的表单信息');
-                    return;
-                }
-                
-                // 在实际应用中，这里应该发送数据到服务器
-                alert('您的留言已提交，我会尽快回复您！');
-                
-                // 清空表单
-                document.getElementById('name').value = '';
-                document.getElementById('email').value = '';
-                document.getElementById('message').value = '';
-            });
+        
+        // 格式化博客内容
+        function formatBlogContent(content) {
+            if (!content) return '';
+            
+            // 将换行符转换为<br>
+            let formatted = content.replace(/\n/g, '<br>');
+            
+            // 支持简单的Markdown语法
+            // 标题
+            formatted = formatted.replace(/## (.*?)$/gm, '<h2>$1</h2>');
+            formatted = formatted.replace(/### (.*?)$/gm, '<h3>$1</h3>');
+            
+            // 粗体和斜体
+            formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            
+            // 代码块
+            formatted = formatted.replace(/`(.*?)`/g, '<code>$1</code>');
+            
+            return formatted;
         }
     </script>
 </body>
