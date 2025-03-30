@@ -98,6 +98,55 @@ function initWriteBlogModal() {
         }
     });
     
+    // 处理图片上传预览
+    const imageInput = document.querySelector('#blog-image');
+    let uploadedImageData = null;
+    
+    if (imageInput) {
+        imageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            // 检查文件大小（限制为2MB）
+            if (file.size > 2 * 1024 * 1024) {
+                alert('图片大小不能超过2MB');
+                e.target.value = '';
+                return;
+            }
+            
+            // 检查文件类型
+            if (!file.type.match('image.*')) {
+                alert('请选择图片文件');
+                e.target.value = '';
+                return;
+            }
+            
+            // 读取文件并转换为base64
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                uploadedImageData = event.target.result;
+                
+                // 显示图片预览
+                const previewContainer = document.querySelector('.image-preview-container') || document.createElement('div');
+                if (!previewContainer.classList.contains('image-preview-container')) {
+                    previewContainer.className = 'image-preview-container';
+                    const previewLabel = document.createElement('p');
+                    previewLabel.textContent = '图片预览:';
+                    previewContainer.appendChild(previewLabel);
+                    const previewImg = document.createElement('img');
+                    previewImg.className = 'image-preview';
+                    previewContainer.appendChild(previewImg);
+                    imageInput.parentNode.appendChild(previewContainer);
+                }
+                
+                const previewImg = previewContainer.querySelector('.image-preview');
+                previewImg.src = uploadedImageData;
+                previewContainer.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+    
     // 表单提交
     if (form) {
         form.addEventListener('submit', function(e) {
@@ -114,14 +163,21 @@ function initWriteBlogModal() {
                 return;
             }
             
-            // 保存博客
-            const newBlog = saveBlogPost(title, content, category, tags);
+            // 保存博客（包含上传的图片数据）
+            const newBlog = saveBlogPost(title, content, category, tags, uploadedImageData);
             
             // 提交成功
             alert('博客发布成功！');
             modal.classList.remove('active');
             document.body.style.overflow = '';
             form.reset();
+            
+            // 清除图片预览
+            const previewContainer = document.querySelector('.image-preview-container');
+            if (previewContainer) {
+                previewContainer.style.display = 'none';
+            }
+            uploadedImageData = null;
             
             // 刷新博客列表
             loadBlogPosts();
@@ -142,7 +198,7 @@ function initWriteBlogModal() {
                 return;
             }
             
-            // 保存为草稿
+            // 保存为草稿（包含上传的图片数据）
             const drafts = JSON.parse(localStorage.getItem('blogDrafts') || '[]');
             const draft = {
                 id: Date.now(),
@@ -150,7 +206,8 @@ function initWriteBlogModal() {
                 content,
                 category,
                 tags,
-                date: new Date().toISOString()
+                date: new Date().toISOString(),
+                imageData: uploadedImageData
             };
             
             drafts.push(draft);
@@ -292,7 +349,7 @@ function initBlogPagination() {
 }
 
 // 添加简单的博客帖子保存功能
-function saveBlogPost(title, content, category, tags) {
+function saveBlogPost(title, content, category, tags, imageData) {
     // 在实际应用中，这里应该与后端API交互
     // 由于这是静态网站，我们将博客数据保存在localStorage中
     let blogs = JSON.parse(localStorage.getItem('blogPosts') || '[]');
@@ -304,7 +361,8 @@ function saveBlogPost(title, content, category, tags) {
         category,
         tags: tags.split(',').map(tag => tag.trim()),
         date: new Date().toISOString(),
-        author: '网站作者'
+        author: '网站作者',
+        imageData: imageData // 保存图片数据
     };
     
     blogs.push(newBlog);
@@ -353,18 +411,25 @@ function createBlogCard(blog) {
     // 截取摘要
     const excerpt = blog.content.length > 120 ? blog.content.substring(0, 120) + '...' : blog.content;
     
-    // 根据分类选择适当的图片
-    let imageUrl = 'images/blog-1.jpg'; // 默认图片
-    
-    // 根据分类选择图片
-    if (blog.category.includes('tech') || blog.category.includes('web')) {
-        imageUrl = 'images/webdev.jpg';
-    } else if (blog.category.includes('ai')) {
-        imageUrl = 'images/ai.jpg';
-    } else if (blog.category.includes('japan')) {
-        imageUrl = 'images/japan.jpg';
-    } else if (blog.category.includes('social')) {
-        imageUrl = 'images/social.jpg';
+    // 确定要使用的图片URL
+    let imageUrl;
+    if (blog.imageData) {
+        // 使用用户上传的图片
+        imageUrl = blog.imageData;
+    } else {
+        // 使用默认图片
+        imageUrl = 'images/blog-1.jpg'; // 默认图片
+        
+        // 根据分类选择图片
+        if (blog.category.includes('tech') || blog.category.includes('web')) {
+            imageUrl = 'images/webdev.jpg';
+        } else if (blog.category.includes('ai')) {
+            imageUrl = 'images/ai.jpg';
+        } else if (blog.category.includes('japan')) {
+            imageUrl = 'images/japan.jpg';
+        } else if (blog.category.includes('social')) {
+            imageUrl = 'images/social.jpg';
+        }
     }
     
     card.innerHTML = `
@@ -428,6 +493,12 @@ function showBlogDetail(blogIdOrObject) {
         formattedDate = '未知日期';
     }
     
+    // 确定博客详情中使用的图片
+    let detailImageHtml = '';
+    if (blog.imageData) {
+        detailImageHtml = `<div class="blog-detail-image"><img src="${blog.imageData}" alt="${blog.title}"></div>`;
+    }
+    
     detailModal.innerHTML = `
         <div class="blog-detail-content">
             <div class="blog-detail-header">
@@ -442,6 +513,7 @@ function showBlogDetail(blogIdOrObject) {
             <div class="blog-detail-tags">
                 ${Array.isArray(blog.tags) ? blog.tags.map(tag => `<span class="blog-tag">${tag}</span>`).join('') : ''}
             </div>
+            ${detailImageHtml}
             <div class="blog-detail-body">
                 ${formatBlogContent(blog.content)}
             </div>

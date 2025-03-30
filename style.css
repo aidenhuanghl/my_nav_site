@@ -1231,3 +1231,29 @@ ul {
     border-radius: var(--border-radius);
     border: 1px dashed var(--card-border);
 }
+
+/* 图片预览样式 */
+.image-preview-container {
+    margin-top: 10px;
+    margin-bottom: 15px;
+    display: none;
+}
+
+.image-preview {
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+/* 博客详情图片样式 */
+.blog-detail-image {
+    margin: 20px 0;
+    text-align: center;
+}
+
+.blog-detail-image img {
+    max-width: 100%;
+    border-radius: 8px;
+    box-shadow: var(--card-shadow);
+}
