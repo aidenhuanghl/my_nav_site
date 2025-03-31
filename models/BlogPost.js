@@ -340,6 +340,60 @@ class BlogPostDAO {
     return false;
   }
 
+  // 通过字符串ID删除文章
+  async deletePostByStringId(stringId) {
+    try {
+      console.log('通过字符串ID删除文章:', stringId);
+      
+      if (this.useLocalStorage) {
+        // 从本地存储获取文章
+        const posts = getLocalStorage('blogPosts', []);
+        const index = posts.findIndex(post => post.id === stringId);
+        
+        if (index === -1) return false;
+        
+        // 保存到已删除集合
+        const deletedPosts = getLocalStorage('deletedPosts', []);
+        deletedPosts.push({
+          title: posts[index].title,
+          deletedAt: new Date()
+        });
+        setLocalStorage('deletedPosts', deletedPosts);
+        
+        // 从文章集合中删除
+        posts.splice(index, 1);
+        setLocalStorage('blogPosts', posts);
+        
+        return true;
+      }
+      
+      // 先获取文章信息，用于存储到已删除集合
+      console.log('使用id字段查询文章:', stringId);
+      const post = await this.postsCollection.findOne({ id: stringId });
+      
+      if (!post) {
+        console.warn('未找到匹配字符串ID的文章:', stringId);
+        return false;
+      }
+      
+      console.log('找到匹配字符串ID的文章:', post.title);
+      
+      // 保存到已删除集合
+      await this.deletedPostsCollection.insertOne({
+        title: post.title,
+        deletedAt: new Date()
+      });
+      
+      // 从文章集合中删除
+      const result = await this.postsCollection.deleteOne({ id: stringId });
+      console.log('删除结果:', result.deletedCount > 0 ? '成功' : '失败');
+      return result.deletedCount > 0;
+    } catch (error) {
+      console.error('通过字符串ID删除文章失败:', error);
+      return false;
+    }
+  }
+
   // 增加文章阅读量
   async incrementViewCount(id) {
     if (this.useLocalStorage) {

@@ -34,10 +34,16 @@ const upload = multer({ storage: storage });
 
 // 中间件：验证MongoDB ObjectId
 function validateObjectId(req, res, next, id) {
-  if (!ObjectId.isValid(id)) {
-    return res.status(400).json({ error: '无效的ID格式' });
+  // 检查是否是有效的ObjectId
+  if (ObjectId.isValid(id)) {
+    req.objectId = new ObjectId(id);
+    req.isObjectId = true;
+  } else {
+    // 如果不是有效的ObjectId，保存原始字符串ID
+    console.warn(`提供的ID不是有效的ObjectId格式: ${id}`);
+    req.objectId = id;
+    req.isObjectId = false;
   }
-  req.objectId = new ObjectId(id);
   next();
 }
 
@@ -144,8 +150,19 @@ router.put('/posts/:id', async (req, res) => {
 // 删除博客文章
 router.delete('/posts/:id', async (req, res) => {
   try {
+    console.log('删除博客文章，ID:', req.params.id, 'isObjectId:', req.isObjectId);
+    
     const blogPostDAO = await getBlogPostDAO();
-    const success = await blogPostDAO.deletePost(req.objectId);
+    
+    // 根据ID格式选择不同的处理方式
+    let success;
+    if (req.isObjectId) {
+      // 如果是有效的ObjectId，使用deletePostById方法
+      success = await blogPostDAO.deletePost(req.objectId);
+    } else {
+      // 如果不是有效的ObjectId，使用通过字符串ID删除的方法
+      success = await blogPostDAO.deletePostByStringId(req.objectId);
+    }
     
     if (!success) {
       return res.status(404).json({ error: '未找到指定文章' });
