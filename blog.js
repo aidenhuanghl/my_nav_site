@@ -967,8 +967,13 @@ function updatePopularArticles() {
 
 // 更新热门文章列表的UI
 function updatePopularArticlesList(articles) {
+    console.log('更新热门文章列表', articles);
+    
     const popularPostsList = document.querySelector('#popular-posts-container');
-    if (!popularPostsList) return;
+    if (!popularPostsList) {
+        console.error('找不到热门文章容器 #popular-posts-container');
+        return;
+    }
     
     // 清空现有列表
     popularPostsList.innerHTML = '';
@@ -982,6 +987,7 @@ function updatePopularArticlesList(articles) {
     
     // 没有文章时显示提示信息
     if (!articles || articles.length === 0) {
+        console.log('没有热门文章可显示');
         noPostsMessage.style.display = 'block';
         return;
     }
@@ -991,6 +997,18 @@ function updatePopularArticlesList(articles) {
     
     // 添加基于浏览量的文章
     articles.forEach(article => {
+        console.log('处理热门文章:', article);
+        
+        // 确保文章有有效的ID
+        if (!article.id || article.id === 'undefined' || article.id === 'null') {
+            console.warn('热门文章缺少有效ID:', article.title);
+            // 为没有ID的文章生成一个基于标题的ID
+            article.id = 'popular-' + (article.title || '未命名').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+            console.log('为热门文章生成ID:', article.id);
+        } else {
+            article.id = String(article.id);
+        }
+        
         // 避免重复添加
         if (!addedArticles.has(article.title)) {
             addedArticles.set(article.title, true);
@@ -1000,25 +1018,98 @@ function updatePopularArticlesList(articles) {
             
             link.href = "#";
             link.className = "popular-post";
-            link.setAttribute("data-title", article.title);
+            link.setAttribute("data-title", article.title || '未命名文章');
             link.setAttribute("data-category", article.category || '未分类');
             link.setAttribute("data-blog-id", article.id);
             link.setAttribute("data-view-count", article.count || 0);
-            link.textContent = article.title;
+            link.textContent = article.title || '未命名文章';
             
             // 添加点击事件
             link.addEventListener('click', function(e) {
                 e.preventDefault();
-                showBlogDetail(article.id);
+                // 获取当前链接上的ID
+                const blogId = this.getAttribute('data-blog-id');
+                console.log('热门文章点击，ID:', blogId);
+                
+                if (!blogId || blogId === 'undefined' || blogId === 'null') {
+                    console.error('热门文章点击时ID无效，使用生成的ID');
+                    const tempId = 'popular-' + Date.now();
+                    // 创建临时博客对象
+                    const tempBlog = {
+                        id: tempId,
+                        title: this.getAttribute('data-title') || '未知文章',
+                        content: "无法找到这篇文章的详细内容。请尝试刷新页面或联系管理员。",
+                        date: new Date().toISOString().split('T')[0],
+                        author: '未知',
+                        category: this.getAttribute('data-category') || '未分类',
+                        tags: [],
+                        viewCount: parseInt(this.getAttribute('data-view-count') || '0')
+                    };
+                    
+                    showBlogDetail(tempBlog);
+                } else {
+                    showBlogDetail(blogId);
+                }
             });
             
             li.appendChild(link);
             popularPostsList.appendChild(li);
+            console.log('添加热门文章到列表:', article.title, 'ID:', article.id);
         }
     });
     
     // 检查并移除任何重复的文章（保险措施）
     removeDuplicateArticles();
+}
+
+// 清理重复的热门文章（基于ID或标题）
+function removeDuplicateArticles() {
+    const popularPostsList = document.querySelector('#popular-posts-container');
+    if (!popularPostsList) return;
+    
+    console.log('检查并移除重复的热门文章');
+    
+    // 使用Map跟踪已经处理过的文章ID和标题
+    const processedIds = new Map();
+    const processedTitles = new Map();
+    
+    // 获取所有热门文章链接元素
+    const popularLinks = popularPostsList.querySelectorAll('.popular-post');
+    
+    // 处理每个热门文章链接
+    popularLinks.forEach(link => {
+        const blogId = link.getAttribute('data-blog-id');
+        const title = link.getAttribute('data-title');
+        const listItem = link.closest('li');
+        
+        // 标记要删除的条件：ID重复或标题重复
+        let shouldRemove = false;
+        
+        // 检查ID是否有效且是否已经处理过
+        if (blogId && blogId !== 'undefined' && blogId !== 'null') {
+            if (processedIds.has(blogId)) {
+                shouldRemove = true;
+                console.log(`移除ID重复的热门文章: ${title} (ID: ${blogId})`);
+            } else {
+                processedIds.set(blogId, true);
+            }
+        }
+        
+        // 检查标题是否已经处理过（即使ID不同，标题相同也视为重复）
+        if (!shouldRemove && title) {
+            if (processedTitles.has(title)) {
+                shouldRemove = true;
+                console.log(`移除标题重复的热门文章: ${title}`);
+            } else {
+                processedTitles.set(title, true);
+            }
+        }
+        
+        // 从DOM中删除重复的文章
+        if (shouldRemove && listItem) {
+            popularPostsList.removeChild(listItem);
+        }
+    });
 }
 
 // 显示博客详情
