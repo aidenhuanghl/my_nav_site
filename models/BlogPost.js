@@ -45,16 +45,65 @@ function createDraft(draftData) {
   };
 }
 
+// 获取本地存储数据
+function getLocalStorage(key, defaultValue = []) {
+  if (typeof window !== 'undefined') {
+    const storedData = localStorage.getItem(key);
+    return storedData ? JSON.parse(storedData) : defaultValue;
+  }
+  
+  // 在服务器端环境中，我们使用一个内存存储
+  if (!global._localStorageData) {
+    global._localStorageData = {};
+  }
+  
+  return global._localStorageData[key] || defaultValue;
+}
+
+// 设置本地存储数据
+function setLocalStorage(key, data) {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(key, JSON.stringify(data));
+  } else {
+    // 在服务器端环境中，我们使用一个内存存储
+    if (!global._localStorageData) {
+      global._localStorageData = {};
+    }
+    
+    global._localStorageData[key] = data;
+  }
+}
+
 // 博客文章数据访问对象
 class BlogPostDAO {
   constructor(db) {
-    this.postsCollection = db.collection(POSTS_COLLECTION);
-    this.draftsCollection = db.collection(DRAFTS_COLLECTION);
-    this.deletedPostsCollection = db.collection(DELETED_POSTS_COLLECTION);
+    this.postsCollection = db ? db.collection(POSTS_COLLECTION) : null;
+    this.draftsCollection = db ? db.collection(DRAFTS_COLLECTION) : null;
+    this.deletedPostsCollection = db ? db.collection(DELETED_POSTS_COLLECTION) : null;
+    
+    // 检查是否需要使用localStorage模式
+    this.useLocalStorage = !db || db === 'localStorage';
+    console.log(`BlogPostDAO初始化，使用本地存储: ${this.useLocalStorage}`);
+    
+    // 如果使用本地存储，初始化数据
+    if (this.useLocalStorage) {
+      // 确保在服务器端有数据结构
+      if (typeof window === 'undefined') {
+        if (!global._localStorageData) {
+          global._localStorageData = {
+            'blogPosts': [],
+            'drafts': [],
+            'deletedPosts': []
+          };
+        }
+      }
+    }
   }
 
-  // 创建索引
+  // 创建索引（本地存储模式不需要）
   async createIndexes() {
+    if (this.useLocalStorage) return;
+    
     await this.postsCollection.createIndex({ title: 1 });
     await this.postsCollection.createIndex({ category: 1 });
     await this.postsCollection.createIndex({ isPopular: 1 });
@@ -63,6 +112,10 @@ class BlogPostDAO {
 
   // 获取所有文章
   async getAllPosts() {
+    if (this.useLocalStorage) {
+      return getLocalStorage('blogPosts', []);
+    }
+    
     return this.postsCollection.find({}).sort({ createdAt: -1 }).toArray();
   }
 
@@ -70,6 +123,28 @@ class BlogPostDAO {
   async getPostById(id) {
     try {
       console.log('尝试获取文章，ID:', id);
+      
+      if (this.useLocalStorage) {
+        const posts = getLocalStorage('blogPosts', []);
+        let post = null;
+        
+        // 尝试用字符串ID查找
+        if (typeof id === 'string') {
+          post = posts.find(p => p.id === id);
+        }
+        
+        // 如果没找到并且id是ObjectId，则转为字符串再找
+        if (!post && id instanceof ObjectId) {
+          const idStr = id.toString();
+          post = posts.find(p => p.id === idStr);
+        }
+        
+        if (post) {
+          post.id = post._id ? post._id.toString() : post.id;
+        }
+        
+        return post;
+      }
       
       // 尝试将ID转换为ObjectId，如果不是有效的ObjectId则直接使用原始ID
       let postId;
@@ -136,6 +211,11 @@ class BlogPostDAO {
 
   // 获取热门文章
   async getPopularPosts() {
+    if (this.useLocalStorage) {
+      const posts = getLocalStorage('blogPosts', []);
+      return posts.filter(post => post.isPopular);
+    }
+    
     return this.postsCollection.find({ isPopular: true }).toArray();
   }
 
@@ -146,6 +226,25 @@ class BlogPostDAO {
       
       // 创建基本文章对象
       const newPost = createBlogPost(postData);
+      
+      if (this.useLocalStorage) {
+        // 生成一个模拟的ObjectId
+        const timestamp = Math.floor(new Date().getTime() / 1000).toString(16);
+        const machineId = Math.floor(Math.random() * 16777216).toString(16).padStart(6, '0');
+        const processId = Math.floor(Math.random() * 65536).toString(16).padStart(4, '0');
+        const counter = Math.floor(Math.random() * 16777216).toString(16).padStart(6, '0');
+        const objectId = `${timestamp}${machineId}${processId}${counter}`;
+        
+        newPost._id = objectId;
+        newPost.id = objectId;
+        
+        // 更新本地存储
+        const posts = getLocalStorage('blogPosts', []);
+        posts.push(newPost);
+        setLocalStorage('blogPosts', posts);
+        
+        return newPost;
+      }
       
       // 添加MongoDB ID作为字符串id字段
       const insertResult = await this.postsCollection.insertOne(newPost);
@@ -171,6 +270,23 @@ class BlogPostDAO {
 
   // 更新文章
   async updatePost(id, postData) {
+    if (this.useLocalStorage) {
+      const posts = getLocalStorage('blogPosts', []);
+      const index = posts.findIndex(post => post.id === id.toString());
+      
+      if (index === -1) return false;
+      
+      // 更新文章
+      posts[index] = {
+        ...posts[index],
+        ...postData,
+        updatedAt: new Date()
+      };
+      
+      setLocalStorage('blogPosts', posts);
+      return true;
+    }
+    
     const updateData = {
       ...postData,
       updatedAt: new Date()
@@ -186,6 +302,28 @@ class BlogPostDAO {
 
   // 删除文章
   async deletePost(id) {
+    if (this.useLocalStorage) {
+      // 从本地存储获取文章
+      const posts = getLocalStorage('blogPosts', []);
+      const index = posts.findIndex(post => post.id === id.toString());
+      
+      if (index === -1) return false;
+      
+      // 保存到已删除集合
+      const deletedPosts = getLocalStorage('deletedPosts', []);
+      deletedPosts.push({
+        title: posts[index].title,
+        deletedAt: new Date()
+      });
+      setLocalStorage('deletedPosts', deletedPosts);
+      
+      // 从文章集合中删除
+      posts.splice(index, 1);
+      setLocalStorage('blogPosts', posts);
+      
+      return true;
+    }
+    
     // 先获取文章信息，用于存储到已删除集合
     const post = await this.getPostById(id);
     if (post) {
@@ -204,6 +342,19 @@ class BlogPostDAO {
 
   // 增加文章阅读量
   async incrementViewCount(id) {
+    if (this.useLocalStorage) {
+      const posts = getLocalStorage('blogPosts', []);
+      const index = posts.findIndex(post => post.id === id.toString());
+      
+      if (index === -1) return false;
+      
+      // 增加阅读量
+      posts[index].viewCount = (posts[index].viewCount || 0) + 1;
+      setLocalStorage('blogPosts', posts);
+      
+      return true;
+    }
+    
     const result = await this.postsCollection.updateOne(
       { _id: id },
       { $inc: { views: 1 } }
@@ -214,6 +365,10 @@ class BlogPostDAO {
   // 获取已删除的文章
   async getDeletedPosts() {
     try {
+        if (this.useLocalStorage) {
+          return getLocalStorage('deletedPosts', []);
+        }
+        
         const deletedPosts = await this.deletedPostsCollection
             .find({})
             .sort({ deletedAt: -1 })
@@ -227,6 +382,24 @@ class BlogPostDAO {
 
   // 保存草稿
   async saveDraft(draftData) {
+    if (this.useLocalStorage) {
+      const draft = createDraft(draftData);
+      
+      // 生成一个模拟的ObjectId
+      const timestamp = Math.floor(new Date().getTime() / 1000).toString(16);
+      const random = Math.floor(Math.random() * 16777216).toString(16).padStart(6, '0');
+      const objectId = `${timestamp}${random}`;
+      
+      draft._id = objectId;
+      
+      // 更新本地存储
+      const drafts = getLocalStorage('drafts', []);
+      drafts.push(draft);
+      setLocalStorage('drafts', drafts);
+      
+      return draft;
+    }
+    
     const draft = createDraft(draftData);
     const result = await this.draftsCollection.insertOne(draft);
     return { ...draft, _id: result.insertedId };
@@ -234,11 +407,28 @@ class BlogPostDAO {
 
   // 获取所有草稿
   async getAllDrafts() {
+    if (this.useLocalStorage) {
+      return getLocalStorage('drafts', []);
+    }
+    
     return this.draftsCollection.find({}).sort({ savedAt: -1 }).toArray();
   }
 
   // 删除草稿
   async deleteDraft(id) {
+    if (this.useLocalStorage) {
+      const drafts = getLocalStorage('drafts', []);
+      const index = drafts.findIndex(draft => draft._id === id.toString());
+      
+      if (index === -1) return false;
+      
+      // 从草稿集合中删除
+      drafts.splice(index, 1);
+      setLocalStorage('drafts', drafts);
+      
+      return true;
+    }
+    
     const result = await this.draftsCollection.deleteOne({ _id: id });
     return result.deletedCount > 0;
   }
