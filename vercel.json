@@ -18,7 +18,19 @@
       "use": "@vercel/static"
     },
     {
+      "src": "public/**",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "js/**",
+      "use": "@vercel/static"
+    },
+    {
       "src": "images/**",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "uploads/**",
       "use": "@vercel/static"
     }
   ],
@@ -26,6 +38,18 @@
     {
       "src": "/api/(.*)",
       "dest": "server.js"
+    },
+    {
+      "src": "/public/(.*)",
+      "dest": "/$1"
+    },
+    {
+      "src": "/js/(.*)",
+      "dest": "/js/$1"
+    },
+    {
+      "src": "/uploads/(.*)",
+      "dest": "/uploads/$1"
     },
     {
       "src": "/(.*\\.(js|css|html|svg|jpg|jpeg|png|gif|ico))",
@@ -39,5 +63,8 @@
       "src": "/(.*)",
       "dest": "server.js"
     }
-  ]
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
 } 
