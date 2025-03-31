@@ -1639,4 +1639,122 @@ function cleanupTestArticles() {
 // 添加单独删除特定文章的功能 - 保留空方法以防被调用
 function deleteSpecificArticle(title) {
     console.log('删除特定文章功能已禁用');
+}
+
+// 显示删除确认对话框
+function showDeleteConfirmation(blogId, parentModal) {
+    // 创建确认对话框
+    const confirmDialog = document.createElement('div');
+    confirmDialog.className = 'confirmation-dialog';
+    confirmDialog.innerHTML = `
+        <div class="confirmation-dialog-content">
+            <h3>确认删除</h3>
+            <p>您确定要删除这篇博客文章吗？此操作无法撤销。</p>
+            <div class="confirmation-buttons">
+                <button class="cancel-btn">取消</button>
+                <button class="confirm-btn">确认删除</button>
+            </div>
+        </div>
+    `;
+    
+    // 添加样式
+    const style = document.createElement('style');
+    style.textContent = `
+        .confirmation-dialog {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .confirmation-dialog-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            max-width: 400px;
+            width: 100%;
+        }
+        .confirmation-buttons {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 1.5rem;
+            gap: 1rem;
+        }
+        .cancel-btn {
+            background-color: #f0f0f0;
+            color: #333;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .confirm-btn {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // 添加到页面
+    document.body.appendChild(confirmDialog);
+    
+    // 添加取消按钮事件
+    const cancelBtn = confirmDialog.querySelector('.cancel-btn');
+    cancelBtn.addEventListener('click', () => {
+        document.body.removeChild(confirmDialog);
+    });
+    
+    // 添加确认按钮事件
+    const confirmBtn = confirmDialog.querySelector('.confirm-btn');
+    confirmBtn.addEventListener('click', () => {
+        // 执行删除操作
+        deleteBlogPost(blogId);
+        
+        // 关闭确认对话框
+        document.body.removeChild(confirmDialog);
+        
+        // 关闭文章详情模态框
+        if (parentModal) {
+            parentModal.classList.remove('active');
+            setTimeout(() => {
+                if (document.body.contains(parentModal)) {
+                    document.body.removeChild(parentModal);
+                    document.body.style.overflow = '';
+                }
+            }, 300);
+        }
+    });
+}
+
+// 删除博客文章
+function deleteBlogPost(blogId) {
+    // 显示加载状态
+    showNotification('正在删除博客文章...', 2000);
+    
+    // 调用API删除文章
+    window.blogAPI.deletePost(blogId)
+        .then(() => {
+            // 删除成功
+            showNotification('博客文章已成功删除', 3000);
+            
+            // 重新加载博客列表
+            loadBlogPosts();
+            
+            // 更新热门文章列表
+            updatePopularArticles();
+        })
+        .catch(error => {
+            console.error('删除博客文章失败:', error);
+            showNotification('删除博客文章失败，请稍后重试', 5000);
+        });
 } 

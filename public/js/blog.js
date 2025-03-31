@@ -1,3 +1,63 @@
+// 显示通知提示
+function showNotification(message, duration = 3000) {
+    // 检查是否已有通知容器
+    let container = document.getElementById('notification-container');
+    
+    // 如果容器不存在，创建一个
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'notification-container';
+        container.style.position = 'fixed';
+        container.style.top = '20px';
+        container.style.right = '20px';
+        container.style.zIndex = '9999';
+        document.body.appendChild(container);
+    }
+    
+    // 创建通知元素
+    const notification = document.createElement('div');
+    notification.className = 'notification';
+    notification.textContent = message;
+    
+    // 应用样式
+    notification.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+    notification.style.color = 'white';
+    notification.style.padding = '12px 20px';
+    notification.style.marginBottom = '10px';
+    notification.style.borderRadius = '4px';
+    notification.style.boxShadow = '0 2px 5px rgba(0, 0, 0, 0.3)';
+    notification.style.opacity = '0';
+    notification.style.transform = 'translateY(20px)';
+    notification.style.transition = 'opacity 0.3s, transform 0.3s';
+    
+    // 添加到容器
+    container.appendChild(notification);
+    
+    // 触发回流并应用动画
+    setTimeout(() => {
+        notification.style.opacity = '1';
+        notification.style.transform = 'translateY(0)';
+    }, 10);
+    
+    // 设置定时器，在指定时间后移除通知
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transform = 'translateY(-20px)';
+        
+        // 动画结束后移除元素
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+            
+            // 如果容器中没有更多通知，移除容器
+            if (container.children.length === 0) {
+                document.body.removeChild(container);
+            }
+        }, 300);
+    }, duration);
+}
+
 // 显示博客详情
 function showBlogDetail(blogIdOrObject) {
     console.log('showBlogDetail called with:', blogIdOrObject);
@@ -426,4 +486,223 @@ function createBlogCard(blog) {
     }
     
     return card;
+}
+
+// 显示删除确认对话框
+function showDeleteConfirmation(blogId, parentModal) {
+    // 创建确认对话框
+    const confirmDialog = document.createElement('div');
+    confirmDialog.className = 'confirmation-dialog';
+    confirmDialog.innerHTML = `
+        <div class="confirmation-dialog-content">
+            <h3>确认删除</h3>
+            <p>您确定要删除这篇博客文章吗？此操作无法撤销。</p>
+            <div class="confirmation-buttons">
+                <button class="cancel-btn">取消</button>
+                <button class="confirm-btn">确认删除</button>
+            </div>
+        </div>
+    `;
+    
+    // 添加样式
+    const style = document.createElement('style');
+    style.textContent = `
+        .confirmation-dialog {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .confirmation-dialog-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            max-width: 400px;
+            width: 100%;
+        }
+        .confirmation-buttons {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 1.5rem;
+            gap: 1rem;
+        }
+        .cancel-btn {
+            background-color: #f0f0f0;
+            color: #333;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .confirm-btn {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // 添加到页面
+    document.body.appendChild(confirmDialog);
+    
+    // 添加取消按钮事件
+    const cancelBtn = confirmDialog.querySelector('.cancel-btn');
+    cancelBtn.addEventListener('click', () => {
+        document.body.removeChild(confirmDialog);
+    });
+    
+    // 添加确认按钮事件
+    const confirmBtn = confirmDialog.querySelector('.confirm-btn');
+    confirmBtn.addEventListener('click', () => {
+        // 执行删除操作
+        deleteBlogPost(blogId);
+        
+        // 关闭确认对话框
+        document.body.removeChild(confirmDialog);
+        
+        // 关闭文章详情模态框
+        if (parentModal) {
+            parentModal.classList.remove('active');
+            setTimeout(() => {
+                if (document.body.contains(parentModal)) {
+                    document.body.removeChild(parentModal);
+                    document.body.style.overflow = '';
+                }
+            }, 300);
+        }
+    });
+}
+
+// 删除博客文章
+function deleteBlogPost(blogId) {
+    // 显示加载状态
+    showNotification('正在删除博客文章...', 2000);
+    
+    // 调用API删除文章
+    window.blogAPI.deletePost(blogId)
+        .then(() => {
+            // 删除成功
+            showNotification('博客文章已成功删除', 3000);
+            
+            // 重新加载博客列表
+            loadBlogPosts();
+            
+            // 更新热门文章列表
+            updatePopularArticles();
+        })
+        .catch(error => {
+            console.error('删除博客文章失败:', error);
+            showNotification('删除博客文章失败，请稍后重试', 5000);
+        });
+}
+
+// 加载博客帖子
+function loadBlogPosts() {
+    // 从MongoDB加载博客数据，而不是从localStorage加载
+    window.blogAPI.getAllPosts()
+        .then(blogs => {
+            const blogGrid = document.querySelector('.blog-grid');
+            const noPostsMessage = document.getElementById('no-blog-posts-message');
+            
+            if (!blogGrid) return;
+            
+            // 清空现有博客
+            blogGrid.innerHTML = '';
+            
+            // 如果没有博客，显示"暂无文章"消息
+            if (blogs.length === 0) {
+                if (noPostsMessage) {
+                    blogGrid.appendChild(noPostsMessage);
+                    noPostsMessage.style.display = 'block';
+                }
+                return;
+            }
+            
+            // 隐藏"暂无文章"消息
+            if (noPostsMessage) {
+                noPostsMessage.style.display = 'none';
+            }
+            
+            // 渲染博客卡片
+            blogs.forEach(blog => {
+                const blogCard = createBlogCard(blog);
+                blogGrid.appendChild(blogCard);
+            });
+        })
+        .catch(error => {
+            console.error('加载博客文章失败:', error);
+            showNotification('加载博客文章失败，请刷新页面重试', 5000);
+        });
+}
+
+// 更新热门文章列表
+function updatePopularArticles() {
+    // 使用API获取热门文章
+    window.blogAPI.getPopularPosts()
+        .then(articles => {
+            // 将API响应转换为需要的格式
+            const topArticles = articles.map(article => ({
+                id: article.id,
+                title: article.title,
+                count: article.viewCount,
+                category: article.category || '未分类'
+            }));
+            
+            // 更新热门文章列表
+            updatePopularArticlesList(topArticles);
+        })
+        .catch(error => {
+            console.error('获取热门文章失败:', error);
+        });
+}
+
+// 更新热门文章列表UI
+function updatePopularArticlesList(articles) {
+    const popularPostsList = document.querySelector('.sidebar-posts');
+    if (!popularPostsList) return;
+    
+    // 清空列表
+    popularPostsList.innerHTML = '';
+    
+    // 如果没有热门文章
+    if (!articles || articles.length === 0) {
+        const emptyMessage = document.createElement('li');
+        emptyMessage.className = 'no-popular-posts';
+        emptyMessage.textContent = '暂无热门文章';
+        popularPostsList.appendChild(emptyMessage);
+        return;
+    }
+    
+    // 添加热门文章
+    articles.forEach(article => {
+        const newItem = document.createElement('li');
+        const newLink = document.createElement('a');
+        newLink.href = "#";
+        newLink.className = "popular-post";
+        newLink.setAttribute("data-title", article.title);
+        newLink.setAttribute("data-category", article.category);
+        newLink.setAttribute("data-blog-id", article.id);
+        newLink.setAttribute("data-view-count", article.count || 0);
+        newLink.textContent = article.title;
+        
+        // 添加点击事件
+        newLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            const blogId = this.getAttribute('data-blog-id');
+            showBlogDetail(blogId);
+        });
+        
+        newItem.appendChild(newLink);
+        popularPostsList.appendChild(newItem);
+    });
 } 
