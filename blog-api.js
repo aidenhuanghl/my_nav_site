@@ -1,5 +1,5 @@
 // 后端API基础URL - 默认为本地开发环境，可通过setBaseURL方法修改
-let API_BASE_URL = 'http://localhost:3000/api';
+let API_BASE_URL = '/api'; // 使用相对路径，适配 Vercel 部署
 
 // 博客API类
 class BlogAPI {
