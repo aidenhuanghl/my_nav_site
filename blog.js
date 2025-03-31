@@ -1044,9 +1044,14 @@ function showBlogDetail(blogIdOrObject) {
             
             // 确保blog对象有一个有效的ID
             if (!blog.id && blog._id) {
-                blog.id = blog._id.toString();
+                blog.id = String(blog._id);
+                console.log('从_id生成id字段:', blog.id);
             } else if (!blog.id && !blog._id) {
                 blog.id = 'blog-' + Date.now();
+                console.log('生成新的id字段:', blog.id);
+            } else if (blog.id) {
+                // 确保id是字符串类型
+                blog.id = String(blog.id);
             }
             
             blogId = blog.id;
@@ -1058,17 +1063,16 @@ function showBlogDetail(blogIdOrObject) {
             // 处理博客ID
             blogId = blogIdOrObject;
             
-            // 确保blogId是一个字符串
-            if (blogId !== undefined && blogId !== null) {
+            // 确保blogId是一个字符串且非空
+            if (blogId !== undefined && blogId !== null && blogId !== 'undefined' && blogId !== 'null') {
                 blogId = String(blogId);
+                console.log('处理博客ID(字符串):', blogId);
             } else {
                 console.error('无效的博客ID:', blogId);
                 showNotification('无法显示博客：无效的ID', 3000);
                 window._showingBlogDetail = false;
                 return;
             }
-            
-            console.log('处理博客ID:', blogId);
             
             // 对于静态博客，保持原有的逻辑
             if (blogId.startsWith('static-')) {
@@ -1095,13 +1099,15 @@ function showBlogDetail(blogIdOrObject) {
                     .then(post => {
                         console.log('API返回博客数据:', post);
                         
-                        if (!post) {
+                        if (!post || Object.keys(post).length === 0) {
                             throw new Error('API返回空数据');
                         }
                         
                         // 确保post对象有id字段
                         if (!post.id && post._id) {
-                            post.id = post._id.toString();
+                            post.id = String(post._id);
+                        } else if (post.id) {
+                            post.id = String(post.id);
                         }
                         
                         // 显示博客详情
@@ -1112,9 +1118,9 @@ function showBlogDetail(blogIdOrObject) {
                         
                         // 创建一个默认的博客对象
                         const defaultBlog = {
-                            id: blogId,
+                            id: blogId, // 保持原始ID
                             title: '未知文章',
-                            content: "无法找到这篇文章的内容。",
+                            content: "无法找到这篇文章的内容。" + (error.message ? `错误信息: ${error.message}` : ""),
                             date: new Date().toISOString().split('T')[0],
                             author: '未知',
                             category: '未分类',
@@ -1142,6 +1148,25 @@ function showBlogDetail(blogIdOrObject) {
 // 新增函数：显示博客详情模态框
 function displayBlogDetailModal(blog, blogId) {
     try {
+        console.log('开始显示博客详情模态框，博客ID:', blogId);
+        
+        // 确保我们有一个有效的blogId
+        if (!blogId || blogId === 'undefined' || blogId === 'null') {
+            console.error('displayBlogDetailModal: 无效的博客ID', blogId);
+            if (blog && blog.id) {
+                blogId = String(blog.id);
+                console.log('使用blog对象中的ID:', blogId);
+            } else if (blog && blog._id) {
+                blogId = String(blog._id);
+                console.log('使用blog对象中的_id:', blogId);
+            } else {
+                blogId = 'blog-' + Date.now();
+                console.log('生成新的临时ID:', blogId);
+                // 同时更新blog对象
+                if (blog) blog.id = blogId;
+            }
+        }
+        
         let currentViewCount = blog.viewCount || 0;
         
         // 检查是否已有模态框
@@ -1235,14 +1260,26 @@ function displayBlogDetailModal(blog, blogId) {
         // 添加删除按钮事件
         const deleteBtn = detailModal.querySelector('.blog-detail-delete');
         if (deleteBtn) {
+            // 先检查按钮上的data-blog-id
+            const btnBlogId = deleteBtn.getAttribute('data-blog-id');
+            console.log('删除按钮上的ID:', btnBlogId);
+            
+            if (!btnBlogId || btnBlogId === 'undefined' || btnBlogId === 'null') {
+                // 如果按钮上没有有效ID，重新设置
+                deleteBtn.setAttribute('data-blog-id', blogId);
+                console.log('更新删除按钮ID为:', blogId);
+            }
+            
             deleteBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
+                
+                // 再次获取按钮上的ID
                 const currentBlogId = deleteBtn.getAttribute('data-blog-id');
                 console.log('删除按钮点击，获取到的博客ID:', currentBlogId);
                 
                 // 确保有有效的ID
-                if (!currentBlogId || currentBlogId === 'undefined') {
+                if (!currentBlogId || currentBlogId === 'undefined' || currentBlogId === 'null') {
                     console.error('无效的博客ID，使用备用ID:', blogId);
                     showDeleteConfirmation(blogId, detailModal);
                 } else {
@@ -1799,17 +1836,19 @@ function deleteBlogPost(blogId) {
     console.log('尝试删除博客文章，ID:', blogId);
     
     // 检查ID是否有效
-    if (!blogId || blogId === 'undefined' || blogId === 'null') {
+    if (!blogId || blogId === 'undefined' || blogId === 'null' || blogId.trim() === '') {
         console.error('无效的博客ID，无法删除:', blogId);
         showNotification('删除失败：无效的文章ID', 5000);
         return;
     }
     
     // 确保blogId是字符串
-    blogId = String(blogId);
+    blogId = String(blogId).trim();
     
     // 显示加载状态
     showNotification('正在删除博客文章...', 2000);
+    
+    console.log('调用API删除文章，ID:', blogId);
     
     // 调用API删除文章
     window.blogAPI.deletePost(blogId)
@@ -1826,6 +1865,6 @@ function deleteBlogPost(blogId) {
         })
         .catch(error => {
             console.error('删除博客文章失败:', error);
-            showNotification('删除博客文章失败，请稍后重试: ' + error.message, 5000);
+            showNotification('删除博客文章失败，请稍后重试: ' + (error.message || '未知错误'), 5000);
         });
 } 
