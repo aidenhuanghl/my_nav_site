@@ -4,6 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>个人博客 | 分享AI、技术与生活</title>
+    <!-- 辅助函数：用于修正环境相关的路径问题 -->
+    <script>
+        // 检测路径并返回正确的资源URL
+        function getCorrectPath(path) {
+            // 获取当前域名
+            const host = window.location.hostname;
+            // 如果在Vercel环境中
+            if (host.includes('vercel.app')) {
+                // 将js/blog.js路径修正，移除public前缀或添加正确前缀
+                if (path.startsWith('js/')) {
+                    return path; // 已经是正确格式
+                } else if (path.startsWith('public/js/')) {
+                    return path.replace('public/', '');
+                }
+            }
+            return path;
+        }
+    </script>
     <!-- Vercel环境修复脚本 - 最早加载 -->
     <script src="vercel-fix.js"></script>
     <link rel="stylesheet" href="style.css">
@@ -11,8 +29,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="blog-api.js"></script>
-    <!-- 修正路径 - 移除public前缀 -->
-    <script src="js/blog.js" defer></script>
+    <!-- 使用辅助函数获取正确路径 -->
+    <script>
+        // 动态加载blog.js脚本
+        document.write('<script src="' + getCorrectPath('js/blog.js') + '" defer><\/script>');
+    </script>
     <script src="auth.js" defer></script>
     <script src="account.js" defer></script>
     <script src="visual-effects.js" defer></script>

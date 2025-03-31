@@ -3,8 +3,67 @@
  * 在页面加载时运行，修复Vercel部署时可能出现的问题
  */
 
+// 立即创建theme-switch-wrapper，不等待DOMContentLoaded
+(function() {
+  console.log('立即执行Vercel修复初始化...');
+  
+  // 确保CSS样式
+  const styleEl = document.createElement('style');
+  styleEl.textContent = `
+    .theme-switch-wrapper {
+      position: fixed;
+      top: 20px;
+      right: 80px;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+    }
+    .account-button {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      color: var(--text-color, #333);
+      padding: 5px;
+      border-radius: 50%;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .glass-effect {
+      background: rgba(255, 255, 255, 0.25);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+  `;
+  document.head.appendChild(styleEl);
+  
+  // 创建theme-switch-wrapper元素
+  if (!document.querySelector('.theme-switch-wrapper')) {
+    console.log('立即创建.theme-switch-wrapper元素');
+    const wrapper = document.createElement('div');
+    wrapper.className = 'theme-switch-wrapper';
+    
+    // 如果body已加载则添加，否则使用MutationObserver监听body
+    if (document.body) {
+      document.body.appendChild(wrapper);
+    } else {
+      // 使用MutationObserver监听body的创建
+      const observer = new MutationObserver(function(mutations) {
+        if (document.body && !document.querySelector('.theme-switch-wrapper')) {
+          document.body.appendChild(wrapper);
+          observer.disconnect();
+        }
+      });
+      
+      observer.observe(document.documentElement, {
+        childList: true,
+        subtree: true
+      });
+    }
+  }
+})();
+
 document.addEventListener('DOMContentLoaded', function() {
-  console.log('正在运行Vercel环境修复脚本...');
+  console.log('正在运行Vercel环境修复脚本 (DOMContentLoaded)...');
   
   // 1. 修复路径问题 - 将/public/路径转换为正确的路径
   fixResourcePaths();
@@ -14,6 +73,9 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // 3. 确保auth模块正常初始化
   checkAuthInitialization();
+  
+  // 4. 修复account.js中的DOM错误
+  fixAccountJs();
 });
 
 /**
@@ -47,6 +109,17 @@ function fixResourcePaths() {
       img.src = newSrc;
     }
   });
+  
+  // 修复任何动态加载的资源
+  const originalFetch = window.fetch;
+  window.fetch = function(url, options) {
+    if (typeof url === 'string' && url.includes('/public/')) {
+      const newUrl = url.replace('/public/', '/');
+      console.log(`修复fetch URL: ${url} -> ${newUrl}`);
+      return originalFetch(newUrl, options);
+    }
+    return originalFetch(url, options);
+  };
 }
 
 /**
@@ -96,10 +169,49 @@ function checkAuthInitialization() {
   }
 }
 
+/**
+ * 专门修复account.js中的问题
+ */
+function fixAccountJs() {
+  // 修复DOM错误：替换account.js中的关键函数
+  window.patchAccountJs = function() {
+    // 创建模拟的theme-switch-wrapper元素（如果不存在）
+    if (!document.querySelector('.theme-switch-wrapper')) {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'theme-switch-wrapper';
+      document.body.appendChild(wrapper);
+      console.log('通过patchAccountJs创建了.theme-switch-wrapper');
+    }
+  };
+  
+  // 添加账户按钮的快捷方法
+  window.addAccountButton = function() {
+    const themeWrapper = document.querySelector('.theme-switch-wrapper');
+    if (!themeWrapper) return;
+    
+    if (!document.querySelector('.account-button')) {
+      const btn = document.createElement('button');
+      btn.className = 'account-button glass-effect';
+      btn.innerHTML = '<i class="fas fa-user"></i>';
+      themeWrapper.appendChild(btn);
+      console.log('通过addAccountButton创建了.account-button');
+    }
+  };
+  
+  // 尝试立即执行
+  window.patchAccountJs();
+  
+  // 并设置一个延迟执行，以防DOM还没完全加载
+  setTimeout(window.patchAccountJs, 1000);
+  setTimeout(window.addAccountButton, 1000);
+}
+
 // 添加到全局错误处理
 window.addEventListener('error', function(event) {
   console.log('捕获到全局错误:', event.message);
   if (event.message.includes('Cannot read properties of null')) {
-    console.log('DOM元素未找到错误，请检查页面结构');
+    console.log('DOM元素未找到错误，尝试修复...');
+    window.patchAccountJs();
+    window.addAccountButton();
   }
 }); 
