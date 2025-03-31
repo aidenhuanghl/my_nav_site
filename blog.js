@@ -1,252 +1,293 @@
-// 检测是否需要从localStorage迁移数据到MongoDB
+// --- 数据迁移 --- 
+// 在文档加载完成后执行
 document.addEventListener('DOMContentLoaded', async function() {
-    // 检查是否有迁移标志
+    // 检查 localStorage 中是否存在 'dataMigratedToMongoDB' 标志
     const dataMigrated = localStorage.getItem('dataMigratedToMongoDB');
     
+    // 如果标志不存在，则表示需要进行数据迁移
     if (!dataMigrated) {
         try {
-            // 显示加载提示
+            // 显示一个临时的加载通知给用户
             showNotification('正在迁移数据到MongoDB，请稍候...', 3000);
             
-            // 迁移数据
+            // 调用 blogAPI (可能在 blog-api.js 中定义) 的函数，执行从 localStorage 到 MongoDB 的数据导入
             await window.blogAPI.importFromLocalStorage();
             
-            // 设置迁移标志
+            // 数据迁移成功后，在 localStorage 中设置标志，避免重复迁移
             localStorage.setItem('dataMigratedToMongoDB', 'true');
             
-            // 显示成功消息
+            // 显示迁移成功的通知
             showNotification('数据成功迁移到MongoDB!', 3000);
         } catch (error) {
+            // 如果迁移过程中出现错误，在控制台打印错误信息
             console.error('数据迁移失败:', error);
+            // 并显示一个错误通知给用户
             showNotification('数据迁移失败，请刷新页面重试', 5000);
         }
     }
     
-    // 初始化博客功能
+    // 无论是否进行了迁移，都初始化博客的主要功能
     initBlogFunctionality();
 });
 
-// 显示通知消息
+// --- 通知功能 --- 
+// 显示一个短暂的通知消息在屏幕右下角
 function showNotification(message, duration = 3000) {
     console.log('显示通知:', message);
     
-    // 创建通知元素
+    // 创建一个新的 div 元素作为通知框
     const notification = document.createElement('div');
-    notification.className = 'notification';
-    notification.textContent = message;
+    notification.className = 'notification'; // 设置 CSS 类名
+    notification.textContent = message; // 设置通知内容
     
-    // 设置样式
-    notification.style.position = 'fixed';
-    notification.style.bottom = '20px';
-    notification.style.right = '20px';
-    notification.style.backgroundColor = '#4a6da7';
-    notification.style.color = 'white';
-    notification.style.padding = '12px 20px';
-    notification.style.borderRadius = '4px';
-    notification.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
-    notification.style.zIndex = '9999';
-    notification.style.transition = 'all 0.3s ease';
-    notification.style.opacity = '0';
+    // --- 设置通知框的样式 ---
+    notification.style.position = 'fixed'; // 固定定位，不随页面滚动
+    notification.style.bottom = '20px'; // 距离底部 20px
+    notification.style.right = '20px'; // 距离右侧 20px
+    notification.style.backgroundColor = '#4a6da7'; // 背景颜色
+    notification.style.color = 'white'; // 文字颜色
+    notification.style.padding = '12px 20px'; // 内边距
+    notification.style.borderRadius = '4px'; // 圆角
+    notification.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)'; // 阴影效果
+    notification.style.zIndex = '9999'; // 置于顶层
+    notification.style.transition = 'all 0.3s ease'; // 过渡效果（透明度）
+    notification.style.opacity = '0'; // 初始透明度为 0 (隐藏)
     
-    // 添加到文档
+    // 将通知框添加到页面的 body 元素中
     document.body.appendChild(notification);
     
-    // 显示通知
+    // --- 显示和隐藏动画 ---
+    // 使用 setTimeout 延迟一小段时间（10毫秒）后，将透明度设为 1，触发渐显效果
     setTimeout(() => {
         notification.style.opacity = '1';
     }, 10);
     
-    // 设置定时器，自动隐藏通知
+    // 设置一个定时器，在指定的 duration 毫秒后开始隐藏通知
     setTimeout(() => {
-        notification.style.opacity = '0';
+        notification.style.opacity = '0'; // 将透明度设回 0，触发渐隐效果
         
-        // 完全隐藏后移除元素
+        // 在渐隐动画（0.3秒）结束后，从 DOM 中移除通知元素
         setTimeout(() => {
+            // 再次检查元素是否还在 DOM 中，防止重复移除
             if (document.body.contains(notification)) {
                 document.body.removeChild(notification);
             }
-        }, 300);
+        }, 300); // 300 毫秒对应 CSS 中的 transition 时间
     }, duration);
 }
 
+// --- 博客功能初始化 --- 
+// 初始化博客相关的所有功能和事件监听器
 function initBlogFunctionality() {
     console.log("初始化博客功能...");
     
-    // 检查API服务器配置
+    // 检查并加载 API 服务器配置
     checkAPIServerConfig();
     
+    // 初始化热门文章的计数器（可能用于显示或排序）
     initPopularPostsCounters();
+    // 更新页面上的博客文章列表
     updateBlogPostsList();
+    // 更新页面上的热门文章列表
     updatePopularArticlesList();
+    // 设置"新建文章"按钮的功能
     setupNewPostButton();
+    // 设置草稿相关的功能（如自动保存、加载草稿）
     setupDraftFunctionality();
 }
 
-// 检查API服务器配置
+// --- API 服务器配置 --- 
+// 检查 localStorage 中是否有保存的 API 服务器配置，并应用它
 function checkAPIServerConfig() {
+    // 从 localStorage 读取 'api_server_config' 项
     const apiServerConfig = localStorage.getItem('api_server_config');
     
+    // 如果存在配置
     if (apiServerConfig) {
         try {
+            // 解析 JSON 格式的配置字符串
             const config = JSON.parse(apiServerConfig);
+            // 如果配置中有 baseURL
             if (config.baseURL) {
-                // 应用保存的API服务器配置
+                // 使用 blogAPI 对象的方法设置 API 的基础 URL
                 blogAPI.setBaseURL(config.baseURL);
                 console.log(`已从本地存储加载API服务器配置: ${config.baseURL}`);
             }
         } catch (error) {
+            // 如果解析失败，打印错误信息
             console.error('解析API服务器配置失败:', error);
         }
     }
     
-    // 添加API服务器配置按钮
+    // 添加一个按钮到页面上，允许用户手动配置 API 服务器地址
     addAPIConfigButton();
 }
 
-// 添加API服务器配置按钮
+// 在页面上添加一个"配置API服务器"的按钮
 function addAPIConfigButton() {
+    // 查找博客控制按钮的容器，如果不存在则创建一个
     const controlsContainer = document.querySelector('.blog-controls') || createBlogControlsContainer();
     
-    // 检查是否已存在配置按钮
+    // 检查页面上是否已经存在 ID 为 'api-config-button' 的按钮，如果存在则不重复添加
     if (document.getElementById('api-config-button')) {
         return;
     }
     
-    // 创建配置按钮
+    // 创建一个新的 button 元素
     const configButton = document.createElement('button');
-    configButton.id = 'api-config-button';
-    configButton.className = 'control-button';
-    configButton.innerHTML = '<i class="fas fa-cog"></i> 配置API服务器';
+    configButton.id = 'api-config-button'; // 设置按钮 ID
+    configButton.className = 'control-button'; // 设置 CSS 类名
+    configButton.innerHTML = '<i class="fas fa-cog"></i> 配置API服务器'; // 按钮文本和图标
+    // 设置按钮样式
     configButton.style.backgroundColor = '#4a6da7';
     configButton.style.color = 'white';
-    configButton.style.marginLeft = '10px';
+    configButton.style.marginLeft = '10px'; // 与其他按钮保持间距
     
-    // 添加点击事件
+    // 为按钮添加点击事件监听器，点击时调用 showAPIConfigDialog 函数
     configButton.addEventListener('click', showAPIConfigDialog);
     
-    // 添加到控制容器
+    // 将按钮添加到控制容器中
     controlsContainer.appendChild(configButton);
 }
 
-// 创建博客控制容器（如果不存在）
+// 如果页面上不存在博客控制按钮的容器，则创建一个并添加到页面中
 function createBlogControlsContainer() {
+    // 查找博客内容的主要区域元素
     const blogSection = document.querySelector('.blog-section');
+    // 创建一个新的 div 元素作为容器
     const controlsContainer = document.createElement('div');
-    controlsContainer.className = 'blog-controls';
-    controlsContainer.style.marginBottom = '20px';
-    controlsContainer.style.display = 'flex';
-    controlsContainer.style.justifyContent = 'flex-end';
+    controlsContainer.className = 'blog-controls'; // 设置 CSS 类名
+    // 设置容器样式
+    controlsContainer.style.marginBottom = '20px'; // 底部外边距
+    controlsContainer.style.display = 'flex'; // 使用 flex 布局
+    controlsContainer.style.justifyContent = 'flex-end'; // 按钮靠右对齐
     
-    // 将控制容器添加到博客区域的顶部
+    // 将控制容器插入到博客区域的顶部
     if (blogSection.firstChild) {
+        // 如果博客区域已有子元素，则插入到第一个子元素之前
         blogSection.insertBefore(controlsContainer, blogSection.firstChild);
     } else {
+        // 如果博客区域为空，则直接添加
         blogSection.appendChild(controlsContainer);
     }
     
+    // 返回创建的容器元素
     return controlsContainer;
 }
 
-// 显示API配置对话框
+// 显示一个模态对话框，用于配置 API 服务器地址
 function showAPIConfigDialog() {
-    // 创建对话框
+    // --- 创建模态框背景层 ---
     const modal = document.createElement('div');
-    modal.className = 'modal';
+    modal.className = 'modal'; // CSS 类名
+    // 设置样式使其覆盖整个屏幕并居中内容
     modal.style.position = 'fixed';
     modal.style.left = '0';
     modal.style.top = '0';
     modal.style.width = '100%';
     modal.style.height = '100%';
-    modal.style.backgroundColor = 'rgba(0,0,0,0.5)';
+    modal.style.backgroundColor = 'rgba(0,0,0,0.5)'; // 半透明黑色背景
     modal.style.display = 'flex';
-    modal.style.alignItems = 'center';
-    modal.style.justifyContent = 'center';
-    modal.style.zIndex = '1000';
+    modal.style.alignItems = 'center'; // 垂直居中
+    modal.style.justifyContent = 'center'; // 水平居中
+    modal.style.zIndex = '1000'; // 置于顶层
     
-    // 创建对话框内容
+    // --- 创建模态框内容区域 ---
     const modalContent = document.createElement('div');
-    modalContent.className = 'modal-content';
+    modalContent.className = 'modal-content'; // CSS 类名
+    // 设置样式
     modalContent.style.backgroundColor = 'white';
     modalContent.style.padding = '20px';
     modalContent.style.borderRadius = '8px';
-    modalContent.style.width = '500px';
-    modalContent.style.maxWidth = '90%';
-    modalContent.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)';
+    modalContent.style.width = '500px'; // 对话框宽度
+    modalContent.style.maxWidth = '90%'; // 最大宽度，适应小屏幕
+    modalContent.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)'; // 阴影效果
     
-    // 创建标题
+    // --- 创建对话框标题 ---
     const title = document.createElement('h2');
     title.textContent = 'API服务器配置';
+    // 设置样式
     title.style.marginTop = '0';
     title.style.color = '#333';
     
-    // 创建当前配置信息
+    // --- 显示当前配置 --- 
     const currentConfig = document.createElement('div');
+    // 使用 innerHTML 插入包含当前 API URL 的段落
+    // blogAPI.getBaseURL() 获取当前的 API 基础 URL
     currentConfig.innerHTML = `<p><strong>当前API服务器:</strong> <span id="current-api-url">${blogAPI.getBaseURL()}</span></p>`;
     
-    // 创建输入表单
+    // --- 创建输入表单 --- 
     const form = document.createElement('form');
     form.style.marginTop = '20px';
     
+    // 创建输入框组（标签 + 输入框）
     const inputGroup = document.createElement('div');
     inputGroup.style.marginBottom = '15px';
     
+    // 创建标签
     const label = document.createElement('label');
-    label.htmlFor = 'api-base-url';
+    label.htmlFor = 'api-base-url'; // 关联到输入框
     label.textContent = 'API服务器地址:';
+    // 设置标签样式
     label.style.display = 'block';
     label.style.marginBottom = '5px';
     label.style.fontWeight = 'bold';
     
+    // 创建文本输入框
     const input = document.createElement('input');
     input.type = 'text';
-    input.id = 'api-base-url';
-    input.value = blogAPI.getBaseURL();
-    input.placeholder = 'http://your-api-server.com/api';
+    input.id = 'api-base-url'; // ID，与 label 的 htmlFor 对应
+    input.value = blogAPI.getBaseURL(); // 默认值为当前的 API URL
+    input.placeholder = 'http://your-api-server.com/api'; // 输入提示
+    // 设置输入框样式
     input.style.width = '100%';
     input.style.padding = '8px';
-    input.style.boxSizing = 'border-box';
+    input.style.boxSizing = 'border-box'; // 防止 padding 影响总宽度
     input.style.border = '1px solid #ccc';
     input.style.borderRadius = '4px';
     
-    // 创建测试连接结果显示区域
+    // --- 创建测试连接结果显示区域 --- 
     const testResult = document.createElement('div');
-    testResult.id = 'test-result';
+    testResult.id = 'test-result'; // ID，用于后续更新内容
     testResult.style.marginTop = '10px';
     testResult.style.padding = '8px';
-    testResult.style.display = 'none';
+    testResult.style.display = 'none'; // 默认隐藏
     
-    // 创建按钮容器
+    // --- 创建按钮组容器 --- 
     const buttonGroup = document.createElement('div');
-    buttonGroup.style.display = 'flex';
-    buttonGroup.style.justifyContent = 'space-between';
+    buttonGroup.style.display = 'flex'; // 使用 flex 布局排列按钮
+    buttonGroup.style.justifyContent = 'space-between'; // 按钮之间留有空间
     buttonGroup.style.marginTop = '20px';
     
-    // 创建保存按钮
+    // --- 创建"保存配置"按钮 --- 
     const saveButton = document.createElement('button');
-    saveButton.type = 'button';
+    saveButton.type = 'button'; // 避免触发表单提交
     saveButton.textContent = '保存配置';
+    // 设置按钮样式
     saveButton.style.padding = '8px 16px';
-    saveButton.style.backgroundColor = '#4CAF50';
+    saveButton.style.backgroundColor = '#4CAF50'; // 绿色
     saveButton.style.color = 'white';
     saveButton.style.border = 'none';
     saveButton.style.borderRadius = '4px';
     saveButton.style.cursor = 'pointer';
     
-    // 创建测试连接按钮
+    // --- 创建"测试连接"按钮 --- 
     const testButton = document.createElement('button');
     testButton.type = 'button';
     testButton.textContent = '测试连接';
+    // 设置按钮样式
     testButton.style.padding = '8px 16px';
-    testButton.style.backgroundColor = '#2196F3';
+    testButton.style.backgroundColor = '#2196F3'; // 蓝色
     testButton.style.color = 'white';
     testButton.style.border = 'none';
     testButton.style.borderRadius = '4px';
     testButton.style.cursor = 'pointer';
     
-    // 创建恢复默认按钮
+    // --- 创建"恢复默认"按钮 --- 
     const resetButton = document.createElement('button');
     resetButton.type = 'button';
     resetButton.textContent = '恢复默认';
+    // 设置按钮样式
     resetButton.style.padding = '8px 16px';
     resetButton.style.backgroundColor = '#607D8B';
     resetButton.style.color = 'white';
@@ -254,7 +295,7 @@ function showAPIConfigDialog() {
     resetButton.style.borderRadius = '4px';
     resetButton.style.cursor = 'pointer';
     
-    // 创建取消按钮
+    // --- 创建取消按钮 --- 
     const cancelButton = document.createElement('button');
     cancelButton.type = 'button';
     cancelButton.textContent = '取消';
@@ -372,220 +413,287 @@ function showAPIConfigDialog() {
     document.body.appendChild(modal);
 }
 
-// 为现有静态博客卡片添加阅读全文功能
+// --- 博客功能初始化 --- 
+// 为 HTML 中预先存在的静态博客卡片添加点击查看详情的功能
 function initExistingBlogCards() {
+    // 查找所有带有 .blog-card 类和 .blog-read-more 类的链接元素
     const readMoreLinks = document.querySelectorAll('.blog-card .blog-read-more');
     
+    // 遍历所有找到的"阅读更多"链接
     readMoreLinks.forEach((link, index) => {
+        // 为每个链接添加点击事件监听器
         link.addEventListener('click', function(e) {
+            // 阻止链接的默认行为（例如页面跳转）
             e.preventDefault();
             
-            // 获取父级博客卡片
+            // 获取包含该链接的父级 .blog-card 元素
             const blogCard = this.closest('.blog-card');
+            // 如果找不到父级卡片，则退出
             if (!blogCard) return;
             
-            // 检查是否已有预设的博客ID
+            // 尝试从链接的 data-blog-id 属性获取博客 ID
+            // 如果没有该属性，则生成一个基于索引的临时 ID (例如 'static-0')
             const blogId = this.getAttribute('data-blog-id') || ('static-' + index);
             
-            // 获取博客信息
+            // --- 从卡片元素中提取博客信息 --- 
+            // 获取标题
             const title = blogCard.querySelector('.blog-card-title').textContent;
+            // 获取摘要
             const excerpt = blogCard.querySelector('.blog-card-excerpt').textContent;
+            // 获取日期元素，如果存在则获取其文本内容，否则使用当前日期
             const dateElement = blogCard.querySelector('.blog-card-date');
             const date = dateElement ? dateElement.textContent : new Date().toISOString().split('T')[0];
             
             // 获取标签
             const tags = [];
+            // 查找卡片内所有 .blog-tag 元素并提取文本内容
             blogCard.querySelectorAll('.blog-tag').forEach(tag => {
                 tags.push(tag.textContent);
             });
             
-            // 获取分类
+            // 获取分类 (从卡片的 data-categories 属性读取，默认为 'tech')
             const categories = blogCard.getAttribute('data-categories') || '';
-            const category = categories.split(',')[0] || 'tech';
+            const category = categories.split(',')[0] || 'tech'; // 取第一个分类
             
-            // 创建临时博客对象
+            // --- 创建一个临时的博客对象 --- 
+            // 这个对象用于传递给 showBlogDetail 函数，模拟从 API 获取的数据结构
             const blog = {
-                id: blogId,
-                title: title,
-                content: excerpt + '\n\n这是预设的静态博客文章。您可以点击右下角的"写博客"按钮创建自己的博客内容。',
-                date: date,
-                author: '网站作者',
-                category: category,
-                tags: tags
+                id: blogId,       // 博客 ID (可能是真实的或临时的)
+                title: title,     // 标题
+                content: excerpt + '\n\n这是预设的静态博客文章。您可以点击右下角的"写博客"按钮创建自己的博客内容。', // 内容 (使用摘要 + 提示信息)
+                date: date,       // 日期
+                author: '网站作者', // 作者 (固定值)
+                category: category, // 分类
+                tags: tags        // 标签数组
             };
             
             console.log('Opening blog with ID:', blogId);
             
-            // 显示博客详情
-            showBlogDetail(blog);
+            // 调用 showBlogDetail 函数，显示包含博客信息的模态框
+            showBlogDetail(blog); // 注意：这里传递的是 blog 对象，而不是 blogId
         });
     });
 }
 
-// 写博客模态框
+// --- 写博客模态框初始化 --- 
+// 初始化"写博客"按钮和相关的模态框交互
 function initWriteBlogModal() {
+    // 获取"写博客"按钮、模态框本身、关闭按钮和表单元素
     const writeBtn = document.querySelector('.write-blog-btn');
     const modal = document.querySelector('.write-blog-modal');
     const closeBtn = document.querySelector('.close-modal-btn');
     const form = document.querySelector('.write-blog-form');
     
+    // 如果任何一个元素不存在，则退出初始化
     if (!writeBtn || !modal || !closeBtn) return;
     
-    // 打开模态框
+    // 为"写博客"按钮添加点击事件
     writeBtn.addEventListener('click', function() {
+        // 添加 'active' 类以显示模态框 (假设 CSS 中定义了 .active 类的样式)
         modal.classList.add('active');
-        document.body.style.overflow = 'hidden'; // 防止背景滚动
+        // 禁止背景页面滚动
+        document.body.style.overflow = 'hidden'; 
     });
     
-    // 关闭模态框
+    // 为关闭按钮添加点击事件
     closeBtn.addEventListener('click', function() {
+        // 移除 'active' 类以隐藏模态框
         modal.classList.remove('active');
+        // 恢复背景页面滚动
         document.body.style.overflow = '';
     });
     
-    // 点击模态框外部关闭
+    // 为模态框背景层添加点击事件 (点击模态框外部区域关闭)
     modal.addEventListener('click', function(e) {
+        // 检查点击的目标是否是模态框背景本身 (而不是内容区域)
         if (e.target === modal) {
+            // 隐藏模态框并恢复滚动
             modal.classList.remove('active');
             document.body.style.overflow = '';
         }
     });
     
-    // 处理图片上传预览
+    // --- 处理图片上传和预览 --- 
+    // 获取图片上传输入框元素
     const imageInput = document.querySelector('#blog-image');
+    // 用于存储上传的图片数据 (Base64 格式)
     let uploadedImageData = null;
     
+    // 如果图片输入框存在
     if (imageInput) {
+        // 为其添加 change 事件监听器 (当用户选择文件后触发)
         imageInput.addEventListener('change', function(e) {
+            // 获取用户选择的文件
             const file = e.target.files[0];
+            // 如果没有选择文件，则退出
             if (!file) return;
             
-            // 检查文件大小（限制为2MB）
+            // --- 文件校验 ---
+            // 检查文件大小是否超过 2MB
             if (file.size > 2 * 1024 * 1024) {
                 alert('图片大小不能超过2MB');
-                e.target.value = '';
+                // 清空文件选择框，以便用户可以重新选择
+                e.target.value = ''; 
                 return;
             }
             
-            // 检查文件类型
+            // 检查文件类型是否为图片
             if (!file.type.match('image.*')) {
                 alert('请选择图片文件');
                 e.target.value = '';
                 return;
             }
             
-            // 读取文件并转换为base64
+            // --- 读取并预览图片 ---
+            // 创建 FileReader 对象
             const reader = new FileReader();
+            // 设置文件读取完成后的回调函数
             reader.onload = function(event) {
+                // 将读取到的文件内容 (Base64 编码) 保存到 uploadedImageData 变量
                 uploadedImageData = event.target.result;
                 
-                // 显示图片预览
+                // --- 显示图片预览 --- 
+                // 查找或创建图片预览容器
                 const previewContainer = document.querySelector('.image-preview-container') || document.createElement('div');
+                // 如果是新创建的容器，设置类名和添加标题及图片元素
                 if (!previewContainer.classList.contains('image-preview-container')) {
-                    previewContainer.className = 'image-preview-container';
+                    previewContainer.className = 'image-preview-container'; // CSS 类名
                     const previewLabel = document.createElement('p');
                     previewLabel.textContent = '图片预览:';
                     previewContainer.appendChild(previewLabel);
                     const previewImg = document.createElement('img');
-                    previewImg.className = 'image-preview';
+                    previewImg.className = 'image-preview'; // CSS 类名
                     previewContainer.appendChild(previewImg);
+                    // 将预览容器添加到图片输入框的父节点下
                     imageInput.parentNode.appendChild(previewContainer);
                 }
                 
+                // 获取预览图片元素，并设置其 src 为读取到的 Base64 数据
                 const previewImg = previewContainer.querySelector('.image-preview');
                 previewImg.src = uploadedImageData;
+                // 显示预览容器
                 previewContainer.style.display = 'block';
             };
+            // 以 Data URL (Base64) 格式读取文件内容
             reader.readAsDataURL(file);
         });
     }
     
-    // 表单提交
+    // --- 处理表单提交 (发布文章) --- 
+    // 如果表单元素存在
     if (form) {
+        // 为表单添加 submit 事件监听器
         form.addEventListener('submit', function(e) {
+            // 阻止表单的默认提交行为 (页面刷新)
             e.preventDefault();
             
-            // 获取表单数据
+            // --- 获取表单输入值 ---
             const title = document.querySelector('#blog-title').value;
             const content = document.querySelector('#blog-content').value;
             const category = document.querySelector('#blog-category').value;
             const tags = document.querySelector('#blog-tags').value;
             
+            // 简单的输入校验
             if (!title || !content) {
                 alert('请填写标题和内容');
                 return;
             }
             
-            // 调用发布博客函数
-            publishBlog();
+            // 调用 publishBlog 函数处理文章发布逻辑 (可能包含 API 调用等)
+            // 注意: uploadedImageData 变量在此函数作用域内可用
+            publishBlog(); 
         });
     }
     
-    // 保存草稿按钮
+    // --- 处理保存草稿按钮 --- 
+    // 获取"保存草稿"按钮元素
     const saveDraftBtn = document.querySelector('.save-draft-btn');
+    // 如果按钮存在
     if (saveDraftBtn) {
+        // 为按钮添加点击事件监听器
         saveDraftBtn.addEventListener('click', function() {
+            // 获取表单中的值，如果标题为空则设置默认值
             const title = document.querySelector('#blog-title').value || '无标题草稿';
             const content = document.querySelector('#blog-content').value || '';
             const category = document.querySelector('#blog-category').value;
             const tags = document.querySelector('#blog-tags').value;
             
+            // 校验内容是否为空
             if (!content) {
                 alert('请至少填写一些内容');
                 return;
             }
             
-            // 保存为草稿（包含上传的图片数据）
+            // --- 将草稿保存到 localStorage --- 
+            // 从 localStorage 读取现有的草稿数组，如果不存在则初始化为空数组
             const drafts = JSON.parse(localStorage.getItem('blogDrafts') || '[]');
+            // 创建新的草稿对象
             const draft = {
-                id: Date.now(),
-                title,
-                content,
-                category,
-                tags,
-                date: new Date().toISOString(),
-                imageData: uploadedImageData
+                id: Date.now(), // 使用时间戳作为唯一 ID
+                title,          // 标题
+                content,        // 内容
+                category,       // 分类
+                tags,           // 标签 (字符串形式)
+                date: new Date().toISOString(), // 保存日期
+                imageData: uploadedImageData // 保存上传的图片数据 (Base64)
             };
             
+            // 将新草稿添加到数组中
             drafts.push(draft);
+            // 将更新后的草稿数组存回 localStorage
             localStorage.setItem('blogDrafts', JSON.stringify(drafts));
             
+            // 提示用户保存成功
             alert('草稿已保存');
         });
     }
 }
 
-// 博客分类筛选
+// --- 博客分类筛选 --- 
+// 初始化分类标签的点击筛选功能
 function initBlogCategories() {
+    // 获取所有的分类标签元素和博客卡片元素
     const categories = document.querySelectorAll('.blog-category');
     const blogCards = document.querySelectorAll('.blog-card');
     
+    // 如果页面上没有分类标签或博客卡片，则退出
     if (!categories.length || !blogCards.length) return;
     
+    // 遍历所有分类标签
     categories.forEach(category => {
+        // 为每个标签添加点击事件监听器
         category.addEventListener('click', function() {
-            // 移除所有分类的active类
+            // --- 更新分类标签的激活状态 --- 
+            // 移除所有分类标签的 'active' 类
             categories.forEach(c => c.classList.remove('active'));
-            
-            // 给当前点击的分类添加active类
+            // 为当前点击的标签添加 'active' 类
             this.classList.add('active');
             
+            // --- 根据选择的分类筛选博客卡片 --- 
+            // 获取当前点击标签的 data-category 属性值 (例如 'tech', 'life', 'all')
             const filter = this.getAttribute('data-category');
             
-            // 如果是"全部"类别，显示所有卡片
+            // 如果选择的是"全部"
             if (filter === 'all') {
+                // 显示所有博客卡片 (通过移除 display:none 样式)
                 blogCards.forEach(card => {
                     card.style.display = '';
                 });
+                // 结束函数执行
                 return;
             }
             
-            // 筛选博客卡片
+            // 如果选择的是特定分类
+            // 遍历所有博客卡片
             blogCards.forEach(card => {
+                // 获取卡片的 data-categories 属性值 (可能包含多个分类，用逗号分隔)
                 const cardCategories = card.getAttribute('data-categories');
+                // 检查卡片的分类是否包含当前选择的分类
                 if (cardCategories && cardCategories.includes(filter)) {
+                    // 如果包含，则显示卡片
                     card.style.display = '';
                 } else {
+                    // 如果不包含，则隐藏卡片
                     card.style.display = 'none';
                 }
             });
@@ -593,19 +701,26 @@ function initBlogCategories() {
     });
 }
 
-// 博客搜索
+// --- 博客搜索功能 --- 
+// 初始化博客搜索框的功能
 function initBlogSearch() {
+    // 获取搜索表单、输入框和所有博客卡片元素
     const searchForm = document.querySelector('.blog-search');
     const searchInput = document.querySelector('.blog-search input');
     const blogCards = document.querySelectorAll('.blog-card');
     
+    // 如果缺少必要的元素，则退出
     if (!searchForm || !searchInput || !blogCards.length) return;
     
+    // 为搜索表单添加 submit 事件监听器 (用户按回车或点击搜索按钮)
     searchForm.addEventListener('submit', function(e) {
+        // 阻止表单默认提交行为
         e.preventDefault();
         
+        // 获取搜索关键词，转换为小写并去除首尾空格
         const searchTerm = searchInput.value.toLowerCase().trim();
         
+        // 如果搜索词为空，显示所有博客卡片
         if (!searchTerm) {
             blogCards.forEach(card => {
                 card.style.display = '';
@@ -613,11 +728,15 @@ function initBlogSearch() {
             return;
         }
         
+        // --- 根据搜索词筛选博客卡片 --- 
         blogCards.forEach(card => {
+            // 获取卡片的标题、摘要，并转换为小写
             const title = card.querySelector('.blog-card-title').textContent.toLowerCase();
             const excerpt = card.querySelector('.blog-card-excerpt').textContent.toLowerCase();
+            // 获取卡片的所有标签元素
             const tags = card.querySelectorAll('.blog-tag');
             
+            // 检查标签是否匹配搜索词
             let tagMatch = false;
             tags.forEach(tag => {
                 if (tag.textContent.toLowerCase().includes(searchTerm)) {
@@ -625,6 +744,7 @@ function initBlogSearch() {
                 }
             });
             
+            // 如果标题、摘要或任何标签包含搜索词，则显示卡片，否则隐藏
             if (title.includes(searchTerm) || excerpt.includes(searchTerm) || tagMatch) {
                 card.style.display = '';
             } else {
@@ -633,10 +753,12 @@ function initBlogSearch() {
         });
     });
     
-    // 实时搜索（可选）
+    // --- 添加实时搜索功能 (当用户在输入框中输入时) --- 
     searchInput.addEventListener('input', function() {
+        // 获取当前输入框的值，转换为小写并去除空格
         const searchTerm = this.value.toLowerCase().trim();
         
+        // 如果输入为空，显示所有卡片
         if (!searchTerm) {
             blogCards.forEach(card => {
                 card.style.display = '';
@@ -644,10 +766,13 @@ function initBlogSearch() {
             return;
         }
         
+        // --- 实时筛选卡片 (仅基于标题和摘要) --- 
+        // (注意：实时搜索可能需要优化性能，例如使用 debounce)
         blogCards.forEach(card => {
             const title = card.querySelector('.blog-card-title').textContent.toLowerCase();
             const excerpt = card.querySelector('.blog-card-excerpt').textContent.toLowerCase();
             
+            // 如果标题或摘要包含搜索词，显示卡片，否则隐藏
             if (title.includes(searchTerm) || excerpt.includes(searchTerm)) {
                 card.style.display = '';
             } else {
@@ -657,29 +782,36 @@ function initBlogSearch() {
     });
 }
 
-// 博客分页功能
+// --- 博客分页功能 --- 
+// 初始化分页组件的点击切换功能 (主要是视觉效果)
 function initBlogPagination() {
+    // 获取所有分页项元素 (例如页码按钮)
     const paginationItems = document.querySelectorAll('.pagination-item');
     
+    // 如果没有分页项，则退出
     if (!paginationItems.length) return;
     
+    // 遍历所有分页项
     paginationItems.forEach(item => {
+        // 为每个分页项添加点击事件监听器
         item.addEventListener('click', function() {
-            // 移除所有分页项的active类
+            // --- 更新分页项的激活状态 --- 
+            // 移除所有分页项的 'active' 类
             paginationItems.forEach(p => p.classList.remove('active'));
-            
-            // 给当前点击的分页项添加active类
+            // 为当前点击的项添加 'active' 类
             this.classList.add('active');
             
-            // 在实际应用中，这里应该加载对应页码的博客内容
-            // 由于这是静态网站，我们仅做演示
+            // --- 实际的分页逻辑 (此处为占位符) --- 
+            // 在实际应用中，这里应该根据点击的页码 (data-page 属性)
+            // 异步加载并显示对应页的博客文章。
+            // 由于这是一个静态示例，这里只打印日志并滚动页面。
             const page = this.getAttribute('data-page');
             console.log('加载博客页面:', page);
             
-            // 模拟页面切换
+            // 平滑滚动到博客区域的顶部
             window.scrollTo({
-                top: document.querySelector('#blog-section').offsetTop - 100,
-                behavior: 'smooth'
+                top: document.querySelector('#blog-section').offsetTop - 100, // 减去 100px 作为偏移量
+                behavior: 'smooth' // 平滑滚动效果
             });
         });
     });
