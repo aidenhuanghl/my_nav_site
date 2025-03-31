@@ -1208,8 +1208,8 @@ function displayBlogDetailModal(blog, blogId) {
                 
                 // 确保有有效的ID
                 if (!currentBlogId || currentBlogId === 'undefined') {
-                    console.error('无效的博客ID，使用备用ID:', id);
-                    showDeleteConfirmation(id, detailModal);
+                    console.error('无效的博客ID，使用备用ID:', blogId);
+                    showDeleteConfirmation(blogId, detailModal);
                 } else {
                     showDeleteConfirmation(currentBlogId, detailModal);
                 }
