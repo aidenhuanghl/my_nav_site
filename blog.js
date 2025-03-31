@@ -1204,7 +1204,15 @@ function displayBlogDetailModal(blog, blogId) {
                 e.preventDefault();
                 e.stopPropagation();
                 const currentBlogId = deleteBtn.getAttribute('data-blog-id');
-                showDeleteConfirmation(currentBlogId, detailModal);
+                console.log('删除按钮点击，获取到的博客ID:', currentBlogId);
+                
+                // 确保有有效的ID
+                if (!currentBlogId || currentBlogId === 'undefined') {
+                    console.error('无效的博客ID，使用备用ID:', id);
+                    showDeleteConfirmation(id, detailModal);
+                } else {
+                    showDeleteConfirmation(currentBlogId, detailModal);
+                }
             });
         }
         
@@ -1738,6 +1746,15 @@ function showDeleteConfirmation(blogId, parentModal) {
 
 // 删除博客文章
 function deleteBlogPost(blogId) {
+    console.log('尝试删除博客文章，ID:', blogId);
+    
+    // 检查ID是否有效
+    if (!blogId || blogId === 'undefined') {
+        console.error('无效的博客ID，无法删除');
+        showNotification('删除失败：无效的文章ID', 5000);
+        return;
+    }
+    
     // 显示加载状态
     showNotification('正在删除博客文章...', 2000);
     
