@@ -1039,16 +1039,36 @@ function showBlogDetail(blogIdOrObject) {
         
         // 确定博客对象和blogId
         if (typeof blogIdOrObject === 'object' && blogIdOrObject !== null) {
+            // 处理博客对象
             blog = blogIdOrObject;
-            blogId = blog.id || ('blog-' + Date.now());
-            console.log('Processing blog object, extracted ID:', blogId);
-            if (!blog.id) {
-                blog.id = blogId;
+            
+            // 确保blog对象有一个有效的ID
+            if (!blog.id && blog._id) {
+                blog.id = blog._id.toString();
+            } else if (!blog.id && !blog._id) {
+                blog.id = 'blog-' + Date.now();
             }
+            
+            blogId = blog.id;
+            console.log('处理博客对象，提取ID:', blogId);
+            
+            // 显示博客详情
+            displayBlogDetailModal(blog, blogId);
         } else {
-            // 如果是ID，从API获取博客文章
+            // 处理博客ID
             blogId = blogIdOrObject;
-            console.log('Processing blog ID:', blogId);
+            
+            // 确保blogId是一个字符串
+            if (blogId !== undefined && blogId !== null) {
+                blogId = String(blogId);
+            } else {
+                console.error('无效的博客ID:', blogId);
+                showNotification('无法显示博客：无效的ID', 3000);
+                window._showingBlogDetail = false;
+                return;
+            }
+            
+            console.log('处理博客ID:', blogId);
             
             // 对于静态博客，保持原有的逻辑
             if (blogId.startsWith('static-')) {
@@ -1069,10 +1089,23 @@ function showBlogDetail(blogIdOrObject) {
                 displayBlogDetailModal(blog, blogId);
             } else {
                 // 对于MongoDB中的博客，使用API获取
+                console.log('从API获取博客，ID:', blogId);
+                
                 window.blogAPI.getPost(blogId)
                     .then(post => {
+                        console.log('API返回博客数据:', post);
+                        
+                        if (!post) {
+                            throw new Error('API返回空数据');
+                        }
+                        
+                        // 确保post对象有id字段
+                        if (!post.id && post._id) {
+                            post.id = post._id.toString();
+                        }
+                        
                         // 显示博客详情
-                        displayBlogDetailModal(post, blogId);
+                        displayBlogDetailModal(post, post.id || blogId);
                     })
                     .catch(error => {
                         console.error('获取博客详情失败:', error);
@@ -1090,17 +1123,19 @@ function showBlogDetail(blogIdOrObject) {
                             viewCount: 0
                         };
                         
+                        console.log('显示默认博客对象:', defaultBlog);
                         displayBlogDetailModal(defaultBlog, blogId);
                     });
             }
-            return;
         }
-        
-        // 如果已经有博客对象，直接显示详情
-        displayBlogDetailModal(blog, blogId);
     } catch (error) {
         console.error('显示博客详情时出错:', error);
-        window._showingBlogDetail = false;
+        showNotification('显示博客详情失败：' + error.message, 3000);
+    } finally {
+        // 确保标志被重置
+        setTimeout(() => {
+            window._showingBlogDetail = false;
+        }, 500);
     }
 }
 
@@ -1651,6 +1686,18 @@ function deleteSpecificArticle(title) {
 
 // 显示删除确认对话框
 function showDeleteConfirmation(blogId, parentModal) {
+    console.log('显示删除确认对话框，博客ID:', blogId);
+    
+    // 检查ID是否有效
+    if (!blogId || blogId === 'undefined' || blogId === 'null') {
+        console.error('无效的博客ID，无法显示删除确认对话框:', blogId);
+        showNotification('无法删除：无效的文章ID', 3000);
+        return;
+    }
+    
+    // 确保blogId是字符串
+    blogId = String(blogId);
+    
     // 创建确认对话框
     const confirmDialog = document.createElement('div');
     confirmDialog.className = 'confirmation-dialog';
@@ -1658,6 +1705,7 @@ function showDeleteConfirmation(blogId, parentModal) {
         <div class="confirmation-dialog-content">
             <h3>确认删除</h3>
             <p>您确定要删除这篇博客文章吗？此操作无法撤销。</p>
+            <p>文章ID: ${blogId}</p>
             <div class="confirmation-buttons">
                 <button class="cancel-btn">取消</button>
                 <button class="confirm-btn">确认删除</button>
@@ -1725,6 +1773,8 @@ function showDeleteConfirmation(blogId, parentModal) {
     // 添加确认按钮事件
     const confirmBtn = confirmDialog.querySelector('.confirm-btn');
     confirmBtn.addEventListener('click', () => {
+        console.log('确认删除博客文章，ID:', blogId);
+        
         // 执行删除操作
         deleteBlogPost(blogId);
         
@@ -1749,18 +1799,22 @@ function deleteBlogPost(blogId) {
     console.log('尝试删除博客文章，ID:', blogId);
     
     // 检查ID是否有效
-    if (!blogId || blogId === 'undefined') {
-        console.error('无效的博客ID，无法删除');
+    if (!blogId || blogId === 'undefined' || blogId === 'null') {
+        console.error('无效的博客ID，无法删除:', blogId);
         showNotification('删除失败：无效的文章ID', 5000);
         return;
     }
+    
+    // 确保blogId是字符串
+    blogId = String(blogId);
     
     // 显示加载状态
     showNotification('正在删除博客文章...', 2000);
     
     // 调用API删除文章
     window.blogAPI.deletePost(blogId)
-        .then(() => {
+        .then(response => {
+            console.log('删除博客成功，响应:', response);
             // 删除成功
             showNotification('博客文章已成功删除', 3000);
             
@@ -1772,6 +1826,6 @@ function deleteBlogPost(blogId) {
         })
         .catch(error => {
             console.error('删除博客文章失败:', error);
-            showNotification('删除博客文章失败，请稍后重试', 5000);
+            showNotification('删除博客文章失败，请稍后重试: ' + error.message, 5000);
         });
 } 
